@@ -55,6 +55,11 @@ class RequestClient:
         """Close HTTP client"""
         self._http.close()
 
+    @property
+    def user_agent(self) -> str:
+        """Get User-Agent header"""
+        return self._get_user_agent()
+
     def _get_user_agent(self) -> str:
         """Build User-Agent header"""
         tab = "\t"
@@ -170,7 +175,9 @@ class RequestClient:
 
         if method == "GET":
             headers["x-lhm"] = "GET"
-            response = self._http.get(url, headers=headers, timeout=timeout or self.timeout)
+            response = self._http.get(
+                url, headers=headers, timeout=timeout or self.timeout
+            )
         else:
             response = self._http.post(
                 url,
@@ -199,7 +206,7 @@ class RequestClient:
         url = f"https://{host or self.HOST}{path}"
         headers = self._build_headers(
             access_token=access_token,
-            content_type="application/json",
+            extra={"content-type": "application/json"},
         )
 
         if method == "GET":

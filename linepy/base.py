@@ -13,6 +13,7 @@ from .storage import BaseStorage, FileStorage, TokenManager
 
 class LineException(Exception):
     """LINE API Exception"""
+
     def __init__(self, code: int, message: str, metadata: Optional[Dict] = None):
         self.code = code
         self.message = message
@@ -85,20 +86,43 @@ class BaseClient:
 
         # Login handler
         from .login import Login
+
         self.login_handler = Login(self)
+
+        # Talk service
+        from .talk import TalkService
+
+        self.talk = TalkService(self)
+
+        # Sync service
+        from .sync import SyncService
+
+        self.sync = SyncService(self)
 
         # Square (OpenChat) service
         from .square import SquareService
+
         self.square = SquareService(self)
+
+        # Channel & Timeline service
+        from .channel import ChannelService
+        from .timeline import Timeline
+
+        self.channel = ChannelService(self)
+        self.timeline = Timeline(self)
 
         # User state
         self.auth_token: Optional[str] = None
         self.mid: Optional[str] = None
         self.profile: Optional[Dict] = None
 
+        # E2EE handler
+        from .e2ee import E2EE
+
+        self.e2ee = E2EE(self)
+
         # Event callbacks
         self._callbacks: Dict[str, List[Callable]] = {}
-
 
     # ========== Login Methods ==========
 
@@ -131,9 +155,9 @@ class BaseClient:
 
         # Get profile
         self.profile = self.get_profile()
-        self.mid = self.profile.get(1)  # mid field
+        self.mid = self.profile.mid
 
-        print(f"Logged in as: {self.profile.get(20, 'Unknown')}")
+        print(f"Logged in as: {self.profile.display_name}")
         return auth_token
 
     def login_with_qr(self, v3: Optional[bool] = None, save: bool = True) -> str:
@@ -150,21 +174,25 @@ class BaseClient:
         auth_token = self.login_handler.login_with_qr(v3=v3)
         self.set_auth_token(auth_token)
 
-        # Save login result
-        if save and hasattr(self.login_handler, '_last_login_response'):
+        # Save auth token explicitly
+        if save:
+            self.token_manager.auth_token = auth_token
+
+        # Save login result (for refresh token etc.)
+        if save and hasattr(self.login_handler, "_last_login_response"):
             self.token_manager.save_login_result(
                 self.login_handler._last_login_response
             )
 
         # Get profile
         self.profile = self.get_profile()
-        self.mid = self.profile.get(1)
+        self.mid = self.profile.mid
 
         # Save MID
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.get(20, 'Unknown')}")
+        print(f"Logged in as: {self.profile.display_name}")
         return auth_token
 
     def login_with_token(self, auth_token: str, save: bool = True):
@@ -183,13 +211,13 @@ class BaseClient:
 
         # Get profile
         self.profile = self.get_profile()
-        self.mid = self.profile.get(1)
+        self.mid = self.profile.mid
 
         # Save MID
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.get(20, 'Unknown')}")
+        print(f"Logged in as: {self.profile.display_name}")
 
     def auto_login(self) -> bool:
         """
@@ -210,9 +238,9 @@ class BaseClient:
 
             # Verify token by getting profile
             self.profile = self.get_profile()
-            self.mid = self.profile.get(1)
+            self.mid = self.profile.mid
 
-            print(f"Auto-logged in as: {self.profile.get(20, 'Unknown')}")
+            print(f"Auto-logged in as: {self.profile.display_name}")
             return True
         except Exception as e:
             print(f"Auto-login failed: {e}")
@@ -307,14 +335,9 @@ class BaseClient:
 
     # ========== Talk Service ==========
 
-    def get_profile(self) -> Dict:
+    def get_profile(self) -> Any:
         """Get user profile"""
-        # linejs: getProfile_args returns [] if no param
-        return self._call_service(
-            path="/S4",
-            method="getProfile",
-            params=[],
-        )
+        return self.talk.get_profile()
 
     def get_contact(self, mid: str) -> Dict:
         """Get contact by mid"""
@@ -343,30 +366,47 @@ class BaseClient:
             params=[[8, 1, 0]],  # syncReason = 0
         )
 
-    def get_chats(self, chat_mids: List[str], with_members: bool = True, with_invitees: bool = True) -> Dict:
+    def get_chats(
+        self,
+        chat_mids: List[str],
+        with_members: bool = True,
+        with_invitees: bool = True,
+    ) -> Dict:
         """Get chats by mids"""
         # getChats_args: [[12, 1, request]]
         return self._call_service(
             path="/S4",
             method="getChats",
-            params=[[12, 1, [
-                [15, 1, [11, chat_mids]],
-                [2, 2, with_members],
-                [2, 3, with_invitees],
-            ]]],
+            params=[
+                [
+                    12,
+                    1,
+                    [
+                        [15, 1, [11, chat_mids]],
+                        [2, 2, with_members],
+                        [2, 3, with_invitees],
+                    ],
+                ]
+            ],
         )
 
-    def get_all_chat_mids(self, with_member_chats: bool = True, with_invited_chats: bool = True) -> Dict:
+    def get_all_chat_mids(
+        self, with_member_chats: bool = True, with_invited_chats: bool = True
+    ) -> Dict:
         """Get all chat mids"""
         # getAllChatMids_args: [[12, 1, request], [8, 2, syncReason]]
         return self._call_service(
             path="/S4",
             method="getAllChatMids",
             params=[
-                [12, 1, [
-                    [2, 1, with_member_chats],
-                    [2, 2, with_invited_chats],
-                ]],
+                [
+                    12,
+                    1,
+                    [
+                        [2, 1, with_member_chats],
+                        [2, 2, with_invited_chats],
+                    ],
+                ],
                 [8, 2, 0],  # syncReason
             ],
         )
@@ -394,11 +434,15 @@ class BaseClient:
             method="sendMessage",
             params=[
                 [8, 1, 0],  # seq
-                [12, 2, [
-                    [11, 2, to],
-                    [11, 10, text],
-                    [8, 15, content_type],
-                ]],
+                [
+                    12,
+                    2,
+                    [
+                        [11, 2, to],
+                        [11, 10, text],
+                        [8, 15, content_type],
+                    ],
+                ],
             ],
         )
 
@@ -413,6 +457,7 @@ class BaseClient:
             event: Event name
             callback: Callback function (optional if used as decorator)
         """
+
         def decorator(func: Callable):
             if event not in self._callbacks:
                 self._callbacks[event] = []
@@ -433,14 +478,14 @@ class BaseClient:
     def get_to_type(self, mid: str) -> Optional[int]:
         """Get target type from mid prefix"""
         type_map = {
-            'u': 0,  # USER
-            'r': 1,  # ROOM
-            'c': 2,  # GROUP
-            's': 3,  # SQUARE
-            'm': 4,  # SQUARE_CHAT
-            'p': 5,  # SQUARE_MEMBER
-            'v': 6,  # BOT
-            't': 7,  # ?
+            "u": 0,  # USER
+            "r": 1,  # ROOM
+            "c": 2,  # GROUP
+            "s": 3,  # SQUARE
+            "m": 4,  # SQUARE_CHAT
+            "p": 5,  # SQUARE_MEMBER
+            "v": 6,  # BOT
+            "t": 7,  # ?
         }
         if mid and len(mid) > 0:
             return type_map.get(mid[0])

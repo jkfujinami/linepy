@@ -22,6 +22,7 @@ Device = Literal[
 
 class DeviceDetails(NamedTuple):
     """Device configuration details"""
+
     device: str
     app_version: str
     system_name: str
@@ -77,9 +78,11 @@ def get_device_details(
     elif device == "IOS":
         app_version = version or DEFAULT_VERSIONS["IOS"]
         system_name = "iOS"
+        system_version = "17.0"
     elif device == "IOSIPAD":
         app_version = version or DEFAULT_VERSIONS["IOSIPAD"]
         system_name = "iOS"
+        system_version = "17.0"
     elif device == "WATCHOS":
         app_version = version or DEFAULT_VERSIONS["WATCHOS"]
         system_name = "Watch OS"

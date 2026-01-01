@@ -9,8 +9,10 @@ import struct
 from typing import Any, Tuple, List, Dict, Optional, Union
 
 
+import os
+
 # Debug mode
-DEBUG = False
+DEBUG = os.getenv("LINEPY_DEBUG", "false").lower() == "true"
 
 
 def set_debug(enabled: bool):
@@ -33,6 +35,7 @@ def debug_log(msg: str, data: Any = None):
 
 class TType:
     """Thrift type constants"""
+
     STOP = 0
     VOID = 1
     BOOL = 2
@@ -52,6 +55,7 @@ class TType:
 
 class CompactType:
     """Compact protocol type constants"""
+
     STOP = 0x00
     TRUE = 0x01
     FALSE = 0x02
@@ -69,12 +73,13 @@ class CompactType:
 
 # ========== Header Generation (from linejs) ==========
 
+
 def gen_header_binary(name: str) -> bytes:
     """
     Generate Binary protocol header (protocol 3).
     Format: [0x80, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, len] + name + [0x00, 0x00, 0x00, 0x00]
     """
-    name_bytes = name.encode('utf-8')
+    name_bytes = name.encode("utf-8")
     prefix = bytes([0x80, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, len(name_bytes)])
     suffix = bytes([0x00, 0x00, 0x00, 0x00])
     return prefix + name_bytes + suffix
@@ -85,12 +90,13 @@ def gen_header_compact(name: str) -> bytes:
     Generate Compact protocol header (protocol 4).
     Format: [0x82, 0x21, 0x00, len] + name
     """
-    name_bytes = name.encode('utf-8')
+    name_bytes = name.encode("utf-8")
     header = bytes([0x82, 0x21, 0x00, len(name_bytes)])
     return header + name_bytes
 
 
 # ========== Compact Protocol Writer ==========
+
 
 class CompactWriter:
     """
@@ -110,7 +116,7 @@ class CompactWriter:
     def _write_varint(self, n: int):
         """Write unsigned varint"""
         while True:
-            byte = n & 0x7f
+            byte = n & 0x7F
             n >>= 7
             if n:
                 self._buffer.append(byte | 0x80)
@@ -136,7 +142,7 @@ class CompactWriter:
         self._last_fid = fid
 
     def write_byte(self, value: int):
-        self._buffer.append(value & 0xff)
+        self._buffer.append(value & 0xFF)
 
     def write_i16(self, value: int):
         self._write_zigzag(value)
@@ -148,11 +154,11 @@ class CompactWriter:
         self._write_zigzag(value)
 
     def write_double(self, value: float):
-        self._buffer += struct.pack('<d', value)
+        self._buffer += struct.pack("<d", value)
 
     def write_binary(self, value: Union[str, bytes]):
         if isinstance(value, str):
-            value = value.encode('utf-8')
+            value = value.encode("utf-8")
         self._write_varint(len(value))
         self._buffer += value
 
@@ -217,7 +223,7 @@ class CompactWriter:
         if size <= 14:
             self._buffer.append((size << 4) | ctype)
         else:
-            self._buffer.append(0xf0 | ctype)
+            self._buffer.append(0xF0 | ctype)
             self._write_varint(size)
 
     def write_map_begin(self, ktype: int, vtype: int, size: int):
@@ -241,6 +247,7 @@ class CompactWriter:
 
 
 # ========== High-Level Writer ==========
+
 
 def write_thrift(params: List, method_name: str, protocol: int = 4) -> bytes:
     """
@@ -267,7 +274,7 @@ def write_thrift(params: List, method_name: str, protocol: int = 4) -> bytes:
     # Write struct
     _write_struct(writer, params)
 
-    # Add field stop at the end
+    # Add field stop at the end if not already present
     body = writer.get_bytes()
     if not body or body[-1] != 0:
         body += bytes([0x00])
@@ -277,19 +284,58 @@ def write_thrift(params: List, method_name: str, protocol: int = 4) -> bytes:
     return result
 
 
-def _write_struct(writer: CompactWriter, params: List):
+def _write_struct(writer: CompactWriter, params: Union[List, Any]):
     """Write struct fields"""
+    from pydantic import BaseModel
+    from enum import Enum
+
     saved_fid = writer._last_fid
     writer._last_fid = 0
 
-    for param in params:
-        if param is None:
-            continue
-        if len(param) < 3:
-            continue
+    if isinstance(params, BaseModel):
+        # Handle Pydantic model
+        # Iterate over pydantic fields to get values and aliases (IDs)
+        for name, field in params.model_fields.items():
+            value = getattr(params, name)
+            if value is None:
+                continue
 
-        ftype, fid, value = param[0], param[1], param[2]
-        _write_value(writer, ftype, fid, value)
+            # Field ID (from alias)
+            fid = int(field.alias) if field.alias and field.alias.isdigit() else 0
+            if fid == 0:
+                continue
+
+            # Infer type
+            if isinstance(value, str):
+                ftype = TType.STRING
+            elif isinstance(value, bool):
+                ftype = TType.BOOL
+            elif isinstance(value, (int, Enum)):
+                ftype = TType.I64
+            elif isinstance(value, float):
+                ftype = TType.DOUBLE
+            elif isinstance(value, list):
+                ftype = TType.LIST
+            elif isinstance(value, dict):
+                ftype = TType.MAP
+            elif isinstance(value, BaseModel):
+                ftype = TType.STRUCT
+            elif isinstance(value, (bytes, bytearray)):
+                ftype = TType.STRING
+            else:
+                ftype = TType.STRUCT  # Default to struct for unknown complex types
+
+            _write_value(writer, ftype, fid, value)
+    elif isinstance(params, list):
+        # Handle original list-of-lists format
+        for param in params:
+            if param is None:
+                continue
+            if len(param) < 3:
+                continue
+
+            ftype, fid, value = param[0], param[1], param[2]
+            _write_value(writer, ftype, fid, value)
 
     writer.write_field_stop()  # Important: Terminate struct
     writer._last_fid = saved_fid
@@ -321,6 +367,8 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
 
     elif ftype == TType.I64:  # 10
         writer.write_field_begin(ftype, fid)
+        if hasattr(value, "value"):  # Enum
+            value = value.value
         writer.write_i64(value)
 
     elif ftype == TType.STRING:  # 11
@@ -332,13 +380,20 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
             return
         writer.write_field_begin(ftype, fid)
         _write_struct(writer, value)
-        writer.write_field_stop()
 
     elif ftype == TType.MAP:  # 13
         # value is [key_type, val_type, dict]
-        if not value or len(value) < 3 or not value[2]:
+        if not value:
             return
-        ktype, vtype, data = value[0], value[1], value[2]
+
+        if isinstance(value, dict):
+            # Try to infer types if it's a raw dict
+            ktype = TType.STRING
+            vtype = TType.STRING
+            data = value
+        else:
+            ktype, vtype, data = value[0], value[1], value[2]
+
         writer.write_field_begin(ftype, fid)
         writer.write_map_begin(ktype, vtype, len(data))
         for k, v in data.items():
@@ -346,10 +401,22 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
             _write_value_raw(writer, vtype, v)
 
     elif ftype in (TType.SET, TType.LIST):  # 14, 15
-        # value is [elem_type, list]
-        if not value or len(value) < 2 or not value[1]:
+        if not value:
             return
-        etype, data = value[0], value[1]
+
+        if isinstance(value, list) and not (
+            len(value) == 2 and isinstance(value[0], int)
+        ):
+            # It's a raw list, infer element type
+            etype = (
+                TType.STRUCT
+                if value and hasattr(value[0], "model_fields")
+                else TType.STRING
+            )
+            data = value
+        else:
+            etype, data = value[0], value[1]
+
         writer.write_field_begin(ftype, fid)
         writer.write_list_begin(etype, len(data))
         for item in data:
@@ -358,8 +425,14 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
 
 def _write_value_raw(writer: CompactWriter, ftype: int, value: Any):
     """Write value without field header"""
+    from pydantic import BaseModel
+    from enum import Enum
+
     if value is None:
         return
+
+    if isinstance(value, Enum):
+        value = value.value
 
     if ftype == TType.BOOL:
         writer.write_byte(1 if value else 0)
@@ -377,10 +450,13 @@ def _write_value_raw(writer: CompactWriter, ftype: int, value: Any):
         writer.write_binary(value)
     elif ftype == TType.STRUCT:
         _write_struct(writer, value)
-        writer.write_field_stop()
+    elif ftype in (TType.SET, TType.LIST):  # handled as List for now
+        # Fallback for nested lists (rarely used in LINE)
+        pass
 
 
 # ========== Compact Protocol Reader ==========
+
 
 class CompactReader:
     """Thrift Compact Protocol Reader"""
@@ -390,10 +466,13 @@ class CompactReader:
         self._pos = 0
         self._last_fid = 0
         self._bool_value = None
-        debug_log("CompactReader initialized with data", data[:100] if len(data) > 100 else data)
+        debug_log(
+            "CompactReader initialized with data",
+            data[:100] if len(data) > 100 else data,
+        )
 
     def _read(self, n: int) -> bytes:
-        result = self.data[self._pos:self._pos + n]
+        result = self.data[self._pos : self._pos + n]
         self._pos += n
         return result
 
@@ -405,7 +484,7 @@ class CompactReader:
         while True:
             byte = self.data[self._pos]
             self._pos += 1
-            result |= (byte & 0x7f) << shift
+            result |= (byte & 0x7F) << shift
             if (byte >> 7) == 0:
                 return result
             shift += 7
@@ -432,37 +511,37 @@ class CompactReader:
             # Not thrift - might be error response
             debug_log("Response bytes", self.data[:200])
             try:
-                text = self.data.decode('utf-8', errors='replace')
+                text = self.data.decode("utf-8", errors="replace")
                 debug_log("Response text", text[:500])
             except:
                 pass
-            raise Exception(f'Bad protocol id: {proto_id}')
+            raise Exception(f"Bad protocol id: {proto_id}")
 
         ver_type = self.data[self._pos]
         self._pos += 1
         _type = (ver_type >> 5) & 7
-        version = ver_type & 0x1f
+        version = ver_type & 0x1F
 
         seqid = self.read_varint()
         name_len = self.read_varint()
-        name = self._read(name_len).decode('utf-8')
+        name = self._read(name_len).decode("utf-8")
 
         debug_log(f"Message: name={name}, type={_type}, seqid={seqid}")
         return name, _type, seqid
 
     def _read_binary_message_begin(self) -> Tuple[str, int, int]:
         """Read binary protocol message header"""
-        sz = struct.unpack('!i', self._read(4))[0]
+        sz = struct.unpack("!i", self._read(4))[0]
         if sz < 0:
-            version = sz & 0xffff0000
+            version = sz & 0xFFFF0000
             if version != 0x80010000:
-                raise Exception(f'Bad binary version: {version}')
-            _type = sz & 0xff
-            name_len = struct.unpack('!i', self._read(4))[0]
-            name = self._read(name_len).decode('utf-8')
-            seqid = struct.unpack('!i', self._read(4))[0]
+                raise Exception(f"Bad binary version: {version}")
+            _type = sz & 0xFF
+            name_len = struct.unpack("!i", self._read(4))[0]
+            name = self._read(name_len).decode("utf-8")
+            seqid = struct.unpack("!i", self._read(4))[0]
             return name, _type, seqid
-        raise Exception(f'Bad binary message: {sz}')
+        raise Exception(f"Bad binary message: {sz}")
 
     # ========== Field Reading ==========
 
@@ -477,7 +556,7 @@ class CompactReader:
             return None, TType.STOP, 0
 
         delta = type_byte >> 4
-        ctype = type_byte & 0x0f
+        ctype = type_byte & 0x0F
 
         if delta == 0:
             fid = self.read_zigzag()
@@ -516,7 +595,7 @@ class CompactReader:
         size_type = self.data[self._pos]
         self._pos += 1
         size = size_type >> 4
-        ctype = size_type & 0x0f
+        ctype = size_type & 0x0F
         if size == 15:
             size = self.read_varint()
 
@@ -540,7 +619,7 @@ class CompactReader:
         types = self.data[self._pos]
         self._pos += 1
         ktype = types >> 4
-        vtype = types & 0x0f
+        vtype = types & 0x0F
 
         ctype_to_ttype = {
             CompactType.TRUE: TType.BOOL,
@@ -575,13 +654,13 @@ class CompactReader:
 
     def read_double(self) -> float:
         data = self._read(8)
-        return struct.unpack('<d', data)[0]
+        return struct.unpack("<d", data)[0]
 
     def read_binary(self) -> Union[str, bytes]:
         size = self.read_varint()
         data = self._read(size)
         try:
-            return data.decode('utf-8')
+            return data.decode("utf-8")
         except:
             return data
 
@@ -658,7 +737,7 @@ class CompactReader:
                     "code": error.get(1) if isinstance(error, dict) else None,
                     "message": error.get(2) if isinstance(error, dict) else str(error),
                     "metadata": error.get(3) if isinstance(error, dict) else None,
-                    "_data": error
+                    "_data": error,
                 }
             }
         else:
@@ -668,6 +747,7 @@ class CompactReader:
 
 
 # ========== Legacy Writer (for compatibility) ==========
+
 
 class ThriftWriter:
     """Legacy Thrift Writer for compatibility"""
@@ -691,7 +771,7 @@ class ThriftWriter:
         pass
 
     def get_bytes(self) -> bytes:
-        return b''
+        return b""
 
 
 class ThriftReader:

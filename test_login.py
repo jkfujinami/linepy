@@ -6,6 +6,7 @@ Interactive script to test login functionality.
 """
 
 import sys
+
 sys.path.insert(0, ".")
 
 from linepy import Client
@@ -54,6 +55,7 @@ def test_email_login():
     except Exception as e:
         print(f"❌ Login failed: {e}")
         import traceback
+
         traceback.print_exc()
         return None
 
@@ -63,7 +65,7 @@ def test_qr_login():
     print("\n=== QR Code Login Test ===")
     confirm = input("Start QR login? (y/N): ").strip().lower()
 
-    if confirm != 'y':
+    if confirm != "y":
         print("Skipped.")
         return None
 
@@ -75,6 +77,7 @@ def test_qr_login():
         print(f"\n[Login] QR Code URL: {url}")
         try:
             import qrcode
+
             qr = qrcode.QRCode()
             qr.add_data(url)
             qr.make()
