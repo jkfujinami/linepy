@@ -37,13 +37,25 @@ client.poll()  # Start listening
 
 ## Features
 
-- ✅ Thrift protocol support (Binary/Compact)
-- ✅ Multiple device types (DESKTOPWIN, DESKTOPMAC, IOS, ANDROID, etc.)
-- ✅ Synchronous API (no asyncio!)
-- ✅ Event-driven message handling
-- 🚧 QR code login (WIP)
-- 🚧 E2EE encryption (WIP)
-- 🚧 Square/OpenChat support (WIP)
+- ✅ **Login Methods**
+  - QR Code Login (v1/v2) with E2EE
+  - Email Login
+  - Auth Token Login
+  - Auto-login with persistent storage
+- ✅ **Messaging**
+  - Text, Image, Content types
+  - Event-driven message handling (Long Polling)
+- ✅ **Square (OpenChat)**
+  - Join/Leave squares
+  - Send/Receive messages
+  - Mention, Reply, Reaction
+- ✅ **Timeline / Note**
+  - Create/Delete posts
+  - List posts (Square Note supported)
+- ✅ **Core**
+  - Thrift protocol support (Binary/Compact)
+  - HTTP/2 support
+  - Multiple device types support
 
 ## Supported Devices
 

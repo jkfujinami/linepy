@@ -205,12 +205,17 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-linejs/
 CHRLINE/
-
+CHRLINE-Patch/
+linejs/
+base/
 # LINEPY specific
 .linepy_storage.json
 .linepy_test.json
 .linepy*.json
 test_*.py
 !test_login.py
+!test_storage.py
+!test_square.py
+!test_timeline.py
+!test_polling.py

@@ -17,6 +17,22 @@ from typing import Optional, Tuple, Dict, Any, List
 
 from .thrift import TType
 from .config import Device, is_v3_support
+from .models.login import (
+    RSAKeyInfo,
+    LoginResponse,
+    VerificationResponse,
+    QRSessionResponse,
+    QRCodeResponse,
+    PinCodeResponse,
+    QRCodeLoginResponse,
+    QRCodeLoginV2Response,
+)
+
+from typing import Type, TypeVar
+from .services.base import ServiceBase
+from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)  # Loginクラス内で使うため定義
 
 
 # Regex patterns (from linejs)
@@ -26,6 +42,7 @@ PASSWORD_REGEX = re.compile(r"^.{6,}$")  # At least 6 characters
 
 class LoginError(Exception):
     """Login specific error"""
+
     pass
 
 
@@ -73,7 +90,7 @@ class Login:
 
     # ========== RSA Encryption ==========
 
-    def get_rsa_key_info(self, provider: int = 0) -> Dict:
+    def get_rsa_key_info(self, provider: int = 0) -> RSAKeyInfo:
         """
         Get RSA public key for credential encryption.
 
@@ -91,15 +108,10 @@ class Login:
             method="getRSAKeyInfo",
             params=params,
             protocol=3,  # Binary
+            response_model=RSAKeyInfo,
         )
 
-        # Parse response: {1: keynm, 2: nvalue, 3: evalue, 4: sessionKey}
-        return {
-            "keynm": response.get(1, ""),
-            "nvalue": response.get(2, ""),
-            "evalue": response.get(3, ""),
-            "sessionKey": response.get(4, ""),
-        }
+        return response
 
     def _encrypt_rsa(self, message: str, nvalue: str, evalue: str) -> str:
         """
@@ -141,7 +153,9 @@ class Login:
         try:
             from nacl.public import PrivateKey
         except ImportError:
-            raise ImportError("pynacl is required for E2EE. Install with: pip install pynacl")
+            raise ImportError(
+                "pynacl is required for E2EE. Install with: pip install pynacl"
+            )
 
         # Generate Curve25519 key pair (matching linejs nacl.box.keyPair())
         private_key = PrivateKey.generate()
@@ -149,6 +163,7 @@ class Login:
 
         # Encode public key to base64 and URL-encode it
         import urllib.parse
+
         public_key_b64 = base64.b64encode(bytes(public_key)).decode()
         secret_param = urllib.parse.quote(public_key_b64)
         version = 1
@@ -214,21 +229,24 @@ class Login:
 
         # Get RSA key
         rsa_key = self.get_rsa_key_info()
-        keynm = rsa_key["keynm"]
-        session_key = rsa_key["sessionKey"]
+        keynm = rsa_key.keynm
+        session_key = rsa_key.sessionKey
 
         # Build message: chr(len) + data for each field
         message = (
-            chr(len(session_key)) + session_key +
-            chr(len(email)) + email +
-            chr(len(password)) + password
+            chr(len(session_key))
+            + session_key
+            + chr(len(email))
+            + email
+            + chr(len(password))
+            + password
         )
 
         # Encrypt with RSA
         encrypted = self._encrypt_rsa(
             message,
-            rsa_key["nvalue"],
-            rsa_key["evalue"],
+            rsa_key.nvalue,
+            rsa_key.evalue,
         )
 
         # Prepare E2EE secret if enabled
@@ -287,10 +305,10 @@ class Login:
         )
 
         # Check if verification needed
-        auth_token = response.get(1)  # authToken
+        auth_token = response.auth_token
         if not auth_token:
-            verifier = response.get(3)  # verifier
-            pin = response.get(4) or pincode
+            verifier = response.verifier
+            pin = response.pincode or pincode
 
             print(f"[Login] Enter PIN code: {pin}")
             self.client.emit("pincall", pin)
@@ -303,7 +321,9 @@ class Login:
             else:
                 # Legacy verification
                 verify_result = self._check_legacy_verification(verifier)
-                e2ee_login = verify_result.get("result", {}).get("verifier", verifier)
+                # verify_result is now VerificationResponse
+                # VerificationResponse.result is a dict
+                e2ee_login = verify_result.result.get("verifier", verifier)
 
             # Retry with verifier
             response = self._login_v2(
@@ -315,10 +335,10 @@ class Login:
                 cert=cert,
                 method="loginZ",
             )
-            auth_token = response.get(1)
+            auth_token = response.auth_token
 
         # Save certificate
-        new_cert = response.get(2)
+        new_cert = response.certificate
         if new_cert:
             self.register_cert(email, new_cert)
             print("[Login] Certificate saved")
@@ -355,9 +375,9 @@ class Login:
         )
 
         # Check for v3 token response
-        token_info = response.get(9)
+        token_info = response.token_info
         if not token_info:
-            verifier = response.get(3)
+            verifier = response.verifier
 
             print(f"[Login] Enter PIN code: {pincode}")
             self.client.emit("pincall", pincode)
@@ -377,17 +397,17 @@ class Login:
                 cert=cert,
                 method="loginV2",
             )
-            token_info = response.get(9)
+            token_info = response.token_info
 
         # Save certificate
-        new_cert = response.get(2)
+        new_cert = response.certificate
         if new_cert:
             self.register_cert(email, new_cert)
 
         if not token_info:
             raise LoginError("Login failed: no token info")
 
-        auth_token = token_info.get(1)
+        auth_token = token_info.auth_token
         # refresh_token = token_info.get(2)
 
         return auth_token
@@ -401,7 +421,7 @@ class Login:
         secret: Optional[bytes],
         cert: Optional[str],
         method: str = "loginV2",
-    ) -> Dict:
+    ) -> LoginResponse:
         """
         Send login request.
 
@@ -416,20 +436,24 @@ class Login:
 
         # Build params in linejs format: [[type, id, value], ...]
         params = [
-            [12, 2, [  # Struct at field 2
-                [8, 1, login_type],          # loginType
-                [8, 2, 1],                   # identityProvider = LINE
-                [11, 3, keynm],              # keynm
-                [11, 4, encrypted],          # encryptedMessage
-                [2, 5, False],               # keepLoggedIn
-                [11, 6, ""],                 # accessLocation
-                [11, 7, device_name],        # systemName
-                [11, 8, cert or ""],         # certificate
-                [11, 9, verifier or ""],     # verifier
-                [11, 10, secret or b""],     # secret
-                [8, 11, 1],                  # ?
-                [11, 12, "System Product Name"],  # modelName
-            ]]
+            [
+                12,
+                2,
+                [  # Struct at field 2
+                    [8, 1, login_type],  # loginType
+                    [8, 2, 1],  # identityProvider = LINE
+                    [11, 3, keynm],  # keynm
+                    [11, 4, encrypted],  # encryptedMessage
+                    [2, 5, False],  # keepLoggedIn
+                    [11, 6, ""],  # accessLocation
+                    [11, 7, device_name],  # systemName
+                    [11, 8, cert or ""],  # certificate
+                    [11, 9, verifier or ""],  # verifier
+                    [11, 10, secret or b""],  # secret
+                    [8, 11, 1],  # ?
+                    [11, 12, "System Product Name"],  # modelName
+                ],
+            ]
         ]
 
         return self._request(
@@ -437,9 +461,10 @@ class Login:
             method=method,
             params=params,
             protocol=3,
+            response_model=LoginResponse,
         )
 
-    def _check_e2ee_verification(self, verifier: str) -> Dict:
+    def _check_e2ee_verification(self, verifier: str) -> VerificationResponse:
         """Check E2EE PIN verification via /LF1 endpoint"""
         import httpx
 
@@ -452,9 +477,9 @@ class Login:
 
         url = f"https://{self.client.request.HOST}{self.E2EE_VERIFY_ENDPOINT}"
         response = httpx.get(url, headers=headers, timeout=120)
-        return response.json().get("result", {})
+        return VerificationResponse.model_validate(response.json())
 
-    def _check_legacy_verification(self, verifier: str) -> Dict:
+    def _check_legacy_verification(self, verifier: str) -> VerificationResponse:
         """Check legacy PIN verification via /Q endpoint"""
         import httpx
 
@@ -467,7 +492,7 @@ class Login:
 
         url = f"https://{self.client.request.HOST}{self.LEGACY_VERIFY_ENDPOINT}"
         response = httpx.get(url, headers=headers, timeout=120)
-        return response.json()
+        return VerificationResponse.model_validate(response.json())
 
     # ========== QR Code Login ==========
 
@@ -476,7 +501,7 @@ class Login:
         Login with QR code.
 
         Args:
-            v3: Use v3 login (auto-detected if None)
+            v3: Deprecated. Always uses SQR login (v2).
 
         Returns:
             Auth token
@@ -497,8 +522,9 @@ class Login:
             method="createSession",
             params=[],
             protocol=4,
+            response_model=QRSessionResponse,
         )
-        sqr = session.get(1)
+        sqr = session.sqr
 
         # Create QR code
         qr_response = self._request(
@@ -506,14 +532,30 @@ class Login:
             method="createQrCode",
             params=[[12, 1, [[11, 1, sqr]]]],
             protocol=4,
+            response_model=QRCodeResponse,
         )
-        url = qr_response.get(1)
+        url = qr_response.url
 
         # Create secret and append to URL
         secret, secret_url = self._create_secret()
         url = f"{url}{secret_url}"
 
         print(f"[Login] QR Code URL: {url}")
+
+        # Try to print QR code
+        try:
+            import qrcode
+
+            qr = qrcode.QRCode(border=1)
+            qr.add_data(url)
+            qr.make(fit=True)
+            qr.print_ascii(invert=True)
+            print("[Login] Please scan the QR code above.")
+        except ImportError:
+            # print("[Login] 'qrcode' library not found. QR code cannot be displayed.")
+            pass
+        except Exception:
+            pass
         self.client.emit("qrcall", url)
 
         # Wait for QR code verification
@@ -528,20 +570,27 @@ class Login:
                     method="createPinCode",
                     params=[[12, 1, [[11, 1, sqr]]]],
                     protocol=4,
+                    response_model=PinCodeResponse,
                 )
-                pincode = pin_response.get(1)
+                pincode = pin_response.pincode
                 print(f"[Login] Enter PIN code: {pincode}")
+                print(f"[Login] Please enter this PIN code on your device.")
                 self.client.emit("pincall", pincode)
-                self._check_pin_verified(sqr)
+
+                if not self._check_pin_verified(sqr):
+                    raise LoginError("PIN verification failed or timed out")
 
             # QR code login
             response = self._qr_code_login(sqr)
 
-            pem = response.get(1)
-            auth_token = response.get(2)
+            pem = response.certificate
+            auth_token = response.auth_token
 
             if pem:
                 self.register_qr_cert(pem)
+
+            if not auth_token:
+                raise LoginError("No auth token in response")
 
             return auth_token
 
@@ -556,8 +605,9 @@ class Login:
             method="createSession",
             params=[],
             protocol=4,
+            response_model=QRSessionResponse,
         )
-        sqr = session.get(1)
+        sqr = session.sqr
 
         # Create QR code
         qr_response = self._request(
@@ -565,26 +615,47 @@ class Login:
             method="createQrCode",
             params=[[12, 1, [[11, 1, sqr]]]],
             protocol=4,
+            response_model=QRCodeResponse,
         )
-        url = qr_response.get(1)
+        url = qr_response.url
 
         secret, secret_url = self._create_secret()
         url = f"{url}{secret_url}"
 
         print(f"[Login] QR Code URL: {url}")
+
+        # Try to print QR code
+        try:
+            print("[DEBUG] Importing qrcode...")
+            import qrcode
+
+            print("[DEBUG] qrcode imported. Creating QRCode object...")
+            qr = qrcode.QRCode(border=1)
+            qr.add_data(url)
+            print("[DEBUG] Making QR code...")
+            qr.make(fit=True)
+            print("[DEBUG] Printing QR code ascii...")
+            qr.print_ascii(invert=True)
+            print("[Login] Please scan the QR code above.")
+        except ImportError:
+            print("[Login] 'qrcode' library not found. QR code cannot be displayed.")
+        except Exception as e:
+            print(f"[Login] Failed to display QR code: {e}")
+
         self.client.emit("qrcall", url)
 
         if self._check_qr_verified(sqr):
             try:
                 self._verify_certificate(sqr, self.get_qr_cert())
-            except:
+            except Exception:
                 pin_response = self._request(
                     path=self.SECONDARY_QR_ENDPOINT,
                     method="createPinCode",
                     params=[[12, 1, [[11, 1, sqr]]]],
                     protocol=4,
+                    response_model=PinCodeResponse,
                 )
-                pincode = pin_response.get(1)
+                pincode = pin_response.pincode
                 print(f"[Login] Enter PIN code: {pincode}")
                 self.client.emit("pincall", pincode)
                 self._check_pin_verified(sqr)
@@ -592,23 +663,28 @@ class Login:
             # V2 login
             response = self._qr_code_login_v2(sqr)
 
-            # Save response for storage
-            self._last_login_response = response
+            # Save response for storage (convert to dict for storage compatibility)
+            self._last_login_response = (
+                response.model_dump(by_alias=True)
+                if hasattr(response, "model_dump")
+                else response
+            )
 
             print(f"[DEBUG] qrCodeLoginV2 response: {response}")
 
-            pem = response.get(1)
-            token_info = response.get(3)
-
-            if pem:
-                self.register_qr_cert(pem)
-
+            # Extract token using Pydantic model attributes
+            token_info = response.token_info
             if not token_info:
                 raise LoginError("No token info in response")
 
-            auth_token = token_info.get(1)
+            auth_token = token_info.auth_token
             if not auth_token:
                 raise LoginError("No auth token in token info")
+
+            # Save cert if available
+            pem = response.certificate
+            if pem:
+                self.register_qr_cert(pem)
 
             return auth_token
 
@@ -617,59 +693,71 @@ class Login:
     def _check_qr_verified(self, sqr: str) -> bool:
         """Wait for QR code verification"""
         import time
-        start_time = time.time()
 
-        while time.time() - start_time < 180:
+        start_time = time.time()
+        timeout = 300  # 5 minutes total timeout
+
+        print("[Login] Waiting for QR code scan...", end="", flush=True)
+
+        while time.time() - start_time < timeout:
             try:
                 self._request(
                     path=self.SECONDARY_QR_LP_ENDPOINT,
                     method="checkQrCodeVerified",
                     params=[[12, 1, [[11, 1, sqr]]]],
                     protocol=4,
-                    timeout=30,  # Short timeout for polling loop
+                    timeout=20,  # Short timeout for http request
                     extra_headers={
-                        "x-lst": "180000",
+                        "x-lst": "20000",  # Tell server to wait 20 sec
                         "x-line-access": sqr,
                     },
                 )
+                print("\n[Login] QR code scanned!")
                 return True
             except Exception as e:
-                # If timeout, retry. If other error, stop.
-                if "timed out" in str(e):
+                # Retry on timeout
+                if "timed out" in str(e) or "ReadTimeout" in str(e):
+                    print(".", end="", flush=True)
                     continue
-                print(f"[Login] QR verification failed: {e}")
+                # Ignore other errors during polling?
+                print(f"\n[Login] Polling error: {e}")
+                time.sleep(2)
 
-                # Check for specific thrift errors?
-                # For now, just retry on timeout
-                time.sleep(1)
-
+        print("\n[Login] QR verification timed out.")
         return False
 
     def _check_pin_verified(self, sqr: str) -> bool:
         """Wait for PIN code verification"""
         import time
-        start_time = time.time()
 
-        while time.time() - start_time < 180:
+        start_time = time.time()
+        timeout = 300  # 5 minutes
+
+        print("[Login] Waiting for PIN code verification...", end="", flush=True)
+
+        while time.time() - start_time < timeout:
             try:
                 self._request(
                     path=self.SECONDARY_QR_LP_ENDPOINT,
                     method="checkPinCodeVerified",
                     params=[[12, 1, [[11, 1, sqr]]]],
                     protocol=4,
-                    timeout=30,
+                    timeout=20,
                     extra_headers={
-                        "x-lst": "180000",
+                        "x-lst": "20000",
                         "x-line-access": sqr,
                     },
                 )
+                print("\n[Login] PIN verified!")
                 return True
             except Exception as e:
-                if "timed out" in str(e):
+                if "timed out" in str(e) or "ReadTimeout" in str(e):
+                    print(".", end="", flush=True)
                     continue
-                print(f"[Login] PIN verification failed: {e}")
-                time.sleep(1)
+                print(f"\n[Login] PIN polling error: {e}")
+                time.sleep(2)
 
+        print("\n[Login] PIN verification timed out.")
         return False
 
     def _verify_certificate(self, sqr: str, cert: Optional[str]):
@@ -681,31 +769,45 @@ class Login:
             protocol=4,
         )
 
-    def _qr_code_login(self, sqr: str) -> Dict:
+    def _qr_code_login(self, sqr: str) -> QRCodeLoginResponse:
         """Execute QR code login"""
         return self._request(
             path=self.SECONDARY_QR_ENDPOINT,
             method="qrCodeLogin",
-            params=[[12, 1, [
-                [11, 1, sqr],
-                [11, 2, self.client.device],
-                [2, 3, True],  # autoLoginIsRequired
-            ]]],
+            params=[
+                [
+                    12,
+                    1,
+                    [
+                        [11, 1, sqr],
+                        [11, 2, self.client.device],
+                        [2, 3, True],  # autoLoginIsRequired
+                    ],
+                ]
+            ],
             protocol=4,
+            response_model=QRCodeLoginResponse,
         )
 
-    def _qr_code_login_v2(self, sqr: str) -> Dict:
+    def _qr_code_login_v2(self, sqr: str) -> QRCodeLoginV2Response:
         """Execute QR code login V2"""
         return self._request(
             path=self.SECONDARY_QR_ENDPOINT,
             method="qrCodeLoginV2",
-            params=[[12, 1, [
-                [11, 1, sqr],
-                [11, 2, self.client.system_name],
-                [11, 3, "linepy-device"],
-                [2, 4, True],  # autoLoginIsRequired
-            ]]],
+            params=[
+                [
+                    12,
+                    1,
+                    [
+                        [11, 1, sqr],
+                        [11, 2, self.client.system_name],
+                        [11, 3, "linepy-device"],
+                        [2, 4, True],  # autoLoginIsRequired
+                    ],
+                ]
+            ],
             protocol=4,
+            response_model=QRCodeLoginV2Response,
         )
 
     # ========== Request Helper ==========
@@ -718,7 +820,8 @@ class Login:
         protocol: int = 4,
         timeout: Optional[float] = None,
         extra_headers: Optional[Dict] = None,
-    ) -> Dict:
+        response_model: Optional[Type[T]] = None,
+    ) -> Any:
         """
         Send Thrift request using linejs-style params format.
 
@@ -735,7 +838,6 @@ class Login:
         # Generate Thrift data using new high-level writer
         data = write_thrift(params, method, protocol)
 
-
         response = self.client.request.request(
             path=path,
             data=data,
@@ -748,8 +850,16 @@ class Login:
         if isinstance(response, dict) and "error" in response:
             error = response["error"]
             error_code = error.get("code") or error.get("_data", {}).get(1)
-            error_msg = error.get("message") or error.get("_data", {}).get(2, "Unknown error")
+            error_msg = error.get("message") or error.get("_data", {}).get(
+                2, "Unknown error"
+            )
             raise LoginError(f"[{error_code}] {error_msg}")
 
-        return response
+        if response_model:
+            from .services.base import _convert_int_keys_to_str
 
+            if isinstance(response, dict):
+                response = _convert_int_keys_to_str(response)
+            return response_model.model_validate(response)
+
+        return response
