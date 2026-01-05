@@ -270,6 +270,42 @@ class TokenManager:
         self.storage.set(key_name, next_val)
         return next_val
 
+    def get_square_sync_token(self, chat_mid: str) -> Optional[str]:
+        """Get stored sync token for a square chat"""
+        tokens = self.storage.get("square_sync_tokens") or {}
+        return tokens.get(chat_mid)
 
+    def set_square_sync_token(self, chat_mid: str, token: str) -> None:
+        """Store sync token for a square chat"""
+        tokens = self.storage.get("square_sync_tokens") or {}
+        tokens[chat_mid] = token
+        self.storage.set("square_sync_tokens", tokens)
+
+    def get_square_continuation_token(self, chat_mid: str) -> Optional[str]:
+        """Get stored continuation token for a square chat"""
+        tokens = self.storage.get("square_cont_tokens") or {}
+        return tokens.get(chat_mid)
+
+    def set_square_continuation_token(self, chat_mid: str, token: str) -> None:
+        """Store continuation token for a square chat"""
+        tokens = self.storage.get("square_cont_tokens") or {}
+        tokens[chat_mid] = token
+        self.storage.set("square_cont_tokens", tokens)
+
+    def clear_square_tokens(self, chat_mid: str) -> None:
+        """Clear tokens for a square chat"""
+        sync_tokens = self.storage.get("square_sync_tokens") or {}
+        cont_tokens = self.storage.get("square_cont_tokens") or {}
+
+        changed = False
+        if chat_mid in sync_tokens:
+            del sync_tokens[chat_mid]
+            self.storage.set("square_sync_tokens", sync_tokens)
+            changed = True
+
+        if chat_mid in cont_tokens:
+            del cont_tokens[chat_mid]
+            self.storage.set("square_cont_tokens", cont_tokens)
+            changed = True
 # Convenient default storage path
 DEFAULT_STORAGE_PATH = ".linepy_storage.json"

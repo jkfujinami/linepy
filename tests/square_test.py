@@ -13,6 +13,7 @@ try:
     print(f"Finding square by ticket: {ticket}")
     response = client.square.findSquareByInvitationTicketV2(ticket)
 
+
     if response.chat:
         target_chat_mid = response.chat.squareChatMid
         print(f"   Chat Name: {response.chat.name}")

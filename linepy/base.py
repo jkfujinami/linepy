@@ -4,10 +4,7 @@ Base Client for LINEPY
 Low-level API client that handles authentication and service calls.
 """
 
-import logging
 from typing import Optional, Dict, Any, Callable, List, Union
-
-logger = logging.getLogger("linepy")
 
 from .config import Device, get_device_details, build_app_name, is_v3_support
 from .request import RequestClient
@@ -175,7 +172,7 @@ class BaseClient:
         self.profile = self.get_profile()
         self.mid = self.profile.mid
 
-        logger.info("Logged in as: %s", self.profile.display_name)
+        print(f"Logged in as: {self.profile.display_name}")
         return auth_token
 
     def login_with_qr(self, v3: Optional[bool] = None, save: bool = True) -> str:
@@ -210,7 +207,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        logger.info("Logged in as: %s", self.profile.display_name)
+        print(f"Logged in as: {self.profile.display_name}")
         return auth_token
 
     def login_with_token(self, auth_token: str, save: bool = True):
@@ -235,7 +232,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        logger.info("Logged in as: %s", self.profile.display_name)
+        print(f"Logged in as: {self.profile.display_name}")
 
     def auto_login(self) -> bool:
         """
@@ -258,10 +255,10 @@ class BaseClient:
             self.profile = self.get_profile()
             self.mid = self.profile.mid
 
-            logger.info("Auto-logged in as: %s", self.profile.display_name)
+            print(f"Auto-logged in as: {self.profile.display_name}")
             return True
         except Exception as e:
-            logger.warning("Auto-login failed: %s", e)
+            print(f"Auto-login failed: {e}")
             return False
 
     def logout(self, clear_storage: bool = True):
@@ -375,7 +372,7 @@ class BaseClient:
             self.push.on_event = on_event
 
         self.push.start(services=[3], fetch_type=fetch_type)  # Square only
-        logger.info("Push started watching %d chat(s)", len(chat_mids))
+        pass
 
     def stop_push(self):
         """Stop LEGY Push."""

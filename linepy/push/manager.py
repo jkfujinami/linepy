@@ -64,28 +64,40 @@ class PushManager:
         # Watched square chats (for fetchSquareChatEvents)
         self.watched_chats: List[str] = []
         self.chat_sync_tokens: Dict[str, str] = {}
+        self.chat_continuation_tokens: Dict[str, str] = {}
         self.square_fetch_type: int = 1  # Default 1
 
         # Thread
         self._thread: Optional[threading.Thread] = None
+        self._fetch_lock = threading.Lock()
 
-    def start(self, services: List[int] = [3, 8], fetch_type: int = 1):
-        """
-        Start push connection in background thread.
-
-        Args:
-            services: Service types to subscribe (3=Square, 8=Talk)
-            fetch_type: Fetch type for Square events (1=Default, 2=Prefetch by Server)
-        """
+    def start(
+        self,
+        watched_chats: List[str] = [],
+        on_event: Optional[Callable[[Any, Any], None]] = None,
+        fetch_type: int = 1,
+        services: List[int] = [3, 8],
+    ):
+        """Start Push connection loop."""
         if self._running:
-            logger.debug("Push already running")
+            logger.warning("Push is already running")
             return
 
-        self.square_fetch_type = fetch_type
+        self.watched_chats = watched_chats
+        if on_event:
+            self.on_event = on_event
+        self.fetch_type = fetch_type
+
+        # Initialize sync tokens
+        self.event_sync_token = None
+        self.subscription_id = 0
+
         self._running = True
+
+        # Start main loop in a thread
         self._thread = threading.Thread(
             target=self._run_loop,
-            args=(services,),
+            args=(services,),  # Pass services to run_loop
             daemon=True
         )
         self._thread.start()
@@ -161,6 +173,13 @@ class PushManager:
     def _init_and_read(self, conn: PushConnection, services: List[int]):
         """Initialize services and start reading."""
 
+        # Send Status Frame (Type 0)
+        # Payload: [0, Flag(0), PingInterval(30)]
+        ping_interval = 30
+        status_payload = bytes([0, 0, ping_interval])
+        conn.write_request(0, status_payload)
+        logger.debug("Sent Status Frame: interval=%ds", ping_interval)
+
         # Initialize each service
         for service in services:
             if service == ServiceType.SQUARE:  # 3
@@ -235,6 +254,7 @@ class PushManager:
     def on_ping(self, ping_id: int):
         """Handle ping callback."""
         self._current_ping_id = ping_id
+        logger.debug("Received LEGY PING id=%d", ping_id)
 
         # Check subscriptions that need refresh
         now = time.time()
@@ -246,6 +266,21 @@ class PushManager:
 
         if refresh_ids:
             logger.debug("Refreshing subscriptions: %s", refresh_ids)
+
+        # Call noop every 3 pings (like linejs)
+        if ping_id % 3 == 0:
+            threading.Thread(
+                target=self._call_noop,
+                daemon=True
+            ).start()
+
+    def _call_noop(self):
+        """Call talk.noop() to keep session alive."""
+        try:
+            self.client.talk.noop()
+            logger.debug("Called noop()")
+        except Exception as e:
+            logger.warning("noop() failed: %s", e)
 
     def on_sign_on_response(self, request_id: int, is_fin: bool, data: bytes):
         """Handle sign-on response."""
@@ -272,6 +307,18 @@ class PushManager:
         logger.debug("Received push: service=%d", frame.service_type)
 
         if frame.service_type == ServiceType.SQUARE:  # 3
+            # Extract subscriptionId from payload (like linejs L445-448)
+            if frame.push_payload and len(frame.push_payload) > 0:
+                try:
+                    from ..thrift import CompactReader
+                    proto = CompactReader(frame.push_payload)
+                    parsed = proto.read_struct()
+                    if 1 in parsed:  # Field 1 = subscriptionId
+                        self.subscription_id = parsed[1]
+                        logger.debug("Updated subscriptionId from push: %d", self.subscription_id)
+                except Exception as e:
+                    logger.debug("Failed to parse push payload: %s", e)
+
             # Server notified us of new events, fetch them in a separate thread
             threading.Thread(
                 target=self._fetch_square_events,
@@ -282,44 +329,121 @@ class PushManager:
 
     def _fetch_square_events(self):
         """Fetch Square events via HTTP (triggered by push)."""
-        if not self.watched_chats:
+        # ロックを取得
+        logger.debug("Requesting fetch lock...")
+        if not self._fetch_lock.acquire(blocking=False):
+            logger.debug("Fetch lock busy, skipping to avoid concurrency.")
             return
 
-        for chat_mid in self.watched_chats:
-            try:
-                sync_token = self.chat_sync_tokens.get(chat_mid)
+        logger.debug("Fetch lock acquired.")
+        try:
+            # --- Keep-Alive Hack: Call fetchMyEvents to maintain global subscription ---
+            # This mimics linejs behavior which uses fetchMyEvents for everything.
+            # We discard the events here but update the subscriptionId and syncToken.
+            if self.subscription_id and self.event_sync_token:
+                try:
+                    logger.debug("Calling fetchMyEvents to keep subscription alive (sub=%d, sync=%s...)",
+                                 self.subscription_id, self.event_sync_token[:10])
 
-                # sync_token がない場合は、まず最新位置を取得する（古いイベント大量取得を防止）
-                if not sync_token:
-                    logger.debug("No sync token for %s, fetching initial position", chat_mid[:12])
-                    init_res = self.client.square.fetchSquareChatEvents(chat_mid, limit=1)
-                    if hasattr(init_res, 'syncToken') and init_res.syncToken:
-                        self.chat_sync_tokens[chat_mid] = init_res.syncToken
-                    continue  # 今回は取得せず、次回以降の Push で処理
+                    # fetchMyEvents(subscriptionId, syncToken, limit, continuationToken)
+                    # Note: Arguments order depends on the generated code. assuming standard order.
+                    # Based on square.py: fetchMyEvents(self, subscriptionId, syncToken=None, limit=None, continuationToken=None, fetchType=None)
 
-                response = self.client.square.fetchSquareChatEvents(
-                    squareChatMid=chat_mid,
-                    syncToken=sync_token,
-                    limit=50,
-                    fetchType=self.square_fetch_type
-                )
+                    global_res = self.client.square.fetchMyEvents(
+                        subscriptionId=self.subscription_id,
+                        syncToken=self.event_sync_token,
+                        limit=10  # Small limit just for keep-alive
+                    )
 
-                # Update sync token
-                if hasattr(response, 'syncToken') and response.syncToken:
-                    self.chat_sync_tokens[chat_mid] = response.syncToken
+                    if hasattr(global_res, 'subscription'):
+                         if hasattr(global_res.subscription, 'subscriptionId'):
+                             new_sub = global_res.subscription.subscriptionId
+                             if new_sub != self.subscription_id:
+                                 self.subscription_id = new_sub
+                                 logger.info("Global Subscription ID updated to %d", new_sub)
 
-                # Process events
-                events = response.events if hasattr(response, 'events') else []
-                if events:
-                    logger.debug("Found %d events in %s", len(events), chat_mid[:12])
+                    if hasattr(global_res, 'syncToken') and global_res.syncToken:
+                        self.event_sync_token = global_res.syncToken
+                        # logger.debug("Global SyncToken updated")
 
-                for event in events:
-                    if self.on_event:
-                        # Pass Pydantic object directly for easier handling
-                        self.on_event(ServiceType.SQUARE, event)
+                except Exception as e:
+                    logger.warning("Keep-alive fetchMyEvents failed: %s", e)
+            # --------------------------------------------------------------------------
 
-            except Exception as e:
-                logger.warning("Error fetching events for %s: %s", chat_mid[:12], e)
+            if not self.watched_chats:
+                return
+
+            for chat_mid in self.watched_chats:
+                try:
+                    sync_token = self.chat_sync_tokens.get(chat_mid)
+                    cont_token = self.chat_continuation_tokens.get(chat_mid)
+                    logger.debug("Fetch start for %s. Token: %s, Cont: %s",
+                                 chat_mid[:12], sync_token, cont_token[:10] if cont_token else None)
+
+                    # sync_token がない場合は、まず最新位置を取得する
+                    if not sync_token:
+                        logger.debug("No sync token, fetching limit=1 to init.")
+                        init_res = self.client.square.fetchSquareChatEvents(chat_mid, limit=1)
+                        if hasattr(init_res, 'syncToken') and init_res.syncToken:
+                            self.chat_sync_tokens[chat_mid] = init_res.syncToken
+                            logger.debug("Initialized Token: %s", init_res.syncToken)
+                        # 初期化時はcontinuationTokenもクリアすべきか？ -> 多分YES
+                        if chat_mid in self.chat_continuation_tokens:
+                            del self.chat_continuation_tokens[chat_mid]
+                        continue
+
+                    response = self.client.square.fetchSquareChatEvents(
+                        squareChatMid=chat_mid,
+                        syncToken=sync_token,
+                        continuationToken=cont_token,
+                        limit=50,
+                        fetchType=self.square_fetch_type
+                    )
+
+                    # Update sync token
+                    if hasattr(response, 'syncToken') and response.syncToken:
+                        new_token = response.syncToken
+                        self.chat_sync_tokens[chat_mid] = new_token
+                        if new_token != sync_token:
+                            logger.debug("Token UPDATED.")
+                            # Save to storage
+                            if hasattr(self.client, 'token_manager'):
+                                self.client.token_manager.set_square_sync_token(chat_mid, new_token)
+
+                    # Update continuation token
+                    if hasattr(response, 'continuationToken'):
+                         # Noneの場合もあるので注意。Noneならクリアするか、単に上書きするか。
+                         # linejsの実装: continuationToken = response.continuationToken
+                         # Noneなら次はないということなので、保持しているものを更新する
+                         self.chat_continuation_tokens[chat_mid] = response.continuationToken
+                         if hasattr(self.client, 'token_manager') and response.continuationToken:
+                             self.client.token_manager.set_square_continuation_token(chat_mid, response.continuationToken)
+
+                    # Process events
+                    events = response.events if hasattr(response, 'events') else []
+                    if events:
+                        first_ev = events[0]
+                        last_ev = events[-1]
+                        logger.debug(
+                            "Fetched %d events. \nFirst: SQEqSeq=%s Type=%s\nLast:  SQEqSeq=%s Type=%s",
+                            len(events),
+                            getattr(first_ev, 'squareEventId', '?'), getattr(first_ev, 'type', '?'),
+                            getattr(last_ev, 'squareEventId', '?'), getattr(last_ev, 'type', '?')
+                        )
+
+                    for event in events:
+                        if self.on_event:
+                            self.on_event(ServiceType.SQUARE, event)
+
+                except Exception as e:
+                    logger.warning("Error fetching events for %s: %s", chat_mid[:12], e)
+                    import traceback
+                    logger.debug(traceback.format_exc())
+        finally:
+            self._fetch_lock.release()
+            logger.debug("Fetch lock released.")
+
+
 
     def add_watched_chat(self, chat_mid: str):
         """Add a chat to watch list."""
@@ -327,9 +451,23 @@ class PushManager:
             self.watched_chats.append(chat_mid)
             logger.debug("Watching chat: %s", chat_mid[:12])
 
+            # Load tokens from storage
+            if hasattr(self.client, 'token_manager'):
+                saved_sync = self.client.token_manager.get_square_sync_token(chat_mid)
+                saved_cont = self.client.token_manager.get_square_continuation_token(chat_mid)
+
+                if saved_sync:
+                    self.chat_sync_tokens[chat_mid] = saved_sync
+                    logger.debug("Loaded sync token for %s", chat_mid[:12])
+                if saved_cont:
+                    self.chat_continuation_tokens[chat_mid] = saved_cont
+                    logger.debug("Loaded continuation token for %s", chat_mid[:12])
+
     def remove_watched_chat(self, chat_mid: str):
         """Remove a chat from watch list."""
         if chat_mid in self.watched_chats:
             self.watched_chats.remove(chat_mid)
             if chat_mid in self.chat_sync_tokens:
                 del self.chat_sync_tokens[chat_mid]
+            if chat_mid in self.chat_continuation_tokens:
+                del self.chat_continuation_tokens[chat_mid]
