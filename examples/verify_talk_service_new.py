@@ -10,10 +10,14 @@ from linepy import BaseClient
 def test_talk():
     try:
         # Initialize Client
-        client = BaseClient("IOSIPAD", storage=".linepy_test.json")
-
+        client = BaseClient("IOSIPAD", storage=".linepy_bot.json")
+        # Try auto-login
         if not client.auto_login():
-            print("Please login first.")
+            print("Auto-login failed. Please login with QR code.")
+            client.login_with_qr()
+
+        if not client.is_logged_in:
+            print("❌ Login failed. Exiting.")
             return
 
         print(f"Testing TalkService for: {client.profile.display_name}")

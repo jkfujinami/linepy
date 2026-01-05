@@ -5,18 +5,13 @@ from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field
 from enum import IntEnum
 
-# Missing types
-MessageStatusType = int
-
-
 class AcceptSpeakersRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    target_mids: List[str] = Field(alias="3", default_factory=list)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    targetMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class AcceptSpeakersResponse(BaseModel):
     pass
@@ -24,15 +19,13 @@ class AcceptSpeakersResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class AcceptToChangeRoleRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    invite_request_id: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    inviteRequestId: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AcceptToChangeRoleResponse(BaseModel):
     pass
@@ -40,15 +33,13 @@ class AcceptToChangeRoleResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class AcceptToListenRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    invite_request_id: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    inviteRequestId: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AcceptToListenResponse(BaseModel):
     pass
@@ -56,15 +47,13 @@ class AcceptToListenResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class AcceptToSpeakRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    invite_request_id: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    inviteRequestId: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AcceptToSpeakResponse(BaseModel):
     pass
@@ -72,23 +61,20 @@ class AcceptToSpeakResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class AcquireLiveTalkRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     title: Optional[str] = Field(alias="2", default=None)
-    type: Optional[int] = Field(alias="3", default=None)
-    speaker_setting: Optional[int] = Field(alias="4", default=None)
+    type_: Optional["LiveTalkType"] = Field(alias="3", default=None)
+    speakerSetting: Optional["LiveTalkSpeakerSetting"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AcquireLiveTalkResponse(BaseModel):
-    live_talk: Optional["LiveTalk"] = Field(alias="1", default=None)
+    liveTalk: Optional["LiveTalk"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AdScreen(IntEnum):
     CHATROOM = 1
@@ -99,14 +85,12 @@ class AdScreen(IntEnum):
     WEB_MAIN = 6
     WEB_SEARCH_RESULT = 7
 
-
 class AgreeToTermsRequest(BaseModel):
-    terms_type: Optional["TermsType"] = Field(alias="1", default=None)
-    terms_agreement: Optional["TermsAgreement"] = Field(alias="2", default=None)
+    termsType: Optional[Any] = Field(alias="1", default=None)
+    termsAgreement: Optional["TermsAgreement"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class AgreeToTermsResponse(BaseModel):
     pass
@@ -114,13 +98,11 @@ class AgreeToTermsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class AllNonMemberLiveTalkParticipants(BaseModel):
     pass
 
     class Config:
         populate_by_name = True
-
 
 class ApprovalValue(BaseModel):
     message: Optional[str] = Field(alias="1", default=None)
@@ -128,54 +110,39 @@ class ApprovalValue(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ApproveSquareMembersRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    requested_member_mids: List[str] = Field(alias="3", default_factory=list)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    requestedMemberMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
 
-
 class ApproveSquareMembersResponse(BaseModel):
-    approved_members: List["SquareMember"] = Field(alias="1", default_factory=list)
+    approvedMembers: List["SquareMember"] = Field(alias="1", default_factory=list)
     status: Optional["SquareStatus"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class BooleanState(IntEnum):
     NONE = 0
     OFF = 1
     ON = 2
 
-
-class BotException(BaseModel):
-    error_code: Optional[int] = Field(alias="1", default=None)
-    reason: Optional[str] = Field(alias="2", default=None)
-    parameter_map: Dict[str, str] = Field(alias="3", default_factory=dict)
-
-    class Config:
-        populate_by_name = True
-
-
 class ButtonContent(BaseModel):
-    url_button: Optional["UrlButton"] = Field(alias="1", default=None)
-    text_button: Optional["TextButton"] = Field(alias="2", default=None)
-    ok_button: Optional["OkButton"] = Field(alias="3", default=None)
+    urlButton: Optional["UrlButton"] = Field(alias="1", default=None)
+    textButton: Optional["TextButton"] = Field(alias="2", default=None)
+    okButton: Optional["OkButton"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class CancelToSpeakRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class CancelToSpeakResponse(BaseModel):
     pass
@@ -183,36 +150,31 @@ class CancelToSpeakResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class Category(BaseModel):
-    id: Optional[int] = Field(alias="1", default=None)
+    id_: int = Field(alias="1", default=0)
     name: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class CheckJoinCodeRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    join_code: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    joinCode: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class CheckJoinCodeResponse(BaseModel):
-    join_token: Optional[str] = Field(alias="1", default=None)
+    joinToken: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class CodeValue(BaseModel):
     code: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ContentType(IntEnum):
     NONE = 0
@@ -239,22 +201,17 @@ class ContentType(IntEnum):
     EXTIMAGE = 21
     FLEX = 22
 
-
 class ContentsAttribute(IntEnum):
     NONE = 1
     CONTENTS_HIDDEN = 2
 
-
 class CreateSquareChatAnnouncementRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    square_chat_announcement: Optional["SquareChatAnnouncement"] = Field(
-        alias="3", default=None
-    )
+    reqSeq: int = Field(alias="1", default=0)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    squareChatAnnouncement: Optional["SquareChatAnnouncement"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class CreateSquareChatAnnouncementResponse(BaseModel):
     announcement: Optional["SquareChatAnnouncement"] = Field(alias="1", default=None)
@@ -262,62 +219,52 @@ class CreateSquareChatAnnouncementResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class CreateSquareChatRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
-    square_chat: Optional["SquareChat"] = Field(alias="2", default=None)
-    square_member_mids: List[str] = Field(alias="3", default_factory=list)
+    reqSeq: int = Field(alias="1", default=0)
+    squareChat: Optional["SquareChat"] = Field(alias="2", default=None)
+    squareMemberMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class CreateSquareChatResponse(BaseModel):
-    square_chat: Optional["SquareChat"] = Field(alias="1", default=None)
-    square_chat_status: Optional["SquareChatStatus"] = Field(alias="2", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="3", default=None)
-    square_chat_feature_set: Optional["SquareChatFeatureSet"] = Field(
-        alias="4", default=None
-    )
+    squareChat: Optional["SquareChat"] = Field(alias="1", default=None)
+    squareChatStatus: Optional["SquareChatStatus"] = Field(alias="2", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="3", default=None)
+    squareChatFeatureSet: Optional["SquareChatFeatureSet"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class CreateSquareRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
+    reqSeq: int = Field(alias="1", default=0)
     square: Optional["Square"] = Field(alias="2", default=None)
     creator: Optional["SquareMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class CreateSquareResponse(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
     creator: Optional["SquareMember"] = Field(alias="2", default=None)
     authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
     status: Optional["SquareStatus"] = Field(alias="4", default=None)
-    feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
-    square_chat: Optional["SquareChat"] = Field(alias="7", default=None)
-    square_chat_status: Optional["SquareChatStatus"] = Field(alias="8", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="9", default=None)
-    square_chat_feature_set: Optional["SquareChatFeatureSet"] = Field(
-        alias="10", default=None
-    )
+    featureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="7", default=None)
+    squareChatStatus: Optional["SquareChatStatus"] = Field(alias="8", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="9", default=None)
+    squareChatFeatureSet: Optional["SquareChatFeatureSet"] = Field(alias="10", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class DeleteSquareChatAnnouncementRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    announcement_seq: Optional[int] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    announcementSeq: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class DeleteSquareChatAnnouncementResponse(BaseModel):
     pass
@@ -325,14 +272,12 @@ class DeleteSquareChatAnnouncementResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class DeleteSquareChatRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    revision: Optional[int] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    revision: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class DeleteSquareChatResponse(BaseModel):
     pass
@@ -340,14 +285,12 @@ class DeleteSquareChatResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class DeleteSquareRequest(BaseModel):
     mid: Optional[str] = Field(alias="2", default=None)
-    revision: Optional[int] = Field(alias="3", default=None)
+    revision: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class DeleteSquareResponse(BaseModel):
     pass
@@ -355,15 +298,13 @@ class DeleteSquareResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class DestroyMessageRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="4", default=None)
-    thread_mid: Optional[str] = Field(alias="5", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="4", default=None)
+    threadMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class DestroyMessageResponse(BaseModel):
     pass
@@ -371,15 +312,13 @@ class DestroyMessageResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class DestroyMessagesRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_ids: List[str] = Field(alias="4", default_factory=list)
-    thread_mid: Optional[str] = Field(alias="5", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    messageIds: List[str] = Field(alias="4", default_factory=list)
+    threadMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class DestroyMessagesResponse(BaseModel):
     pass
@@ -387,117 +326,99 @@ class DestroyMessagesResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ErrorExtraInfo(BaseModel):
-    precondition_failed_extra_info: Optional[int] = Field(alias="1", default=None)
-    user_restriction_info: Optional["UserRestrictionExtraInfo"] = Field(
-        alias="2", default=None
-    )
-    try_again_later_extra_info: Optional["TryAgainLaterExtraInfo"] = Field(
-        alias="3", default=None
-    )
-    live_talk_extra_info: Optional["LiveTalkExtraInfo"] = Field(alias="4", default=None)
-    terms_agreement_extra_info: Optional["TermsAgreementExtraInfo"] = Field(
-        alias="5", default=None
-    )
+    preconditionFailedExtraInfo: int = Field(alias="1", default=0)
+    userRestrictionInfo: Optional["UserRestrictionExtraInfo"] = Field(alias="2", default=None)
+    tryAgainLaterExtraInfo: Optional["TryAgainLaterExtraInfo"] = Field(alias="3", default=None)
+    liveTalkExtraInfo: Optional["LiveTalkExtraInfo"] = Field(alias="4", default=None)
+    termsAgreementExtraInfo: Optional["TermsAgreementExtraInfo"] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FetchDirection(IntEnum):
     FORWARD = 1
     BACKWARD = 2
 
-
 class FetchLiveTalkEventsRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    sync_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    syncToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class FetchLiveTalkEventsResponse(BaseModel):
     events: List["LiveTalkEvent"] = Field(alias="1", default_factory=list)
-    sync_token: Optional[str] = Field(alias="2", default=None)
-    has_more: Optional[bool] = Field(alias="3", default=None)
+    syncToken: Optional[str] = Field(alias="2", default=None)
+    hasMore: bool = Field(alias="3", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class FetchMyEventsRequest(BaseModel):
-    subscription_id: Optional[int] = Field(alias="1", default=None)
-    sync_token: Optional[str] = Field(alias="2", default=None)
-    limit: Optional[int] = Field(alias="3", default=None)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
+    subscriptionId: int = Field(alias="1", default=0)
+    syncToken: Optional[str] = Field(alias="2", default=None)
+    limit: int = Field(alias="3", default=0)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FetchMyEventsResponse(BaseModel):
     subscription: Optional["SubscriptionState"] = Field(alias="1", default=None)
     events: List["SquareEvent"] = Field(alias="2", default_factory=list)
-    sync_token: Optional[str] = Field(alias="3", default=None)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
+    syncToken: Optional[str] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FetchSquareChatEventsRequest(BaseModel):
-    subscription_id: Optional[int] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    sync_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
-    direction: Optional[int] = Field(alias="5", default=None)
-    inclusive: Optional[int] = Field(alias="6", default=None)
-    continuation_token: Optional[str] = Field(alias="7", default=None)
-    fetch_type: Optional[int] = Field(alias="8", default=None)
-    thread_mid: Optional[str] = Field(alias="9", default=None)
+    subscriptionId: int = Field(alias="1", default=0)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    syncToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
+    direction: Optional["FetchDirection"] = Field(alias="5", default=None)
+    inclusive: Optional["BooleanState"] = Field(alias="6", default=None)
+    continuationToken: Optional[str] = Field(alias="7", default=None)
+    fetchType: Optional["FetchType"] = Field(alias="8", default=None)
+    threadMid: Optional[str] = Field(alias="9", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FetchSquareChatEventsResponse(BaseModel):
     subscription: Optional["SubscriptionState"] = Field(alias="1", default=None)
     events: List["SquareEvent"] = Field(alias="2", default_factory=list)
-    sync_token: Optional[str] = Field(alias="3", default=None)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
+    syncToken: Optional[str] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FetchType(IntEnum):
     DEFAULT = 1
     PREFETCH_BY_SERVER = 2
     PREFETCH_BY_CLIENT = 3
 
-
 class FindLiveTalkByInvitationTicketRequest(BaseModel):
-    invitation_ticket: Optional[str] = Field(alias="1", default=None)
+    invitationTicket: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindLiveTalkByInvitationTicketResponse(BaseModel):
-    chat_invitation_ticket: Optional[str] = Field(alias="1", default=None)
-    live_talk: Optional["LiveTalk"] = Field(alias="2", default=None)
+    chatInvitationTicket: Optional[str] = Field(alias="1", default=None)
+    liveTalk: Optional["LiveTalk"] = Field(alias="2", default=None)
     chat: Optional["SquareChat"] = Field(alias="3", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="4", default=None)
-    chat_membership_state: Optional[int] = Field(alias="5", default=None)
-    square_adult_only: Optional[int] = Field(alias="6", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="4", default=None)
+    chatMembershipState: Optional["SquareChatMembershipState"] = Field(alias="5", default=None)
+    squareAdultOnly: Optional["BooleanState"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindSquareByEmidRequest(BaseModel):
     emid: Optional[str] = Field(alias="1", default=None)
@@ -505,70 +426,61 @@ class FindSquareByEmidRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class FindSquareByEmidResponse(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    my_membership: Optional["SquareMember"] = Field(alias="2", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
+    myMembership: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="3", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindSquareByInvitationTicketRequest(BaseModel):
-    invitation_ticket: Optional[str] = Field(alias="2", default=None)
+    invitationTicket: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindSquareByInvitationTicketResponse(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    my_membership: Optional["SquareMember"] = Field(alias="2", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
+    myMembership: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="3", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
     chat: Optional["SquareChat"] = Field(alias="7", default=None)
-    chat_status: Optional["SquareChatStatus"] = Field(alias="8", default=None)
+    chatStatus: Optional["SquareChatStatus"] = Field(alias="8", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindSquareByInvitationTicketV2Request(BaseModel):
-    invitation_ticket: Optional[str] = Field(alias="1", default=None)
+    invitationTicket: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class FindSquareByInvitationTicketV2Response(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    my_membership: Optional["SquareMember"] = Field(alias="2", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
+    myMembership: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="3", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
     chat: Optional["SquareChat"] = Field(alias="7", default=None)
-    chat_status: Optional["SquareChatStatusWithoutMessage"] = Field(
-        alias="8", default=None
-    )
+    chatStatus: Optional["SquareChatStatusWithoutMessage"] = Field(alias="8", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ForceEndLiveTalkRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ForceEndLiveTalkResponse(BaseModel):
     pass
@@ -576,37 +488,33 @@ class ForceEndLiveTalkResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GeolocationAccuracy(BaseModel):
-    radius_meters: Optional[float] = Field(alias="1", default=None)
-    radius_confidence: Optional[float] = Field(alias="2", default=None)
-    altitude_accuracy: Optional[float] = Field(alias="3", default=None)
-    velocity_accuracy: Optional[float] = Field(alias="4", default=None)
-    bearing_accuracy: Optional[float] = Field(alias="5", default=None)
-    accuracy_mode: Optional[int] = Field(alias="6", default=None)
+    radiusMeters: float = Field(alias="1", default=0.0)
+    radiusConfidence: float = Field(alias="2", default=0.0)
+    altitudeAccuracy: float = Field(alias="3", default=0.0)
+    velocityAccuracy: float = Field(alias="4", default=0.0)
+    bearingAccuracy: float = Field(alias="5", default=0.0)
+    accuracyMode: Optional["Pb1_EnumC13050k"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetGoogleAdOptionsRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    ad_screen: Optional[int] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    adScreen: Optional["AdScreen"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetGoogleAdOptionsResponse(BaseModel):
-    show_ad: Optional[bool] = Field(alias="1", default=None)
-    content_urls: List[str] = Field(alias="2", default_factory=list)
-    custom_targeting: Dict[str, List["_any"]] = Field(alias="3", default_factory=dict)
-    client_cache_ttl_seconds: Optional[int] = Field(alias="4", default=None)
+    showAd: bool = Field(alias="1", default=False)
+    contentUrls: List[str] = Field(alias="2", default_factory=list)
+    customTargeting: Dict[str, List[Any]] = Field(alias="3", default_factory=dict)
+    clientCacheTtlSeconds: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetInvitationTicketUrlRequest(BaseModel):
     mid: Optional[str] = Field(alias="2", default=None)
@@ -614,116 +522,101 @@ class GetInvitationTicketUrlRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetInvitationTicketUrlResponse(BaseModel):
-    invitation_url: Optional[str] = Field(alias="1", default=None)
+    invitationURL: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinableSquareChatsRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    continuation_token: Optional[str] = Field(alias="10", default=None)
-    limit: Optional[int] = Field(alias="11", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    continuationToken: Optional[str] = Field(alias="10", default=None)
+    limit: int = Field(alias="11", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinableSquareChatsResponse(BaseModel):
-    square_chats: List["SquareChat"] = Field(alias="1", default_factory=list)
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    total_square_chat_count: Optional[int] = Field(alias="3", default=None)
-    square_chat_statuses: Dict[str, "SquareChatStatus"] = Field(
-        alias="4", default_factory=dict
-    )
+    squareChats: List["SquareChat"] = Field(alias="1", default_factory=list)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    totalSquareChatCount: int = Field(alias="3", default=0)
+    squareChatStatuses: Dict[str, "SquareChatStatus"] = Field(alias="4", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinedSquareChatsRequest(BaseModel):
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    limit: Optional[int] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    limit: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinedSquareChatsResponse(BaseModel):
     chats: List["SquareChat"] = Field(alias="1", default_factory=list)
-    chat_members: Dict[str, "SquareChatMember"] = Field(alias="2", default_factory=dict)
+    chatMembers: Dict[str, "SquareChatMember"] = Field(alias="2", default_factory=dict)
     statuses: Dict[str, "SquareChatStatus"] = Field(alias="3", default_factory=dict)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinedSquaresRequest(BaseModel):
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    limit: Optional[int] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    limit: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetJoinedSquaresResponse(BaseModel):
     squares: List["Square"] = Field(alias="1", default_factory=list)
     members: Dict[str, "SquareMember"] = Field(alias="2", default_factory=dict)
     authorities: Dict[str, "SquareAuthority"] = Field(alias="3", default_factory=dict)
     statuses: Dict[str, "SquareStatus"] = Field(alias="4", default_factory=dict)
-    continuation_token: Optional[str] = Field(alias="5", default=None)
-    note_statuses: Dict[str, "NoteStatus"] = Field(alias="6", default_factory=dict)
+    continuationToken: Optional[str] = Field(alias="5", default=None)
+    noteStatuses: Dict[str, "NoteStatus"] = Field(alias="6", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class GetLiveTalkInfoForNonMemberRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
     speakers: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetLiveTalkInfoForNonMemberResponse(BaseModel):
-    chat_name: Optional[str] = Field(alias="1", default=None)
-    chat_image_obs_hash: Optional[str] = Field(alias="2", default=None)
-    live_talk: Optional["LiveTalk"] = Field(alias="3", default=None)
+    chatName: Optional[str] = Field(alias="1", default=None)
+    chatImageObsHash: Optional[str] = Field(alias="2", default=None)
+    liveTalk: Optional["LiveTalk"] = Field(alias="3", default=None)
     speakers: List["LiveTalkSpeaker"] = Field(alias="4", default_factory=list)
-    chat_invitation_ticket: Optional[str] = Field(alias="5", default=None)
+    chatInvitationTicket: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetLiveTalkInvitationUrlRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetLiveTalkInvitationUrlResponse(BaseModel):
-    invitation_url: Optional[str] = Field(alias="1", default=None)
+    invitationUrl: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class GetLiveTalkSpeakersForNonMemberRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
     speakers: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetLiveTalkSpeakersForNonMemberResponse(BaseModel):
     speakers: List["LiveTalkSpeaker"] = Field(alias="1", default_factory=list)
@@ -731,42 +624,37 @@ class GetLiveTalkSpeakersForNonMemberResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetMessageReactionsRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    message_id: Optional[str] = Field(alias="2", default=None)
-    type: Optional[int] = Field(alias="3", default=None)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
-    limit: Optional[int] = Field(alias="5", default=None)
-    thread_mid: Optional[str] = Field(alias="6", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="2", default=None)
+    type_: Optional["MessageReactionType"] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
+    limit: int = Field(alias="5", default=0)
+    threadMid: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetMessageReactionsResponse(BaseModel):
     reactions: List["SquareMessageReaction"] = Field(alias="1", default_factory=list)
     status: Optional["SquareMessageReactionStatus"] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetNoteStatusRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class GetNoteStatusResponse(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
     status: Optional["NoteStatus"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetPopularKeywordsRequest(BaseModel):
     pass
@@ -774,21 +662,18 @@ class GetPopularKeywordsRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetPopularKeywordsResponse(BaseModel):
-    popular_keywords: List["PopularKeyword"] = Field(alias="1", default_factory=list)
-    expired_at: Optional[int] = Field(alias="2", default=None)
+    popularKeywords: List["PopularKeyword"] = Field(alias="1", default_factory=list)
+    expiredAt: int = Field(alias="2", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareAuthoritiesRequest(BaseModel):
-    square_mids: List[str] = Field(alias="2", default_factory=list)
+    squareMids: List[str] = Field(alias="2", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareAuthoritiesResponse(BaseModel):
     authorities: Dict[str, "SquareAuthority"] = Field(alias="1", default_factory=dict)
@@ -796,13 +681,11 @@ class GetSquareAuthoritiesResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetSquareAuthorityRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareAuthorityResponse(BaseModel):
     authority: Optional["SquareAuthority"] = Field(alias="1", default=None)
@@ -810,257 +693,206 @@ class GetSquareAuthorityResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
-class GetSquareBotRequest(BaseModel):
-    bot_mid: Optional[str] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
-class GetSquareBotResponse(BaseModel):
-    square_bot: Optional["SquareBot"] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
 class GetSquareCategoriesRequest(BaseModel):
     pass
 
     class Config:
         populate_by_name = True
 
-
 class GetSquareCategoriesResponse(BaseModel):
-    category_list: List["Category"] = Field(alias="1", default_factory=list)
+    categoryList: List["Category"] = Field(alias="1", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatAnnouncementsRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatAnnouncementsResponse(BaseModel):
-    announcements: List["SquareChatAnnouncement"] = Field(
-        alias="1", default_factory=list
-    )
+    announcements: List["SquareChatAnnouncement"] = Field(alias="1", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatEmidRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatEmidResponse(BaseModel):
-    square_chat_emid: Optional[str] = Field(alias="1", default=None)
+    squareChatEmid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatFeatureSetRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatFeatureSetResponse(BaseModel):
-    square_chat_feature_set: Optional["SquareChatFeatureSet"] = Field(
-        alias="1", default=None
-    )
+    squareChatFeatureSet: Optional["SquareChatFeatureSet"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatMemberRequest(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="2", default=None)
-    square_chat_mid: Optional[str] = Field(alias="3", default=None)
+    squareMemberMid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatMemberResponse(BaseModel):
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="1", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatMembersRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    limit: Optional[int] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    limit: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatMembersResponse(BaseModel):
-    square_chat_members: List["SquareMember"] = Field(alias="1", default_factory=list)
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    contents_attributes: Dict[str, int] = Field(alias="3", default_factory=dict)
+    squareChatMembers: List["SquareMember"] = Field(alias="1", default_factory=list)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    contentsAttributes: Dict[str, int] = Field(alias="3", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatResponse(BaseModel):
-    square_chat: Optional["SquareChat"] = Field(alias="1", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="2", default=None)
-    square_chat_status: Optional["SquareChatStatus"] = Field(alias="3", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="1", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="2", default=None)
+    squareChatStatus: Optional["SquareChatStatus"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatStatusRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareChatStatusResponse(BaseModel):
-    chat_status: Optional["SquareChatStatus"] = Field(alias="1", default=None)
+    chatStatus: Optional["SquareChatStatus"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareEmidRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareEmidResponse(BaseModel):
-    square_emid: Optional[str] = Field(alias="1", default=None)
+    squareEmid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareFeatureSetRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareFeatureSetResponse(BaseModel):
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="1", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareInfoByChatMidRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareInfoByChatMidResponse(BaseModel):
-    default_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_name: Optional[str] = Field(alias="2", default=None)
-    square_desc: Optional[str] = Field(alias="3", default=None)
+    defaultChatMid: Optional[str] = Field(alias="1", default=None)
+    squareName: Optional[str] = Field(alias="2", default=None)
+    squareDesc: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMemberRelationRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    target_square_member_mid: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    targetSquareMemberMid: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class GetSquareMemberRelationResponse(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    target_square_member_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    targetSquareMemberMid: Optional[str] = Field(alias="2", default=None)
     relation: Optional["SquareMemberRelation"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class GetSquareMemberRelationsRequest(BaseModel):
-    state: Optional[int] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
+    state: Optional["SquareMemberRelationState"] = Field(alias="2", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMemberRelationsResponse(BaseModel):
-    square_members: List["SquareMember"] = Field(alias="1", default_factory=list)
-    relations: Dict[str, "SquareMemberRelation"] = Field(
-        alias="2", default_factory=dict
-    )
-    continuation_token: Optional[str] = Field(alias="3", default=None)
+    squareMembers: List["SquareMember"] = Field(alias="1", default_factory=list)
+    relations: Dict[str, "SquareMemberRelation"] = Field(alias="2", default_factory=dict)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMemberRequest(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="2", default=None)
+    squareMemberMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMemberResponse(BaseModel):
-    square_member: Optional["SquareMember"] = Field(alias="1", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="1", default=None)
     relation: Optional["SquareMemberRelation"] = Field(alias="2", default=None)
-    one_on_one_chat_mid: Optional[str] = Field(alias="3", default=None)
-    contents_attribute: Optional[int] = Field(alias="4", default=None)
+    oneOnOneChatMid: Optional[str] = Field(alias="3", default=None)
+    contentsAttribute: Optional["ContentsAttribute"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMembersBySquareRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    square_member_mids: List[str] = Field(alias="3", default_factory=list)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    squareMemberMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMembersBySquareResponse(BaseModel):
     members: List["SquareMember"] = Field(alias="1", default_factory=list)
-    contents_attributes: Dict[str, int] = Field(alias="2", default_factory=dict)
+    contentsAttributes: Dict[str, int] = Field(alias="2", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareMembersRequest(BaseModel):
     mids: List[str] = Field(alias="2", default_factory=list)
@@ -1068,13 +900,11 @@ class GetSquareMembersRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetSquareMembersResponse(BaseModel):
     members: Dict[str, "SquareMember"] = Field(alias="1", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareRequest(BaseModel):
     mid: Optional[str] = Field(alias="2", default=None)
@@ -1082,89 +912,76 @@ class GetSquareRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class GetSquareResponse(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    my_membership: Optional["SquareMember"] = Field(alias="2", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
-    extra_info: Optional["SquareExtraInfo"] = Field(alias="7", default=None)
+    myMembership: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="3", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
+    extraInfo: Optional["SquareExtraInfo"] = Field(alias="7", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareStatusRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareStatusResponse(BaseModel):
-    square_status: Optional["SquareStatus"] = Field(alias="1", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareThreadMidRequest(BaseModel):
-    chat_mid: Optional[str] = Field(alias="1", default=None)
-    message_id: Optional[str] = Field(alias="2", default=None)
+    chatMid: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareThreadMidResponse(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareThreadRequest(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
-    include_root_message: Optional[bool] = Field(alias="2", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
+    includeRootMessage: bool = Field(alias="2", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class GetSquareThreadResponse(BaseModel):
-    square_thread: Optional["SquareThread"] = Field(alias="1", default=None)
-    my_thread_member: Optional["SquareThreadMember"] = Field(alias="2", default=None)
-    root_message: Optional["SquareMessage"] = Field(alias="3", default=None)
+    squareThread: Optional["SquareThread"] = Field(alias="1", default=None)
+    myThreadMember: Optional["SquareThreadMember"] = Field(alias="2", default=None)
+    rootMessage: Optional["SquareMessage"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class GetUserSettingsRequest(BaseModel):
-    requested_attrs: List["SquareUserSettingsAttribute"] = Field(
-        alias="1", default_factory=list
-    )
+    requestedAttrs: List[Any] = Field(alias="1", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class GetUserSettingsResponse(BaseModel):
-    requested_attrs: List[int] = Field(alias="1", default_factory=list)
-    user_settings: Optional["SquareUserSettings"] = Field(alias="2", default=None)
+    requestedAttrs: List[int] = Field(alias="1", default_factory=list)
+    userSettings: Optional["SquareUserSettings"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class HideSquareMemberContentsRequest(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class HideSquareMemberContentsResponse(BaseModel):
     pass
@@ -1172,31 +989,27 @@ class HideSquareMemberContentsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class InviteIntoSquareChatRequest(BaseModel):
-    invitee_mids: List[str] = Field(alias="1", default_factory=list)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
+    inviteeMids: List[str] = Field(alias="1", default_factory=list)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteIntoSquareChatResponse(BaseModel):
-    invitee_mids: List[str] = Field(alias="1", default_factory=list)
+    inviteeMids: List[str] = Field(alias="1", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToChangeRoleRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    target_mid: Optional[str] = Field(alias="3", default=None)
-    target_role: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    targetMid: Optional[str] = Field(alias="3", default=None)
+    targetRole: Optional["LiveTalkRole"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToChangeRoleResponse(BaseModel):
     pass
@@ -1204,15 +1017,13 @@ class InviteToChangeRoleResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class InviteToListenRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    target_mid: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    targetMid: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToListenResponse(BaseModel):
     pass
@@ -1220,15 +1031,13 @@ class InviteToListenResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class InviteToLiveTalkRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
     invitees: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToLiveTalkResponse(BaseModel):
     pass
@@ -1236,31 +1045,27 @@ class InviteToLiveTalkResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class InviteToSpeakRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    target_mid: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    targetMid: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToSpeakResponse(BaseModel):
-    invite_request_id: Optional[str] = Field(alias="1", default=None)
+    inviteRequestId: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToSquareRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
     invitees: List[str] = Field(alias="3", default_factory=list)
-    square_chat_mid: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class InviteToSquareResponse(BaseModel):
     pass
@@ -1268,103 +1073,93 @@ class InviteToSquareResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class JoinLiveTalkRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    want_to_speak: Optional[bool] = Field(alias="3", default=None)
-    claim_adult: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    wantToSpeak: bool = Field(alias="3", default=False)
+    claimAdult: Optional["BooleanState"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinLiveTalkResponse(BaseModel):
-    host_member_mid: Optional[str] = Field(alias="1", default=None)
-    member_session_id: Optional[str] = Field(alias="2", default=None)
+    hostMemberMid: Optional[str] = Field(alias="1", default=None)
+    memberSessionId: Optional[str] = Field(alias="2", default=None)
     token: Optional[str] = Field(alias="3", default=None)
     proto: Optional[str] = Field(alias="4", default=None)
-    voip_address: Optional[str] = Field(alias="5", default=None)
-    voip_address6: Optional[str] = Field(alias="6", default=None)
-    voip_udp_port: Optional[int] = Field(alias="7", default=None)
-    voip_tcp_port: Optional[int] = Field(alias="8", default=None)
-    from_zone: Optional[str] = Field(alias="9", default=None)
-    comm_param: Optional[str] = Field(alias="10", default=None)
-    orion_address: Optional[str] = Field(alias="11", default=None)
-    polaris_address: Optional[str] = Field(alias="12", default=None)
-    polaris_zone: Optional[str] = Field(alias="13", default=None)
-    polaris_udp_port: Optional[int] = Field(alias="14", default=None)
-    speaker: Optional[bool] = Field(alias="15", default=None)
+    voipAddress: Optional[str] = Field(alias="5", default=None)
+    voipAddress6: Optional[str] = Field(alias="6", default=None)
+    voipUdpPort: int = Field(alias="7", default=0)
+    voipTcpPort: int = Field(alias="8", default=0)
+    fromZone: Optional[str] = Field(alias="9", default=None)
+    commParam: Optional[str] = Field(alias="10", default=None)
+    orionAddress: Optional[str] = Field(alias="11", default=None)
+    polarisAddress: Optional[str] = Field(alias="12", default=None)
+    polarisZone: Optional[str] = Field(alias="13", default=None)
+    polarisUdpPort: int = Field(alias="14", default=0)
+    speaker: bool = Field(alias="15", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareChatRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareChatResponse(BaseModel):
-    square_chat: Optional["SquareChat"] = Field(alias="1", default=None)
-    square_chat_status: Optional["SquareChatStatus"] = Field(alias="2", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="3", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="1", default=None)
+    squareChatStatus: Optional["SquareChatStatus"] = Field(alias="2", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
     member: Optional["SquareMember"] = Field(alias="3", default=None)
-    square_chat_mid: Optional[str] = Field(alias="4", default=None)
-    join_value: Optional["SquareJoinMethodValue"] = Field(alias="5", default=None)
-    claim_adult: Optional[int] = Field(alias="6", default=None)
+    squareChatMid: Optional[str] = Field(alias="4", default=None)
+    joinValue: Optional["SquareJoinMethodValue"] = Field(alias="5", default=None)
+    claimAdult: Optional["BooleanState"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareResponse(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="2", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="3", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
-    square_chat: Optional["SquareChat"] = Field(alias="7", default=None)
-    square_chat_status: Optional["SquareChatStatus"] = Field(alias="8", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="9", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="2", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="3", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="7", default=None)
+    squareChatStatus: Optional["SquareChatStatus"] = Field(alias="8", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="9", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareThreadRequest(BaseModel):
-    chat_mid: Optional[str] = Field(alias="1", default=None)
-    thread_mid: Optional[str] = Field(alias="2", default=None)
+    chatMid: Optional[str] = Field(alias="1", default=None)
+    threadMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class JoinSquareThreadResponse(BaseModel):
-    thread_member: Optional["SquareThreadMember"] = Field(alias="1", default=None)
+    threadMember: Optional["SquareThreadMember"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class KickOutLiveTalkParticipantsRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
     target: Optional["LiveTalkKickOutTarget"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class KickOutLiveTalkParticipantsResponse(BaseModel):
     pass
@@ -1372,15 +1167,13 @@ class KickOutLiveTalkParticipantsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class LeaveSquareChatRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    say_goodbye: Optional[bool] = Field(alias="3", default=None)
-    square_chat_member_revision: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    sayGoodbye: bool = Field(alias="3", default=False)
+    squareChatMemberRevision: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class LeaveSquareChatResponse(BaseModel):
     pass
@@ -1388,13 +1181,11 @@ class LeaveSquareChatResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class LeaveSquareRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LeaveSquareResponse(BaseModel):
     pass
@@ -1402,76 +1193,52 @@ class LeaveSquareResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class LeaveSquareThreadRequest(BaseModel):
-    chat_mid: Optional[str] = Field(alias="1", default=None)
-    thread_mid: Optional[str] = Field(alias="2", default=None)
+    chatMid: Optional[str] = Field(alias="1", default=None)
+    threadMid: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LeaveSquareThreadResponse(BaseModel):
-    thread_member: Optional["SquareThreadMember"] = Field(alias="1", default=None)
+    threadMember: Optional["SquareThreadMember"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
-
-class LeftSquareMember(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    display_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
-    updated_at: Optional[int] = Field(alias="4", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
-class LiffSquareChatContext(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
 
 class LiveTalk(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
     title: Optional[str] = Field(alias="3", default=None)
-    type: Optional[int] = Field(alias="4", default=None)
-    speaker_setting: Optional[int] = Field(alias="5", default=None)
-    allow_request_to_speak: Optional[bool] = Field(alias="6", default=None)
-    host_member_mid: Optional[str] = Field(alias="7", default=None)
+    type_: Optional["LiveTalkType"] = Field(alias="4", default=None)
+    speakerSetting: Optional["LiveTalkSpeakerSetting"] = Field(alias="5", default=None)
+    allowRequestToSpeak: bool = Field(alias="6", default=False)
+    hostMemberMid: Optional[str] = Field(alias="7", default=None)
     announcement: Optional[str] = Field(alias="8", default=None)
-    participant_count: Optional[int] = Field(alias="9", default=None)
-    revision: Optional[int] = Field(alias="10", default=None)
-    started_at: Optional[int] = Field(alias="11", default=None)
+    participantCount: int = Field(alias="9", default=0)
+    revision: int = Field(alias="10", default=0)
+    startedAt: int = Field(alias="11", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkAttribute(IntEnum):
     TITLE = 1
     ALLOW_REQUEST_TO_SPEAK = 2
 
-
 class LiveTalkEvent(BaseModel):
-    type: Optional[int] = Field(alias="1", default=None)
+    type_: Optional["LiveTalkEventType"] = Field(alias="1", default=None)
     payload: Optional["LiveTalkEventPayload"] = Field(alias="2", default=None)
-    revision: Optional[int] = Field(alias="3", default=None)
+    revision: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkEventNotifiedUpdateLiveTalkAllowRequestToSpeak(BaseModel):
-    allow_request_to_speak: Optional[bool] = Field(alias="1", default=None)
+    allowRequestToSpeak: bool = Field(alias="1", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkEventNotifiedUpdateLiveTalkAnnouncement(BaseModel):
     announcement: Optional[str] = Field(alias="1", default=None)
@@ -1479,52 +1246,37 @@ class LiveTalkEventNotifiedUpdateLiveTalkAnnouncement(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class LiveTalkEventNotifiedUpdateLiveTalkTitle(BaseModel):
     title: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class LiveTalkEventNotifiedUpdateSquareMember(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    display_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
-    role: Optional[int] = Field(alias="4", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
+    displayName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
+    role: Optional["SquareMemberRole"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkEventNotifiedUpdateSquareMemberRole(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    role: Optional[int] = Field(alias="2", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
+    role: Optional["SquareMemberRole"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkEventPayload(BaseModel):
-    notified_update_live_talk_title: Optional[
-        "LiveTalkEventNotifiedUpdateLiveTalkTitle"
-    ] = Field(alias="1", default=None)
-    notified_update_live_talk_announcement: Optional[
-        "LiveTalkEventNotifiedUpdateLiveTalkAnnouncement"
-    ] = Field(alias="2", default=None)
-    notified_update_square_member_role: Optional[
-        "LiveTalkEventNotifiedUpdateSquareMemberRole"
-    ] = Field(alias="3", default=None)
-    notified_update_live_talk_allow_request_to_speak: Optional[
-        "LiveTalkEventNotifiedUpdateLiveTalkAllowRequestToSpeak"
-    ] = Field(alias="4", default=None)
-    notified_update_square_member: Optional[
-        "LiveTalkEventNotifiedUpdateSquareMember"
-    ] = Field(alias="5", default=None)
+    notifiedUpdateLiveTalkTitle: Optional["LiveTalkEventNotifiedUpdateLiveTalkTitle"] = Field(alias="1", default=None)
+    notifiedUpdateLiveTalkAnnouncement: Optional["LiveTalkEventNotifiedUpdateLiveTalkAnnouncement"] = Field(alias="2", default=None)
+    notifiedUpdateSquareMemberRole: Optional["LiveTalkEventNotifiedUpdateSquareMemberRole"] = Field(alias="3", default=None)
+    notifiedUpdateLiveTalkAllowRequestToSpeak: Optional["LiveTalkEventNotifiedUpdateLiveTalkAllowRequestToSpeak"] = Field(alias="4", default=None)
+    notifiedUpdateSquareMember: Optional["LiveTalkEventNotifiedUpdateSquareMember"] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkEventType(IntEnum):
     NOTIFIED_UPDATE_LIVE_TALK_TITLE = 1
@@ -1533,32 +1285,24 @@ class LiveTalkEventType(IntEnum):
     NOTIFIED_UPDATE_LIVE_TALK_ALLOW_REQUEST_TO_SPEAK = 4
     NOTIFIED_UPDATE_SQUARE_MEMBER = 5
 
-
 class LiveTalkExtraInfo(BaseModel):
-    saturn_response: Optional[str] = Field(alias="1", default=None)
+    saturnResponse: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkKickOutTarget(BaseModel):
-    live_talk_participant: Optional["LiveTalkParticipant"] = Field(
-        alias="1", default=None
-    )
-    all_non_member_live_talk_participants: Optional[
-        "AllNonMemberLiveTalkParticipants"
-    ] = Field(alias="2", default=None)
+    liveTalkParticipant: Optional["LiveTalkParticipant"] = Field(alias="1", default=None)
+    allNonMemberLiveTalkParticipants: Optional["AllNonMemberLiveTalkParticipants"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkParticipant(BaseModel):
     mid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkReportType(IntEnum):
     ADVERTISING = 1
@@ -1569,46 +1313,40 @@ class LiveTalkReportType(IntEnum):
     IMPERSONATION = 6
     SCAM = 7
 
-
 class LiveTalkRole(IntEnum):
     HOST = 1
     CO_HOST = 2
     GUEST = 3
 
-
 class LiveTalkSpeaker(BaseModel):
-    display_name: Optional[str] = Field(alias="1", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="2", default=None)
-    role: Optional[int] = Field(alias="3", default=None)
+    displayName: Optional[str] = Field(alias="1", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="2", default=None)
+    role: Optional["SquareMemberRole"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class LiveTalkSpeakerSetting(IntEnum):
     APPROVAL = 1
     ALL = 2
 
-
 class LiveTalkType(IntEnum):
     PUBLIC = 1
     PRIVATE = 2
 
-
 class Location(BaseModel):
     title: Optional[str] = Field(alias="1", default=None)
     address: Optional[str] = Field(alias="2", default=None)
-    latitude: Optional[float] = Field(alias="3", default=None)
-    longitude: Optional[float] = Field(alias="4", default=None)
+    latitude: float = Field(alias="3", default=0.0)
+    longitude: float = Field(alias="4", default=0.0)
     phone: Optional[str] = Field(alias="5", default=None)
-    category_id: Optional[str] = Field(alias="6", default=None)
-    provider: Optional[int] = Field(alias="7", default=None)
+    categoryId: Optional[str] = Field(alias="6", default=None)
+    provider: Optional["Pb1_D6"] = Field(alias="7", default=None)
     accuracy: Optional["GeolocationAccuracy"] = Field(alias="8", default=None)
-    altitude_meters: Optional[float] = Field(alias="9", default=None)
+    altitudeMeters: float = Field(alias="9", default=0.0)
 
     class Config:
         populate_by_name = True
-
 
 class MIDType(IntEnum):
     USER = 0
@@ -1620,33 +1358,29 @@ class MIDType(IntEnum):
     BOT = 6
     SQUARE_THREAD = 7
 
-
 class ManualRepairRequest(BaseModel):
-    sync_token: Optional[str] = Field(alias="1", default=None)
-    limit: Optional[int] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
+    syncToken: Optional[str] = Field(alias="1", default=None)
+    limit: int = Field(alias="2", default=0)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ManualRepairResponse(BaseModel):
     events: List["SquareEvent"] = Field(alias="1", default_factory=list)
-    sync_token: Optional[str] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
+    syncToken: Optional[str] = Field(alias="2", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class MarkAsReadRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="4", default=None)
-    thread_mid: Optional[str] = Field(alias="5", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="4", default=None)
+    threadMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class MarkAsReadResponse(BaseModel):
     pass
@@ -1654,13 +1388,11 @@ class MarkAsReadResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class MarkChatsAsReadRequest(BaseModel):
-    chat_mids: List[str] = Field(alias="2", default_factory=list)
+    chatMids: List[str] = Field(alias="2", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class MarkChatsAsReadResponse(BaseModel):
     pass
@@ -1668,13 +1400,11 @@ class MarkChatsAsReadResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class MarkThreadsAsReadRequest(BaseModel):
-    chat_mid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class MarkThreadsAsReadResponse(BaseModel):
     pass
@@ -1682,61 +1412,56 @@ class MarkThreadsAsReadResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class Mentionable(BaseModel):
-    square_member: Optional["MentionableSquareMember"] = Field(alias="1", default=None)
+    squareMember: Optional["MentionableSquareMember"] = Field(alias="1", default=None)
     bot: Optional["MentionableBot"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class MentionableBot(BaseModel):
     mid: Optional[str] = Field(alias="1", default=None)
-    display_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
-    square_mid: Optional[str] = Field(alias="4", default=None)
+    displayName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class MentionableSquareMember(BaseModel):
     mid: Optional[str] = Field(alias="1", default=None)
-    display_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
-    role: Optional[int] = Field(alias="4", default=None)
-    square_mid: Optional[str] = Field(alias="5", default=None)
+    displayName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
+    role: Optional["SquareMemberRole"] = Field(alias="4", default=None)
+    squareMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class Message(BaseModel):
     from_: Optional[str] = Field(alias="1", default=None)
     to: Optional[str] = Field(alias="2", default=None)
-    to_type: Optional[int] = Field(alias="3", default=None)
-    id: Optional[str] = Field(alias="4", default=None)
-    created_time: Optional[int] = Field(alias="5", default=None)
-    delivered_time: Optional[int] = Field(alias="6", default=None)
+    toType: Optional["MIDType"] = Field(alias="3", default=None)
+    id_: Optional[str] = Field(alias="4", default=None)
+    createdTime: int = Field(alias="5", default=0)
+    deliveredTime: int = Field(alias="6", default=0)
     text: Optional[str] = Field(alias="10", default=None)
     location: Optional["Location"] = Field(alias="11", default=None)
-    has_content: Optional[bool] = Field(alias="14", default=None)
-    content_type: Optional[int] = Field(alias="15", default=None)
-    content_preview: Optional[str] = Field(alias="17", default=None)
-    content_metadata: Dict[str, str] = Field(alias="18", default_factory=dict)
-    session_id: Optional[int] = Field(alias="19", default=None)
+    hasContent: bool = Field(alias="14", default=False)
+    contentType: Optional["ContentType"] = Field(alias="15", default=None)
+    contentPreview: Optional[str] = Field(alias="17", default=None)
+    contentMetadata: Dict[str, str] = Field(alias="18", default_factory=dict)
+    sessionId: int = Field(alias="19", default=0)
     chunks: List[str] = Field(alias="20", default_factory=list)
-    related_message_id: Optional[str] = Field(alias="21", default=None)
-    message_relation_type: Optional[int] = Field(alias="22", default=None)
-    read_count: Optional[int] = Field(alias="23", default=None)
-    related_message_service_code: Optional[int] = Field(alias="24", default=None)
-    app_extension_type: Optional[int] = Field(alias="25", default=None)
+    relatedMessageId: Optional[str] = Field(alias="21", default=None)
+    messageRelationType: Optional["Pb1_EnumC13015h6"] = Field(alias="22", default=None)
+    readCount: int = Field(alias="23", default=0)
+    relatedMessageServiceCode: Optional["Pb1_E7"] = Field(alias="24", default=None)
+    appExtensionType: Optional["Pb1_B"] = Field(alias="25", default=None)
     reactions: List["Reaction"] = Field(alias="27", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class MessageReactionType(IntEnum):
     ALL = 0
@@ -1748,13 +1473,11 @@ class MessageReactionType(IntEnum):
     SAD = 6
     OMG = 7
 
-
 class MessageStatusContents(BaseModel):
-    message_reaction_status: Optional["_any"] = Field(alias="1", default=None)
+    messageReactionStatus: Optional[Any] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class MessageSummaryReportType(IntEnum):
     LEGAL_VIOLATION = 1
@@ -1764,23 +1487,20 @@ class MessageSummaryReportType(IntEnum):
     GENDER_HARASSMENT = 5
     OTHER = 6
 
-
 class MessageVisibility(BaseModel):
-    show_join_message: Optional[bool] = Field(alias="1", default=None)
-    show_leave_message: Optional[bool] = Field(alias="2", default=None)
-    show_kickout_message: Optional[bool] = Field(alias="3", default=None)
+    showJoinMessage: bool = Field(alias="1", default=False)
+    showLeaveMessage: bool = Field(alias="2", default=False)
+    showKickoutMessage: bool = Field(alias="3", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class NoteStatus(BaseModel):
-    note_count: Optional[int] = Field(alias="1", default=None)
-    latest_created_at: Optional[int] = Field(alias="2", default=None)
+    noteCount: int = Field(alias="1", default=0)
+    latestCreatedAt: int = Field(alias="2", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class NotificationPostType(IntEnum):
     POST_MENTION = 2
@@ -1790,11 +1510,9 @@ class NotificationPostType(IntEnum):
     POST_COMMENT_LIKE = 6
     POST_RELAY_JOIN = 7
 
-
 class NotifiedMessageType(IntEnum):
     MENTION = 1
     REPLY = 2
-
 
 class OkButton(BaseModel):
     text: Optional[str] = Field(alias="1", default=None)
@@ -1802,12 +1520,10 @@ class OkButton(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class Pb1_B(IntEnum):
     SIRI = 1
     GOOGLE_ASSISTANT = 2
     OS_SHARE = 3
-
 
 class Pb1_D6(IntEnum):
     GOOGLE = 0
@@ -1816,19 +1532,16 @@ class Pb1_D6(IntEnum):
     YAHOOJAPAN = 3
     KINGWAY = 4
 
-
 class Pb1_E7(IntEnum):
     UNKNOWN = 0
     TALK = 1
     SQUARE = 2
-
 
 class Pb1_EnumC13015h6(IntEnum):
     FORWARD = 0
     AUTO_REPLY = 1
     SUBORDINATE = 2
     REPLY = 3
-
 
 class Pb1_EnumC13050k(IntEnum):
     UNKNOWN = 0
@@ -1837,26 +1550,23 @@ class Pb1_EnumC13050k(IntEnum):
     AOS_PRECISE_LOCATION = 3
     AOS_APPROXIMATE_LOCATION = 4
 
-
 class PopularKeyword(BaseModel):
     value: Optional[str] = Field(alias="1", default=None)
-    highlighted: Optional[bool] = Field(alias="2", default=None)
-    id: Optional[int] = Field(alias="3", default=None)
+    highlighted: bool = Field(alias="2", default=False)
+    id_: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class ReactToMessageRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="3", default=None)
-    reaction_type: Optional[int] = Field(alias="4", default=None)
-    thread_mid: Optional[str] = Field(alias="5", default=None)
+    reqSeq: int = Field(alias="1", default=0)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="3", default=None)
+    reactionType: Optional["MessageReactionType"] = Field(alias="4", default=None)
+    threadMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReactToMessageResponse(BaseModel):
     reaction: Optional["SquareMessageReaction"] = Field(alias="1", default=None)
@@ -1865,22 +1575,19 @@ class ReactToMessageResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class Reaction(BaseModel):
-    from_user_mid: Optional[str] = Field(alias="1", default=None)
-    at_millis: Optional[int] = Field(alias="2", default=None)
-    reaction_type: Optional["ReactionType"] = Field(alias="3", default=None)
+    fromUserMid: Optional[str] = Field(alias="1", default=None)
+    atMillis: int = Field(alias="2", default=0)
+    reactionType: Optional["ReactionType"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReactionType(BaseModel):
-    predefined_reaction_type: Optional[int] = Field(alias="1", default=None)
+    predefinedReactionType: Optional["MessageReactionType"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class RefreshSubscriptionsRequest(BaseModel):
     subscriptions: List[int] = Field(alias="2", default_factory=list)
@@ -1888,25 +1595,20 @@ class RefreshSubscriptionsRequest(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class RefreshSubscriptionsResponse(BaseModel):
-    ttl_millis: Optional[int] = Field(alias="1", default=None)
-    subscription_states: Dict[int, "SubscriptionState"] = Field(
-        alias="2", default_factory=dict
-    )
+    ttlMillis: int = Field(alias="1", default=0)
+    subscriptionStates: Dict[int, "SubscriptionState"] = Field(alias="2", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class RejectSpeakersRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    target_mids: List[str] = Field(alias="3", default_factory=list)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    targetMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class RejectSpeakersResponse(BaseModel):
     pass
@@ -1914,31 +1616,27 @@ class RejectSpeakersResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class RejectSquareMembersRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    requested_member_mids: List[str] = Field(alias="3", default_factory=list)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    requestedMemberMids: List[str] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
 
-
 class RejectSquareMembersResponse(BaseModel):
-    rejected_members: List["SquareMember"] = Field(alias="1", default_factory=list)
+    rejectedMembers: List["SquareMember"] = Field(alias="1", default_factory=list)
     status: Optional["SquareStatus"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class RejectToSpeakRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    invite_request_id: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    inviteRequestId: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class RejectToSpeakResponse(BaseModel):
     pass
@@ -1946,14 +1644,12 @@ class RejectToSpeakResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class RemoveLiveTalkSubscriptionRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class RemoveLiveTalkSubscriptionResponse(BaseModel):
     pass
@@ -1961,13 +1657,11 @@ class RemoveLiveTalkSubscriptionResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class RemoveSubscriptionsRequest(BaseModel):
     unsubscriptions: List[int] = Field(alias="2", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class RemoveSubscriptionsResponse(BaseModel):
     pass
@@ -1975,15 +1669,13 @@ class RemoveSubscriptionsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportLiveTalkRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    report_type: Optional[int] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    reportType: Optional["LiveTalkReportType"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportLiveTalkResponse(BaseModel):
     pass
@@ -1991,16 +1683,14 @@ class ReportLiveTalkResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportLiveTalkSpeakerRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    speaker_member_mid: Optional[str] = Field(alias="3", default=None)
-    report_type: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    speakerMemberMid: Optional[str] = Field(alias="3", default=None)
+    reportType: Optional["LiveTalkReportType"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportLiveTalkSpeakerResponse(BaseModel):
     pass
@@ -2008,15 +1698,13 @@ class ReportLiveTalkSpeakerResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportMessageSummaryRequest(BaseModel):
-    chat_emid: Optional[str] = Field(alias="1", default=None)
-    message_summary_range_to: Optional[int] = Field(alias="2", default=None)
-    report_type: Optional[int] = Field(alias="3", default=None)
+    chatEmid: Optional[str] = Field(alias="1", default=None)
+    messageSummaryRangeTo: int = Field(alias="2", default=0)
+    reportType: Optional["MessageSummaryReportType"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportMessageSummaryResponse(BaseModel):
     pass
@@ -2024,16 +1712,14 @@ class ReportMessageSummaryResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportSquareChatRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    square_chat_mid: Optional[str] = Field(alias="3", default=None)
-    report_type: Optional[int] = Field(alias="5", default=None)
-    other_reason: Optional[str] = Field(alias="6", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="3", default=None)
+    reportType: Optional["ReportType"] = Field(alias="5", default=None)
+    otherReason: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportSquareChatResponse(BaseModel):
     pass
@@ -2041,17 +1727,15 @@ class ReportSquareChatResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportSquareMemberRequest(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="2", default=None)
-    report_type: Optional[int] = Field(alias="3", default=None)
-    other_reason: Optional[str] = Field(alias="4", default=None)
-    square_chat_mid: Optional[str] = Field(alias="5", default=None)
-    thread_mid: Optional[str] = Field(alias="6", default=None)
+    squareMemberMid: Optional[str] = Field(alias="2", default=None)
+    reportType: Optional["ReportType"] = Field(alias="3", default=None)
+    otherReason: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="5", default=None)
+    threadMid: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportSquareMemberResponse(BaseModel):
     pass
@@ -2059,18 +1743,16 @@ class ReportSquareMemberResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportSquareMessageRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    square_chat_mid: Optional[str] = Field(alias="3", default=None)
-    square_message_id: Optional[str] = Field(alias="4", default=None)
-    report_type: Optional[int] = Field(alias="5", default=None)
-    other_reason: Optional[str] = Field(alias="6", default=None)
-    thread_mid: Optional[str] = Field(alias="7", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="3", default=None)
+    squareMessageId: Optional[str] = Field(alias="4", default=None)
+    reportType: Optional["ReportType"] = Field(alias="5", default=None)
+    otherReason: Optional[str] = Field(alias="6", default=None)
+    threadMid: Optional[str] = Field(alias="7", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportSquareMessageResponse(BaseModel):
     pass
@@ -2078,22 +1760,19 @@ class ReportSquareMessageResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class ReportSquareRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    report_type: Optional[int] = Field(alias="3", default=None)
-    other_reason: Optional[str] = Field(alias="4", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    reportType: Optional["ReportType"] = Field(alias="3", default=None)
+    otherReason: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class ReportSquareResponse(BaseModel):
     pass
 
     class Config:
         populate_by_name = True
-
 
 class ReportType(IntEnum):
     ADVERTISING = 1
@@ -2104,14 +1783,12 @@ class ReportType(IntEnum):
     IMPERSONATION = 6
     SCAM = 7
 
-
 class RequestToListenRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class RequestToListenResponse(BaseModel):
     pass
@@ -2119,14 +1796,12 @@ class RequestToListenResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class RequestToSpeakRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class RequestToSpeakResponse(BaseModel):
     pass
@@ -2134,150 +1809,125 @@ class RequestToSpeakResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SearchSquareChatMembersRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    search_option: Optional["SquareChatMemberSearchOption"] = Field(
-        alias="2", default=None
-    )
-    continuation_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    searchOption: Optional["SquareChatMemberSearchOption"] = Field(alias="2", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquareChatMembersResponse(BaseModel):
     members: List["SquareMember"] = Field(alias="1", default_factory=list)
-    continuation_token: Optional[str] = Field(alias="2", default=None)
-    total_count: Optional[int] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
+    totalCount: int = Field(alias="3", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquareChatMentionablesRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    search_option: Optional["SquareChatMentionableSearchOption"] = Field(
-        alias="2", default=None
-    )
-    continuation_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    searchOption: Optional["SquareChatMentionableSearchOption"] = Field(alias="2", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquareChatMentionablesResponse(BaseModel):
     mentionables: List["Mentionable"] = Field(alias="1", default_factory=list)
-    continuation_token: Optional[str] = Field(alias="2", default=None)
+    continuationToken: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquareMembersRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    search_option: Optional["SquareMemberSearchOption"] = Field(alias="3", default=None)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
-    limit: Optional[int] = Field(alias="5", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    searchOption: Optional["SquareMemberSearchOption"] = Field(alias="3", default=None)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
+    limit: int = Field(alias="5", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquareMembersResponse(BaseModel):
     members: List["SquareMember"] = Field(alias="1", default_factory=list)
-    revision: Optional[int] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
-    total_count: Optional[int] = Field(alias="4", default=None)
+    revision: int = Field(alias="2", default=0)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
+    totalCount: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquaresRequest(BaseModel):
     query: Optional[str] = Field(alias="2", default=None)
-    continuation_token: Optional[str] = Field(alias="3", default=None)
-    limit: Optional[int] = Field(alias="4", default=None)
+    continuationToken: Optional[str] = Field(alias="3", default=None)
+    limit: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SearchSquaresResponse(BaseModel):
     squares: List["Square"] = Field(alias="1", default_factory=list)
-    square_statuses: Dict[str, "SquareStatus"] = Field(alias="2", default_factory=dict)
-    my_memberships: Dict[str, "SquareMember"] = Field(alias="3", default_factory=dict)
-    continuation_token: Optional[str] = Field(alias="4", default=None)
-    note_statuses: Dict[str, "NoteStatus"] = Field(alias="5", default_factory=dict)
+    squareStatuses: Dict[str, "SquareStatus"] = Field(alias="2", default_factory=dict)
+    myMemberships: Dict[str, "SquareMember"] = Field(alias="3", default_factory=dict)
+    continuationToken: Optional[str] = Field(alias="4", default=None)
+    noteStatuses: Dict[str, "NoteStatus"] = Field(alias="5", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class SendMessageRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="3", default=None)
+    reqSeq: int = Field(alias="1", default=0)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SendMessageResponse(BaseModel):
-    created_square_message: Optional["SquareMessage"] = Field(alias="1", default=None)
+    createdSquareMessage: Optional["SquareMessage"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SendSquareThreadMessageRequest(BaseModel):
-    req_seq: Optional[int] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    thread_mid: Optional[str] = Field(alias="3", default=None)
-    thread_message: Optional["SquareMessage"] = Field(alias="4", default=None)
+    reqSeq: int = Field(alias="1", default=0)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    threadMid: Optional[str] = Field(alias="3", default=None)
+    threadMessage: Optional["SquareMessage"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SendSquareThreadMessageResponse(BaseModel):
-    created_thread_message: Optional["SquareMessage"] = Field(alias="1", default=None)
+    createdThreadMessage: Optional["SquareMessage"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class Square(BaseModel):
     mid: Optional[str] = Field(alias="1", default=None)
     name: Optional[str] = Field(alias="2", default=None)
-    welcome_message: Optional[str] = Field(alias="3", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="4", default=None)
+    welcomeMessage: Optional[str] = Field(alias="3", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="4", default=None)
     desc: Optional[str] = Field(alias="5", default=None)
-    searchable: Optional[bool] = Field(alias="6", default=None)
-    type: Optional[int] = Field(alias="7", default=None)
-    category_id: Optional[int] = Field(alias="8", default=None)
-    invitation_url: Optional[str] = Field(alias="9", default=None)
-    revision: Optional[int] = Field(alias="10", default=None)
-    able_to_use_invitation_ticket: Optional[bool] = Field(alias="11", default=None)
-    state: Optional[int] = Field(alias="12", default=None)
-    emblems: List[int] = Field(alias="13", default_factory=list)
-    join_method: Optional["SquareJoinMethod"] = Field(alias="14", default=None)
-    adult_only: Optional[int] = Field(alias="15", default=None)
-    svc_tags: List[str] = Field(alias="16", default_factory=list)
-    created_at: Optional[int] = Field(alias="17", default=None)
+    searchable: bool = Field(alias="6", default=False)
+    type_: Optional["SquareType"] = Field(alias="7", default=None)
+    categoryId: int = Field(alias="8", default=0)
+    invitationURL: Optional[str] = Field(alias="9", default=None)
+    revision: int = Field(alias="10", default=0)
+    ableToUseInvitationTicket: bool = Field(alias="11", default=False)
+    state: Optional["SquareState"] = Field(alias="12", default=None)
+    emblems: List["SquareEmblem"] = Field(alias="13", default_factory=list)
+    joinMethod: Optional["SquareJoinMethod"] = Field(alias="14", default=None)
+    adultOnly: Optional["BooleanState"] = Field(alias="15", default=None)
+    svcTags: List[str] = Field(alias="16", default_factory=list)
+    createdAt: int = Field(alias="17", default=0)
 
     class Config:
         populate_by_name = True
-
-
-class SquareActivityScore(BaseModel):
-    clean_score: Optional["_any"] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
 
 class SquareAttribute(IntEnum):
     NAME = 1
@@ -2294,27 +1944,25 @@ class SquareAttribute(IntEnum):
     CHANNEL_ID = 13
     SVC_TAGS = 14
 
-
 class SquareAuthority(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    update_square_profile: Optional[int] = Field(alias="2", default=None)
-    invite_new_member: Optional[int] = Field(alias="3", default=None)
-    approve_join_request: Optional[int] = Field(alias="4", default=None)
-    create_post: Optional[int] = Field(alias="5", default=None)
-    create_open_square_chat: Optional[int] = Field(alias="6", default=None)
-    delete_square_chat_or_post: Optional[int] = Field(alias="7", default=None)
-    remove_square_member: Optional[int] = Field(alias="8", default=None)
-    grant_role: Optional[int] = Field(alias="9", default=None)
-    enable_invitation_ticket: Optional[int] = Field(alias="10", default=None)
-    revision: Optional[int] = Field(alias="11", default=None)
-    create_square_chat_announcement: Optional[int] = Field(alias="12", default=None)
-    update_max_chat_member_count: Optional[int] = Field(alias="13", default=None)
-    use_readonly_default_chat: Optional[int] = Field(alias="14", default=None)
-    send_all_mention: Optional[int] = Field(alias="15", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    updateSquareProfile: Optional["SquareMemberRole"] = Field(alias="2", default=None)
+    inviteNewMember: Optional["SquareMemberRole"] = Field(alias="3", default=None)
+    approveJoinRequest: Optional["SquareMemberRole"] = Field(alias="4", default=None)
+    createPost: Optional["SquareMemberRole"] = Field(alias="5", default=None)
+    createOpenSquareChat: Optional["SquareMemberRole"] = Field(alias="6", default=None)
+    deleteSquareChatOrPost: Optional["SquareMemberRole"] = Field(alias="7", default=None)
+    removeSquareMember: Optional["SquareMemberRole"] = Field(alias="8", default=None)
+    grantRole: Optional["SquareMemberRole"] = Field(alias="9", default=None)
+    enableInvitationTicket: Optional["SquareMemberRole"] = Field(alias="10", default=None)
+    revision: int = Field(alias="11", default=0)
+    createSquareChatAnnouncement: Optional["SquareMemberRole"] = Field(alias="12", default=None)
+    updateMaxChatMemberCount: Optional["SquareMemberRole"] = Field(alias="13", default=None)
+    useReadonlyDefaultChat: Optional["SquareMemberRole"] = Field(alias="14", default=None)
+    sendAllMention: Optional["SquareMemberRole"] = Field(alias="15", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareAuthorityAttribute(IntEnum):
     UPDATE_SQUARE_PROFILE = 1
@@ -2331,58 +1979,37 @@ class SquareAuthorityAttribute(IntEnum):
     USE_READONLY_DEFAULT_CHAT = 12
     SEND_ALL_MENTION = 13
 
-
-class SquareBot(BaseModel):
-    bot_mid: Optional[str] = Field(alias="1", default=None)
-    active: Optional[bool] = Field(alias="2", default=None)
-    display_name: Optional[str] = Field(alias="3", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="4", default=None)
-    icon_type: Optional[int] = Field(alias="5", default=None)
-    last_modified_at: Optional[int] = Field(alias="6", default=None)
-    expired_in: Optional[int] = Field(alias="7", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
 class SquareChat(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    type: Optional[int] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    type_: Optional["SquareChatType"] = Field(alias="3", default=None)
     name: Optional[str] = Field(alias="4", default=None)
-    chat_image_obs_hash: Optional[str] = Field(alias="5", default=None)
-    square_chat_revision: Optional[int] = Field(alias="6", default=None)
-    max_member_count: Optional[int] = Field(alias="7", default=None)
-    state: Optional[int] = Field(alias="8", default=None)
-    invitation_url: Optional[str] = Field(alias="9", default=None)
-    message_visibility: Optional["MessageVisibility"] = Field(alias="10", default=None)
-    able_to_search_message: Optional[int] = Field(alias="11", default=None)
+    chatImageObsHash: Optional[str] = Field(alias="5", default=None)
+    squareChatRevision: int = Field(alias="6", default=0)
+    maxMemberCount: int = Field(alias="7", default=0)
+    state: Optional["SquareChatState"] = Field(alias="8", default=None)
+    invitationUrl: Optional[str] = Field(alias="9", default=None)
+    messageVisibility: Optional["MessageVisibility"] = Field(alias="10", default=None)
+    ableToSearchMessage: Optional["BooleanState"] = Field(alias="11", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatAnnouncement(BaseModel):
-    announcement_seq: Optional[int] = Field(alias="1", default=None)
-    type: Optional[int] = Field(alias="2", default=None)
-    contents: Optional["SquareChatAnnouncementContents"] = Field(
-        alias="3", default=None
-    )
-    created_at: Optional[int] = Field(alias="4", default=None)
+    announcementSeq: int = Field(alias="1", default=0)
+    type_: int = Field(alias="2", default=0)
+    contents: Optional["SquareChatAnnouncementContents"] = Field(alias="3", default=None)
+    createdAt: int = Field(alias="4", default=0)
     creator: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareChatAnnouncementContents(BaseModel):
-    text_message_announcement_contents: Optional["TextMessageAnnouncementContents"] = (
-        Field(alias="1", default=None)
-    )
+    textMessageAnnouncementContents: Optional["TextMessageAnnouncementContents"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatAttribute(IntEnum):
     NAME = 2
@@ -2393,45 +2020,36 @@ class SquareChatAttribute(IntEnum):
     MESSAGE_VISIBILITY = 7
     ABLE_TO_SEARCH_MESSAGE = 8
 
-
 class SquareChatFeature(BaseModel):
-    control_state: Optional[int] = Field(alias="1", default=None)
-    boolean_value: Optional[int] = Field(alias="2", default=None)
+    controlState: Optional["SquareChatFeatureControlState"] = Field(alias="1", default=None)
+    booleanValue: Optional["BooleanState"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatFeatureControlState(IntEnum):
     DISABLED = 1
     ENABLED = 2
 
-
 class SquareChatFeatureSet(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    revision: Optional[int] = Field(alias="2", default=None)
-    disable_update_max_chat_member_count: Optional["SquareChatFeature"] = Field(
-        alias="11", default=None
-    )
-    disable_mark_as_read_event: Optional["SquareChatFeature"] = Field(
-        alias="12", default=None
-    )
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    revision: int = Field(alias="2", default=0)
+    disableUpdateMaxChatMemberCount: Optional["SquareChatFeature"] = Field(alias="11", default=None)
+    disableMarkAsReadEvent: Optional["SquareChatFeature"] = Field(alias="12", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatMember(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    revision: Optional[int] = Field(alias="3", default=None)
-    membership_state: Optional[int] = Field(alias="4", default=None)
-    notification_for_message: Optional[bool] = Field(alias="5", default=None)
-    notification_for_new_member: Optional[bool] = Field(alias="6", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    revision: int = Field(alias="3", default=0)
+    membershipState: Optional["SquareChatMembershipState"] = Field(alias="4", default=None)
+    notificationForMessage: bool = Field(alias="5", default=False)
+    notificationForNewMember: bool = Field(alias="6", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatMemberAttribute(IntEnum):
     MEMBERSHIP_STATE = 4
@@ -2440,55 +2058,46 @@ class SquareChatMemberAttribute(IntEnum):
     LEFT_BY_KICK_MESSAGE_LOCAL_ID = 8
     MESSAGE_LOCAL_ID_WHEN_BLOCK = 9
 
-
 class SquareChatMemberSearchOption(BaseModel):
-    display_name: Optional[str] = Field(alias="1", default=None)
-    including_me: Optional[bool] = Field(alias="2", default=None)
+    displayName: Optional[str] = Field(alias="1", default=None)
+    includingMe: bool = Field(alias="2", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatMembershipState(IntEnum):
     JOINED = 1
     LEFT = 2
 
-
 class SquareChatMentionableSearchOption(BaseModel):
-    display_name: Optional[str] = Field(alias="1", default=None)
+    displayName: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatState(IntEnum):
     ALIVE = 0
     DELETED = 1
     SUSPENDED = 2
 
-
 class SquareChatStatus(BaseModel):
-    last_message: Optional["SquareMessage"] = Field(alias="3", default=None)
-    sender_display_name: Optional[str] = Field(alias="4", default=None)
-    other_status: Optional["SquareChatStatusWithoutMessage"] = Field(
-        alias="5", default=None
-    )
+    lastMessage: Optional["SquareMessage"] = Field(alias="3", default=None)
+    senderDisplayName: Optional[str] = Field(alias="4", default=None)
+    otherStatus: Optional["SquareChatStatusWithoutMessage"] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareChatStatusWithoutMessage(BaseModel):
-    member_count: Optional[int] = Field(alias="1", default=None)
-    unread_message_count: Optional[int] = Field(alias="2", default=None)
-    marked_as_read_message_id: Optional[str] = Field(alias="3", default=None)
-    mentioned_message_id: Optional[str] = Field(alias="4", default=None)
-    notified_message_type: Optional[int] = Field(alias="5", default=None)
+    memberCount: int = Field(alias="1", default=0)
+    unreadMessageCount: int = Field(alias="2", default=0)
+    markedAsReadMessageId: Optional[str] = Field(alias="3", default=None)
+    mentionedMessageId: Optional[str] = Field(alias="4", default=None)
+    notifiedMessageType: Optional["NotifiedMessageType"] = Field(alias="5", default=None)
     badges: List[int] = Field(alias="6", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class SquareChatType(IntEnum):
     OPEN = 1
@@ -2496,18 +2105,9 @@ class SquareChatType(IntEnum):
     ONE_ON_ONE = 3
     SQUARE_DEFAULT = 4
 
-
-class SquareCleanScore(BaseModel):
-    score: Optional[float] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
 class SquareEmblem(IntEnum):
     SUPER = 1
     OFFICIAL = 2
-
 
 class SquareErrorCode(IntEnum):
     UNKNOWN = 0
@@ -2523,727 +2123,545 @@ class SquareErrorCode(IntEnum):
     REVISION_MISMATCH = 409
     PRECONDITION_FAILED = 410
 
-
 class SquareEvent(BaseModel):
-    created_time: Optional[int] = Field(alias="2", default=None)
-    type: Optional[int] = Field(alias="3", default=None)
+    createdTime: int = Field(alias="2", default=0)
+    type: Optional["SquareEventType"] = Field(alias="3", default=None)
     payload: Optional["SquareEventPayload"] = Field(alias="4", default=None)
-    sync_token: Optional[str] = Field(alias="5", default=None)
-    event_status: Optional[int] = Field(alias="6", default=None)
+    syncToken: Optional[str] = Field(alias="5", default=None)
+    eventStatus: Optional["SquareEventStatus"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventChatPopup(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    popup_id: Optional[int] = Field(alias="2", default=None)
-    flex_json: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    popupId: int = Field(alias="2", default=0)
+    flexJson: Optional[str] = Field(alias="3", default=None)
     button: Optional["ButtonContent"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventMutateMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="2", default=None)
-    req_seq: Optional[int] = Field(alias="3", default=None)
-    sender_display_name: Optional[str] = Field(alias="4", default=None)
-    thread_mid: Optional[str] = Field(alias="5", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="2", default=None)
+    reqSeq: int = Field(alias="3", default=0)
+    senderDisplayName: Optional[str] = Field(alias="4", default=None)
+    threadMid: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationJoinRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_name: Optional[str] = Field(alias="2", default=None)
-    request_member_name: Optional[str] = Field(alias="3", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="4", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareName: Optional[str] = Field(alias="2", default=None)
+    requestMemberName: Optional[str] = Field(alias="3", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationLiveTalk(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    live_talk_invitation_ticket: Optional[str] = Field(alias="2", default=None)
-    square_chat_name: Optional[str] = Field(alias="3", default=None)
-    chat_image_obs_hash: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    liveTalkInvitationTicket: Optional[str] = Field(alias="2", default=None)
+    squareChatName: Optional[str] = Field(alias="3", default=None)
+    chatImageObsHash: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationMemberUpdate(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="2", default=None)
-    sender_display_name: Optional[str] = Field(alias="3", default=None)
-    unread_count: Optional[int] = Field(alias="4", default=None)
-    required_to_fetch_chat_events: Optional[bool] = Field(alias="5", default=None)
-    mentioned_message_id: Optional[str] = Field(alias="6", default=None)
-    notified_message_type: Optional[int] = Field(alias="7", default=None)
-    req_seq: Optional[int] = Field(alias="8", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="2", default=None)
+    senderDisplayName: Optional[str] = Field(alias="3", default=None)
+    unreadCount: int = Field(alias="4", default=0)
+    requiredToFetchChatEvents: bool = Field(alias="5", default=False)
+    mentionedMessageId: Optional[str] = Field(alias="6", default=None)
+    notifiedMessageType: Optional["NotifiedMessageType"] = Field(alias="7", default=None)
+    reqSeq: int = Field(alias="8", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationMessageReaction(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    message_id: Optional[str] = Field(alias="2", default=None)
-    square_chat_name: Optional[str] = Field(alias="3", default=None)
-    reactor_name: Optional[str] = Field(alias="4", default=None)
-    thumbnail_obs_hash: Optional[str] = Field(alias="5", default=None)
-    message_text: Optional[str] = Field(alias="6", default=None)
-    type: Optional[int] = Field(alias="7", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="2", default=None)
+    squareChatName: Optional[str] = Field(alias="3", default=None)
+    reactorName: Optional[str] = Field(alias="4", default=None)
+    thumbnailObsHash: Optional[str] = Field(alias="5", default=None)
+    messageText: Optional[str] = Field(alias="6", default=None)
+    type_: Optional["MessageReactionType"] = Field(alias="7", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationNewChatMember(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_chat_name: Optional[str] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareChatName: Optional[str] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationPost(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    notification_post_type: Optional[int] = Field(alias="2", default=None)
-    thumbnail_obs_hash: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    notificationPostType: Optional["NotificationPostType"] = Field(alias="2", default=None)
+    thumbnailObsHash: Optional[str] = Field(alias="3", default=None)
     text: Optional[str] = Field(alias="4", default=None)
-    action_uri: Optional[str] = Field(alias="5", default=None)
+    actionUri: Optional[str] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationPostAnnouncement(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_name: Optional[str] = Field(alias="2", default=None)
-    square_profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
-    action_uri: Optional[str] = Field(alias="4", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareName: Optional[str] = Field(alias="2", default=None)
+    squareProfileImageObsHash: Optional[str] = Field(alias="3", default=None)
+    actionUri: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationSquareChatDelete(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_chat_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareChatName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationSquareDelete(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_name: Optional[str] = Field(alias="2", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareName: Optional[str] = Field(alias="2", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationThreadMessage(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="3", default=None)
-    sender_display_name: Optional[str] = Field(alias="4", default=None)
-    unread_count: Optional[int] = Field(alias="5", default=None)
-    total_message_count: Optional[int] = Field(alias="6", default=None)
-    thread_root_message_id: Optional[str] = Field(alias="7", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="3", default=None)
+    senderDisplayName: Optional[str] = Field(alias="4", default=None)
+    unreadCount: int = Field(alias="5", default=0)
+    totalMessageCount: int = Field(alias="6", default=0)
+    threadRootMessageId: Optional[str] = Field(alias="7", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotificationThreadMessageReaction(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="3", default=None)
-    square_chat_name: Optional[str] = Field(alias="4", default=None)
-    reactor_name: Optional[str] = Field(alias="5", default=None)
-    thumbnail_obs_hash: Optional[str] = Field(alias="6", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="3", default=None)
+    squareChatName: Optional[str] = Field(alias="4", default=None)
+    reactorName: Optional[str] = Field(alias="5", default=None)
+    thumbnailObsHash: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedAddBot(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="2", default=None)
-    bot_mid: Optional[str] = Field(alias="3", default=None)
-    bot_display_name: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="2", default=None)
+    botMid: Optional[str] = Field(alias="3", default=None)
+    botDisplayName: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedCreateSquareChatMember(BaseModel):
     chat: Optional["SquareChat"] = Field(alias="1", default=None)
-    chat_status: Optional["SquareChatStatus"] = Field(alias="2", default=None)
-    chat_member: Optional["SquareChatMember"] = Field(alias="3", default=None)
-    joined_at: Optional[int] = Field(alias="4", default=None)
-    peer_square_member: Optional["SquareMember"] = Field(alias="5", default=None)
-    square_chat_feature_set: Optional["SquareChatFeatureSet"] = Field(
-        alias="6", default=None
-    )
+    chatStatus: Optional["SquareChatStatus"] = Field(alias="2", default=None)
+    chatMember: Optional["SquareChatMember"] = Field(alias="3", default=None)
+    joinedAt: int = Field(alias="4", default=0)
+    peerSquareMember: Optional["SquareMember"] = Field(alias="5", default=None)
+    squareChatFeatureSet: Optional["SquareChatFeatureSet"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedCreateSquareMember(BaseModel):
     square: Optional["Square"] = Field(alias="1", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="2", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="3", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="4", default=None)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="6", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="2", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="3", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="4", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="5", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedDeleteSquareChat(BaseModel):
-    square_chat: Optional["SquareChat"] = Field(alias="1", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedDestroyMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    message_id: Optional[str] = Field(alias="3", default=None)
-    thread_mid: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="3", default=None)
+    threadMid: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedInviteIntoSquareChat(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     invitees: List["SquareMember"] = Field(alias="2", default_factory=list)
     invitor: Optional["SquareMember"] = Field(alias="3", default=None)
-    invitor_relation: Optional["SquareMemberRelation"] = Field(alias="4", default=None)
+    invitorRelation: Optional["SquareMemberRelation"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedJoinSquareChat(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    joined_member: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    joinedMember: Optional["SquareMember"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedKickoutFromSquare(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     kickees: List["SquareMember"] = Field(alias="2", default_factory=list)
     kicker: Optional["SquareMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedLeaveSquareChat(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_member_mid: Optional[str] = Field(alias="2", default=None)
-    say_goodbye: Optional[bool] = Field(alias="3", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMemberMid: Optional[str] = Field(alias="2", default=None)
+    sayGoodbye: bool = Field(alias="3", default=False)
+    squareMember: Optional["SquareMember"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedMarkAsRead(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    s_member_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sMemberMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedRemoveBot(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="2", default=None)
-    bot_mid: Optional[str] = Field(alias="3", default=None)
-    bot_display_name: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="2", default=None)
+    botMid: Optional[str] = Field(alias="3", default=None)
+    botDisplayName: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedShutdownSquare(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     square: Optional["Square"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedSystemMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     text: Optional[str] = Field(alias="2", default=None)
-    message_key: Optional[str] = Field(alias="3", default=None)
+    messageKey: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateLiveTalk(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    session_id: Optional[str] = Field(alias="2", default=None)
-    live_talk_on_air: Optional[bool] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    sessionId: Optional[str] = Field(alias="2", default=None)
+    liveTalkOnAir: bool = Field(alias="3", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateLiveTalkInfo(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    live_talk: Optional["LiveTalk"] = Field(alias="2", default=None)
-    live_talk_on_air: Optional[bool] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    liveTalk: Optional["LiveTalk"] = Field(alias="2", default=None)
+    liveTalkOnAir: bool = Field(alias="3", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateMessageStatus(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    message_id: Optional[str] = Field(alias="2", default=None)
-    message_status: Optional["SquareMessageStatus"] = Field(alias="3", default=None)
-    thread_mid: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="2", default=None)
+    messageStatus: Optional["SquareMessageStatus"] = Field(alias="3", default=None)
+    threadMid: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateReadonlyChat(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    readonly: Optional[bool] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    readonly: bool = Field(alias="2", default=False)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedUpdateSquare(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
     square: Optional["Square"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedUpdateSquareAuthority(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_authority: Optional["SquareAuthority"] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareAuthority: Optional["SquareAuthority"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChat(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    square_chat: Optional["SquareChat"] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    squareChat: Optional["SquareChat"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChatAnnouncement(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    announcement_seq: Optional[int] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    announcementSeq: int = Field(alias="2", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChatFeatureSet(BaseModel):
-    square_chat_feature_set: Optional["SquareChatFeatureSet"] = Field(
-        alias="1", default=None
-    )
+    squareChatFeatureSet: Optional["SquareChatFeatureSet"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedUpdateSquareChatMaxMemberCount(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    max_member_count: Optional[int] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    maxMemberCount: int = Field(alias="2", default=0)
     editor: Optional["SquareMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareEventNotifiedUpdateSquareChatMember(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_chat_member: Optional["SquareChatMember"] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareChatMember: Optional["SquareChatMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChatProfileImage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     editor: Optional["SquareMember"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChatProfileName(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
     editor: Optional["SquareMember"] = Field(alias="2", default=None)
-    updated_chat_name: Optional[str] = Field(alias="3", default=None)
+    updatedChatName: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareChatStatus(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    status_without_message: Optional["SquareChatStatusWithoutMessage"] = Field(
-        alias="2", default=None
-    )
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    statusWithoutMessage: Optional["SquareChatStatusWithoutMessage"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareFeatureSet(BaseModel):
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="1", default=None)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareMember(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_member_mid: Optional[str] = Field(alias="2", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="3", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareMemberMid: Optional[str] = Field(alias="2", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareMemberProfile(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_member: Optional["SquareMember"] = Field(alias="2", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMember: Optional["SquareMember"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareMemberRelation(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    my_member_mid: Optional[str] = Field(alias="2", default=None)
-    target_square_member_mid: Optional[str] = Field(alias="3", default=None)
-    square_member_relation: Optional["SquareMemberRelation"] = Field(
-        alias="4", default=None
-    )
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    myMemberMid: Optional[str] = Field(alias="2", default=None)
+    targetSquareMemberMid: Optional[str] = Field(alias="3", default=None)
+    squareMemberRelation: Optional["SquareMemberRelation"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareNoteStatus(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    note_status: Optional["NoteStatus"] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    noteStatus: Optional["NoteStatus"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateSquareStatus(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareStatus: Optional["SquareStatus"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateThread(BaseModel):
-    square_thread: Optional["SquareThread"] = Field(alias="1", default=None)
+    squareThread: Optional["SquareThread"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateThreadMember(BaseModel):
-    thread_member: Optional["SquareThreadMember"] = Field(alias="1", default=None)
-    square_thread: Optional["SquareThread"] = Field(alias="2", default=None)
-    thread_root_message: Optional["SquareMessage"] = Field(alias="3", default=None)
-    total_message_count: Optional[int] = Field(alias="4", default=None)
-    last_message: Optional["SquareMessage"] = Field(alias="5", default=None)
-    last_message_sender_display_name: Optional[str] = Field(alias="6", default=None)
+    threadMember: Optional["SquareThreadMember"] = Field(alias="1", default=None)
+    squareThread: Optional["SquareThread"] = Field(alias="2", default=None)
+    threadRootMessage: Optional["SquareMessage"] = Field(alias="3", default=None)
+    totalMessageCount: int = Field(alias="4", default=0)
+    lastMessage: Optional["SquareMessage"] = Field(alias="5", default=None)
+    lastMessageSenderDisplayName: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateThreadRootMessage(BaseModel):
-    square_thread: Optional["SquareThread"] = Field(alias="1", default=None)
+    squareThread: Optional["SquareThread"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateThreadRootMessageStatus(BaseModel):
-    chat_mid: Optional[str] = Field(alias="1", default=None)
-    thread_mid: Optional[str] = Field(alias="2", default=None)
-    thread_root_message_id: Optional[str] = Field(alias="3", default=None)
-    total_message_count: Optional[int] = Field(alias="4", default=None)
-    last_message_at: Optional[int] = Field(alias="5", default=None)
+    chatMid: Optional[str] = Field(alias="1", default=None)
+    threadMid: Optional[str] = Field(alias="2", default=None)
+    threadRootMessageId: Optional[str] = Field(alias="3", default=None)
+    totalMessageCount: int = Field(alias="4", default=0)
+    lastMessageAt: int = Field(alias="5", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventNotifiedUpdateThreadStatus(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    unread_count: Optional[int] = Field(alias="3", default=None)
-    mark_as_read_message_id: Optional[str] = Field(alias="4", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    unreadCount: int = Field(alias="3", default=0)
+    markAsReadMessageId: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventPayload(BaseModel):
-    receive_message: Optional["SquareEventReceiveMessage"] = Field(
-        alias="1", default=None
-    )
-    send_message: Optional["SquareEventSendMessage"] = Field(alias="2", default=None)
-    notified_join_square_chat: Optional["SquareEventNotifiedJoinSquareChat"] = Field(
-        alias="3", default=None
-    )
-    notified_invite_into_square_chat: Optional[
-        "SquareEventNotifiedInviteIntoSquareChat"
-    ] = Field(alias="4", default=None)
-    notified_leave_square_chat: Optional["SquareEventNotifiedLeaveSquareChat"] = Field(
-        alias="5", default=None
-    )
-    notified_destroy_message: Optional["SquareEventNotifiedDestroyMessage"] = Field(
-        alias="6", default=None
-    )
-    notified_mark_as_read: Optional["SquareEventNotifiedMarkAsRead"] = Field(
-        alias="7", default=None
-    )
-    notified_update_square_member_profile: Optional[
-        "SquareEventNotifiedUpdateSquareMemberProfile"
-    ] = Field(alias="8", default=None)
-    notified_update_square: Optional["SquareEventNotifiedUpdateSquare"] = Field(
-        alias="9", default=None
-    )
-    notified_update_square_member: Optional["SquareEventNotifiedUpdateSquareMember"] = (
-        Field(alias="10", default=None)
-    )
-    notified_update_square_chat: Optional["SquareEventNotifiedUpdateSquareChat"] = (
-        Field(alias="11", default=None)
-    )
-    notified_update_square_chat_member: Optional[
-        "SquareEventNotifiedUpdateSquareChatMember"
-    ] = Field(alias="12", default=None)
-    notified_update_square_authority: Optional[
-        "SquareEventNotifiedUpdateSquareAuthority"
-    ] = Field(alias="13", default=None)
-    notified_update_square_status: Optional["SquareEventNotifiedUpdateSquareStatus"] = (
-        Field(alias="14", default=None)
-    )
-    notified_update_square_chat_status: Optional[
-        "SquareEventNotifiedUpdateSquareChatStatus"
-    ] = Field(alias="15", default=None)
-    notified_create_square_member: Optional["SquareEventNotifiedCreateSquareMember"] = (
-        Field(alias="16", default=None)
-    )
-    notified_create_square_chat_member: Optional[
-        "SquareEventNotifiedCreateSquareChatMember"
-    ] = Field(alias="17", default=None)
-    notified_update_square_member_relation: Optional[
-        "SquareEventNotifiedUpdateSquareMemberRelation"
-    ] = Field(alias="18", default=None)
-    notified_shutdown_square: Optional["SquareEventNotifiedShutdownSquare"] = Field(
-        alias="19", default=None
-    )
-    notified_kickout_from_square: Optional["SquareEventNotifiedKickoutFromSquare"] = (
-        Field(alias="20", default=None)
-    )
-    notified_delete_square_chat: Optional["SquareEventNotifiedDeleteSquareChat"] = (
-        Field(alias="21", default=None)
-    )
-    notification_join_request: Optional["SquareEventNotificationJoinRequest"] = Field(
-        alias="22", default=None
-    )
-    notification_joined: Optional["SquareEventNotificationMemberUpdate"] = Field(
-        alias="23", default=None
-    )
-    notification_promote_coadmin: Optional["SquareEventNotificationMemberUpdate"] = (
-        Field(alias="24", default=None)
-    )
-    notification_promote_admin: Optional["SquareEventNotificationMemberUpdate"] = Field(
-        alias="25", default=None
-    )
-    notification_demote_member: Optional["SquareEventNotificationMemberUpdate"] = Field(
-        alias="26", default=None
-    )
-    notification_kicked_out: Optional["SquareEventNotificationMemberUpdate"] = Field(
-        alias="27", default=None
-    )
-    notification_square_delete: Optional["SquareEventNotificationSquareDelete"] = Field(
-        alias="28", default=None
-    )
-    notification_square_chat_delete: Optional[
-        "SquareEventNotificationSquareChatDelete"
-    ] = Field(alias="29", default=None)
-    notification_message: Optional["SquareEventNotificationMessage"] = Field(
-        alias="30", default=None
-    )
-    notified_update_square_chat_profile_name: Optional[
-        "SquareEventNotifiedUpdateSquareChatProfileName"
-    ] = Field(alias="31", default=None)
-    notified_update_square_chat_profile_image: Optional[
-        "SquareEventNotifiedUpdateSquareChatProfileImage"
-    ] = Field(alias="32", default=None)
-    notified_update_square_feature_set: Optional[
-        "SquareEventNotifiedUpdateSquareFeatureSet"
-    ] = Field(alias="33", default=None)
-    notified_add_bot: Optional["SquareEventNotifiedAddBot"] = Field(
-        alias="34", default=None
-    )
-    notified_remove_bot: Optional["SquareEventNotifiedRemoveBot"] = Field(
-        alias="35", default=None
-    )
-    notified_update_square_note_status: Optional[
-        "SquareEventNotifiedUpdateSquareNoteStatus"
-    ] = Field(alias="36", default=None)
-    notified_update_square_chat_announcement: Optional[
-        "SquareEventNotifiedUpdateSquareChatAnnouncement"
-    ] = Field(alias="37", default=None)
-    notified_update_square_chat_max_member_count: Optional[
-        "SquareEventNotifiedUpdateSquareChatMaxMemberCount"
-    ] = Field(alias="38", default=None)
-    notification_post_announcement: Optional[
-        "SquareEventNotificationPostAnnouncement"
-    ] = Field(alias="39", default=None)
-    notification_post: Optional["SquareEventNotificationPost"] = Field(
-        alias="40", default=None
-    )
-    mutate_message: Optional["SquareEventMutateMessage"] = Field(
-        alias="41", default=None
-    )
-    notification_new_chat_member: Optional["SquareEventNotificationNewChatMember"] = (
-        Field(alias="42", default=None)
-    )
-    notified_update_readonly_chat: Optional["SquareEventNotifiedUpdateReadonlyChat"] = (
-        Field(alias="43", default=None)
-    )
-    notified_update_message_status: Optional[
-        "SquareEventNotifiedUpdateMessageStatus"
-    ] = Field(alias="44", default=None)
-    notification_message_reaction: Optional[
-        "SquareEventNotificationMessageReaction"
-    ] = Field(alias="45", default=None)
-    chat_popup: Optional["SquareEventChatPopup"] = Field(alias="46", default=None)
-    notified_system_message: Optional["SquareEventNotifiedSystemMessage"] = Field(
-        alias="47", default=None
-    )
-    notified_update_square_chat_feature_set: Optional[
-        "SquareEventNotifiedUpdateSquareChatFeatureSet"
-    ] = Field(alias="48", default=None)
-    notified_update_live_talk_info: Optional[
-        "SquareEventNotifiedUpdateLiveTalkInfo"
-    ] = Field(alias="49", default=None)
-    notified_update_live_talk: Optional["SquareEventNotifiedUpdateLiveTalk"] = Field(
-        alias="50", default=None
-    )
-    notification_live_talk: Optional["SquareEventNotificationLiveTalk"] = Field(
-        alias="51", default=None
-    )
-    notification_thread_message: Optional["SquareEventNotificationThreadMessage"] = (
-        Field(alias="52", default=None)
-    )
-    notification_thread_message_reaction: Optional[
-        "SquareEventNotificationThreadMessageReaction"
-    ] = Field(alias="53", default=None)
-    notified_update_thread: Optional["SquareEventNotifiedUpdateThread"] = Field(
-        alias="54", default=None
-    )
-    notified_update_thread_status: Optional["SquareEventNotifiedUpdateThreadStatus"] = (
-        Field(alias="55", default=None)
-    )
-    notified_update_thread_member: Optional["SquareEventNotifiedUpdateThreadMember"] = (
-        Field(alias="56", default=None)
-    )
-    notified_update_thread_root_message: Optional[
-        "SquareEventNotifiedUpdateThreadRootMessage"
-    ] = Field(alias="57", default=None)
-    notified_update_thread_root_message_status: Optional[
-        "SquareEventNotifiedUpdateThreadRootMessageStatus"
-    ] = Field(alias="58", default=None)
+    receiveMessage: Optional["SquareEventReceiveMessage"] = Field(alias="1", default=None)
+    sendMessage: Optional["SquareEventSendMessage"] = Field(alias="2", default=None)
+    notifiedJoinSquareChat: Optional["SquareEventNotifiedJoinSquareChat"] = Field(alias="3", default=None)
+    notifiedInviteIntoSquareChat: Optional["SquareEventNotifiedInviteIntoSquareChat"] = Field(alias="4", default=None)
+    notifiedLeaveSquareChat: Optional["SquareEventNotifiedLeaveSquareChat"] = Field(alias="5", default=None)
+    notifiedDestroyMessage: Optional["SquareEventNotifiedDestroyMessage"] = Field(alias="6", default=None)
+    notifiedMarkAsRead: Optional["SquareEventNotifiedMarkAsRead"] = Field(alias="7", default=None)
+    notifiedUpdateSquareMemberProfile: Optional["SquareEventNotifiedUpdateSquareMemberProfile"] = Field(alias="8", default=None)
+    notifiedUpdateSquare: Optional["SquareEventNotifiedUpdateSquare"] = Field(alias="9", default=None)
+    notifiedUpdateSquareMember: Optional["SquareEventNotifiedUpdateSquareMember"] = Field(alias="10", default=None)
+    notifiedUpdateSquareChat: Optional["SquareEventNotifiedUpdateSquareChat"] = Field(alias="11", default=None)
+    notifiedUpdateSquareChatMember: Optional["SquareEventNotifiedUpdateSquareChatMember"] = Field(alias="12", default=None)
+    notifiedUpdateSquareAuthority: Optional["SquareEventNotifiedUpdateSquareAuthority"] = Field(alias="13", default=None)
+    notifiedUpdateSquareStatus: Optional["SquareEventNotifiedUpdateSquareStatus"] = Field(alias="14", default=None)
+    notifiedUpdateSquareChatStatus: Optional["SquareEventNotifiedUpdateSquareChatStatus"] = Field(alias="15", default=None)
+    notifiedCreateSquareMember: Optional["SquareEventNotifiedCreateSquareMember"] = Field(alias="16", default=None)
+    notifiedCreateSquareChatMember: Optional["SquareEventNotifiedCreateSquareChatMember"] = Field(alias="17", default=None)
+    notifiedUpdateSquareMemberRelation: Optional["SquareEventNotifiedUpdateSquareMemberRelation"] = Field(alias="18", default=None)
+    notifiedShutdownSquare: Optional["SquareEventNotifiedShutdownSquare"] = Field(alias="19", default=None)
+    notifiedKickoutFromSquare: Optional["SquareEventNotifiedKickoutFromSquare"] = Field(alias="20", default=None)
+    notifiedDeleteSquareChat: Optional["SquareEventNotifiedDeleteSquareChat"] = Field(alias="21", default=None)
+    notificationJoinRequest: Optional["SquareEventNotificationJoinRequest"] = Field(alias="22", default=None)
+    notificationJoined: Optional["SquareEventNotificationMemberUpdate"] = Field(alias="23", default=None)
+    notificationPromoteCoadmin: Optional["SquareEventNotificationMemberUpdate"] = Field(alias="24", default=None)
+    notificationPromoteAdmin: Optional["SquareEventNotificationMemberUpdate"] = Field(alias="25", default=None)
+    notificationDemoteMember: Optional["SquareEventNotificationMemberUpdate"] = Field(alias="26", default=None)
+    notificationKickedOut: Optional["SquareEventNotificationMemberUpdate"] = Field(alias="27", default=None)
+    notificationSquareDelete: Optional["SquareEventNotificationSquareDelete"] = Field(alias="28", default=None)
+    notificationSquareChatDelete: Optional["SquareEventNotificationSquareChatDelete"] = Field(alias="29", default=None)
+    notificationMessage: Optional["SquareEventNotificationMessage"] = Field(alias="30", default=None)
+    notifiedUpdateSquareChatProfileName: Optional["SquareEventNotifiedUpdateSquareChatProfileName"] = Field(alias="31", default=None)
+    notifiedUpdateSquareChatProfileImage: Optional["SquareEventNotifiedUpdateSquareChatProfileImage"] = Field(alias="32", default=None)
+    notifiedUpdateSquareFeatureSet: Optional["SquareEventNotifiedUpdateSquareFeatureSet"] = Field(alias="33", default=None)
+    notifiedAddBot: Optional["SquareEventNotifiedAddBot"] = Field(alias="34", default=None)
+    notifiedRemoveBot: Optional["SquareEventNotifiedRemoveBot"] = Field(alias="35", default=None)
+    notifiedUpdateSquareNoteStatus: Optional["SquareEventNotifiedUpdateSquareNoteStatus"] = Field(alias="36", default=None)
+    notifiedUpdateSquareChatAnnouncement: Optional["SquareEventNotifiedUpdateSquareChatAnnouncement"] = Field(alias="37", default=None)
+    notifiedUpdateSquareChatMaxMemberCount: Optional["SquareEventNotifiedUpdateSquareChatMaxMemberCount"] = Field(alias="38", default=None)
+    notificationPostAnnouncement: Optional["SquareEventNotificationPostAnnouncement"] = Field(alias="39", default=None)
+    notificationPost: Optional["SquareEventNotificationPost"] = Field(alias="40", default=None)
+    mutateMessage: Optional["SquareEventMutateMessage"] = Field(alias="41", default=None)
+    notificationNewChatMember: Optional["SquareEventNotificationNewChatMember"] = Field(alias="42", default=None)
+    notifiedUpdateReadonlyChat: Optional["SquareEventNotifiedUpdateReadonlyChat"] = Field(alias="43", default=None)
+    notifiedUpdateMessageStatus: Optional["SquareEventNotifiedUpdateMessageStatus"] = Field(alias="44", default=None)
+    notificationMessageReaction: Optional["SquareEventNotificationMessageReaction"] = Field(alias="45", default=None)
+    chatPopup: Optional["SquareEventChatPopup"] = Field(alias="46", default=None)
+    notifiedSystemMessage: Optional["SquareEventNotifiedSystemMessage"] = Field(alias="47", default=None)
+    notifiedUpdateSquareChatFeatureSet: Optional["SquareEventNotifiedUpdateSquareChatFeatureSet"] = Field(alias="48", default=None)
+    notifiedUpdateLiveTalkInfo: Optional["SquareEventNotifiedUpdateLiveTalkInfo"] = Field(alias="49", default=None)
+    notifiedUpdateLiveTalk: Optional["SquareEventNotifiedUpdateLiveTalk"] = Field(alias="50", default=None)
+    notificationLiveTalk: Optional["SquareEventNotificationLiveTalk"] = Field(alias="51", default=None)
+    notificationThreadMessage: Optional["SquareEventNotificationThreadMessage"] = Field(alias="52", default=None)
+    notificationThreadMessageReaction: Optional["SquareEventNotificationThreadMessageReaction"] = Field(alias="53", default=None)
+    notifiedUpdateThread: Optional["SquareEventNotifiedUpdateThread"] = Field(alias="54", default=None)
+    notifiedUpdateThreadStatus: Optional["SquareEventNotifiedUpdateThreadStatus"] = Field(alias="55", default=None)
+    notifiedUpdateThreadMember: Optional["SquareEventNotifiedUpdateThreadMember"] = Field(alias="56", default=None)
+    notifiedUpdateThreadRootMessage: Optional["SquareEventNotifiedUpdateThreadRootMessage"] = Field(alias="57", default=None)
+    notifiedUpdateThreadRootMessageStatus: Optional["SquareEventNotifiedUpdateThreadRootMessageStatus"] = Field(alias="58", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventReceiveMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="2", default=None)
-    sender_display_name: Optional[str] = Field(alias="3", default=None)
-    message_reaction_status: Optional["SquareMessageReactionStatus"] = Field(
-        alias="4", default=None
-    )
-    sender_revision: Optional[int] = Field(alias="5", default=None)
-    square_mid: Optional[str] = Field(alias="6", default=None)
-    thread_mid: Optional[str] = Field(alias="7", default=None)
-    thread_total_message_count: Optional[int] = Field(alias="8", default=None)
-    thread_last_message_at: Optional[int] = Field(alias="9", default=None)
-    contents_attribute: Optional[int] = Field(alias="10", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="2", default=None)
+    senderDisplayName: Optional[str] = Field(alias="3", default=None)
+    messageReactionStatus: Optional["SquareMessageReactionStatus"] = Field(alias="4", default=None)
+    senderRevision: int = Field(alias="5", default=0)
+    squareMid: Optional[str] = Field(alias="6", default=None)
+    threadMid: Optional[str] = Field(alias="7", default=None)
+    threadTotalMessageCount: int = Field(alias="8", default=0)
+    threadLastMessageAt: int = Field(alias="9", default=0)
+    contentsAttribute: Optional["ContentsAttribute"] = Field(alias="10", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventSendMessage(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    square_message: Optional["SquareMessage"] = Field(alias="2", default=None)
-    req_seq: Optional[int] = Field(alias="3", default=None)
-    sender_display_name: Optional[str] = Field(alias="4", default=None)
-    message_reaction_status: Optional["SquareMessageReactionStatus"] = Field(
-        alias="5", default=None
-    )
-    thread_mid: Optional[str] = Field(alias="6", default=None)
-    thread_total_message_count: Optional[int] = Field(alias="7", default=None)
-    thread_last_message_at: Optional[int] = Field(alias="8", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    squareMessage: Optional["SquareMessage"] = Field(alias="2", default=None)
+    reqSeq: int = Field(alias="3", default=0)
+    senderDisplayName: Optional[str] = Field(alias="4", default=None)
+    messageReactionStatus: Optional["SquareMessageReactionStatus"] = Field(alias="5", default=None)
+    threadMid: Optional[str] = Field(alias="6", default=None)
+    threadTotalMessageCount: int = Field(alias="7", default=0)
+    threadLastMessageAt: int = Field(alias="8", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareEventStatus(IntEnum):
     NORMAL = 1
     ALERT_DISABLED = 2
-
 
 class SquareEventType(IntEnum):
     RECEIVE_MESSAGE = 0
@@ -3305,15 +2723,13 @@ class SquareEventType(IntEnum):
     NOTIFICATION_THREAD_MESSAGE = 54
     NOTIFICATION_THREAD_MESSAGE_REACTION = 55
 
-
 class SquareException(BaseModel):
-    error_code: Optional[int] = Field(alias="1", default=None)
-    error_extra_info: Optional["ErrorExtraInfo"] = Field(alias="2", default=None)
+    errorCode: Optional["SquareErrorCode"] = Field(alias="1", default=None)
+    errorExtraInfo: Optional["ErrorExtraInfo"] = Field(alias="2", default=None)
     reason: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareExtraInfo(BaseModel):
     country: Optional[str] = Field(alias="1", default=None)
@@ -3321,54 +2737,38 @@ class SquareExtraInfo(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareFeature(BaseModel):
-    control_state: Optional[int] = Field(alias="1", default=None)
-    boolean_value: Optional[int] = Field(alias="2", default=None)
+    controlState: Optional["SquareFeatureControlState"] = Field(alias="1", default=None)
+    booleanValue: Optional["BooleanState"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareFeatureControlState(IntEnum):
     DISABLED = 1
     ENABLED = 2
 
-
 class SquareFeatureSet(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    revision: Optional[int] = Field(alias="2", default=None)
-    creating_secret_square_chat: Optional["SquareFeature"] = Field(
-        alias="11", default=None
-    )
-    inviting_into_open_square_chat: Optional["SquareFeature"] = Field(
-        alias="12", default=None
-    )
-    creating_square_chat: Optional["SquareFeature"] = Field(alias="13", default=None)
-    readonly_default_chat: Optional["SquareFeature"] = Field(alias="14", default=None)
-    showing_advertisement: Optional["SquareFeature"] = Field(alias="15", default=None)
-    delegate_join_to_plug: Optional["SquareFeature"] = Field(alias="16", default=None)
-    delegate_kick_out_to_plug: Optional["SquareFeature"] = Field(
-        alias="17", default=None
-    )
-    disable_update_join_method: Optional["SquareFeature"] = Field(
-        alias="18", default=None
-    )
-    disable_transfer_admin: Optional["SquareFeature"] = Field(alias="19", default=None)
-    creating_live_talk: Optional["SquareFeature"] = Field(alias="20", default=None)
-    disable_update_searchable: Optional["SquareFeature"] = Field(
-        alias="21", default=None
-    )
-    summarizing_messages: Optional["SquareFeature"] = Field(alias="22", default=None)
-    creating_square_thread: Optional["SquareFeature"] = Field(alias="23", default=None)
-    enable_square_thread: Optional["SquareFeature"] = Field(alias="24", default=None)
-    disable_change_role_co_admin: Optional["SquareFeature"] = Field(
-        alias="25", default=None
-    )
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    revision: int = Field(alias="2", default=0)
+    creatingSecretSquareChat: Optional["SquareFeature"] = Field(alias="11", default=None)
+    invitingIntoOpenSquareChat: Optional["SquareFeature"] = Field(alias="12", default=None)
+    creatingSquareChat: Optional["SquareFeature"] = Field(alias="13", default=None)
+    readonlyDefaultChat: Optional["SquareFeature"] = Field(alias="14", default=None)
+    showingAdvertisement: Optional["SquareFeature"] = Field(alias="15", default=None)
+    delegateJoinToPlug: Optional["SquareFeature"] = Field(alias="16", default=None)
+    delegateKickOutToPlug: Optional["SquareFeature"] = Field(alias="17", default=None)
+    disableUpdateJoinMethod: Optional["SquareFeature"] = Field(alias="18", default=None)
+    disableTransferAdmin: Optional["SquareFeature"] = Field(alias="19", default=None)
+    creatingLiveTalk: Optional["SquareFeature"] = Field(alias="20", default=None)
+    disableUpdateSearchable: Optional["SquareFeature"] = Field(alias="21", default=None)
+    summarizingMessages: Optional["SquareFeature"] = Field(alias="22", default=None)
+    creatingSquareThread: Optional["SquareFeature"] = Field(alias="23", default=None)
+    enableSquareThread: Optional["SquareFeature"] = Field(alias="24", default=None)
+    disableChangeRoleCoAdmin: Optional["SquareFeature"] = Field(alias="25", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareFeatureSetAttribute(IntEnum):
     CREATING_SECRET_SQUARE_CHAT = 1
@@ -3387,54 +2787,40 @@ class SquareFeatureSetAttribute(IntEnum):
     ENABLE_SQUARE_THREAD = 14
     DISABLE_CHANGE_ROLE_CO_ADMIN = 15
 
-
-class SquareInfo(BaseModel):
-    square: Optional["Square"] = Field(alias="1", default=None)
-    square_status: Optional["SquareStatus"] = Field(alias="2", default=None)
-    square_note_status: Optional["NoteStatus"] = Field(alias="3", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
 class SquareJoinMethod(BaseModel):
-    type: Optional[int] = Field(alias="1", default=None)
+    type_: Optional["SquareJoinMethodType"] = Field(alias="1", default=None)
     value: Optional["SquareJoinMethodValue"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareJoinMethodType(IntEnum):
     NONE = 0
     APPROVAL = 1
     CODE = 2
 
-
 class SquareJoinMethodValue(BaseModel):
-    approval_value: Optional["ApprovalValue"] = Field(alias="1", default=None)
-    code_value: Optional["CodeValue"] = Field(alias="2", default=None)
+    approvalValue: Optional["ApprovalValue"] = Field(alias="1", default=None)
+    codeValue: Optional["CodeValue"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMember(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    display_name: Optional[str] = Field(alias="3", default=None)
-    profile_image_obs_hash: Optional[str] = Field(alias="4", default=None)
-    able_to_receive_message: Optional[bool] = Field(alias="5", default=None)
-    membership_state: Optional[int] = Field(alias="7", default=None)
-    role: Optional[int] = Field(alias="8", default=None)
-    revision: Optional[int] = Field(alias="9", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    displayName: Optional[str] = Field(alias="3", default=None)
+    profileImageObsHash: Optional[str] = Field(alias="4", default=None)
+    ableToReceiveMessage: bool = Field(alias="5", default=False)
+    membershipState: Optional["SquareMembershipState"] = Field(alias="7", default=None)
+    role: Optional["SquareMemberRole"] = Field(alias="8", default=None)
+    revision: int = Field(alias="9", default=0)
     preference: Optional["SquarePreference"] = Field(alias="10", default=None)
-    join_message: Optional[str] = Field(alias="11", default=None)
-    created_at: Optional[int] = Field(alias="12", default=None)
+    joinMessage: Optional[str] = Field(alias="11", default=None)
+    createdAt: int = Field(alias="12", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMemberAttribute(IntEnum):
     DISPLAY_NAME = 1
@@ -3444,40 +2830,35 @@ class SquareMemberAttribute(IntEnum):
     ROLE = 6
     PREFERENCE = 7
 
-
 class SquareMemberRelation(BaseModel):
-    state: Optional[int] = Field(alias="1", default=None)
-    revision: Optional[int] = Field(alias="2", default=None)
+    state: Optional["SquareMemberRelationState"] = Field(alias="1", default=None)
+    revision: int = Field(alias="2", default=0)
 
     class Config:
         populate_by_name = True
 
-
 class SquareMemberRelationState(IntEnum):
     NONE = 1
     BLOCKED = 2
-
 
 class SquareMemberRole(IntEnum):
     ADMIN = 1
     CO_ADMIN = 2
     MEMBER = 10
 
-
 class SquareMemberSearchOption(BaseModel):
-    membership_state: Optional[int] = Field(alias="1", default=None)
-    member_roles: List[int] = Field(alias="2", default_factory=list)
-    display_name: Optional[str] = Field(alias="3", default=None)
-    able_to_receive_message: Optional[int] = Field(alias="4", default=None)
-    able_to_receive_friend_request: Optional[int] = Field(alias="5", default=None)
-    chat_mid_to_exclude_members: Optional[str] = Field(alias="6", default=None)
-    including_me: Optional[bool] = Field(alias="7", default=None)
-    exclude_blocked_members: Optional[bool] = Field(alias="8", default=None)
-    including_me_only_match: Optional[bool] = Field(alias="9", default=None)
+    membershipState: Optional["SquareMembershipState"] = Field(alias="1", default=None)
+    memberRoles: List["SquareMemberRole"] = Field(alias="2", default_factory=list)
+    displayName: Optional[str] = Field(alias="3", default=None)
+    ableToReceiveMessage: Optional["BooleanState"] = Field(alias="4", default=None)
+    ableToReceiveFriendRequest: Optional["BooleanState"] = Field(alias="5", default=None)
+    chatMidToExcludeMembers: Optional[str] = Field(alias="6", default=None)
+    includingMe: bool = Field(alias="7", default=False)
+    excludeBlockedMembers: bool = Field(alias="8", default=False)
+    includingMeOnlyMatch: bool = Field(alias="9", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMembershipState(IntEnum):
     JOIN_REQUESTED = 1
@@ -3489,46 +2870,32 @@ class SquareMembershipState(IntEnum):
     DELETED = 7
     JOIN_REQUEST_WITHDREW = 8
 
-
 class SquareMessage(BaseModel):
     message: Optional["Message"] = Field(alias="1", default=None)
-    from_type: Optional[int] = Field(alias="3", default=None)
-    square_message_revision: Optional[int] = Field(alias="4", default=None)
-    state: Optional[int] = Field(alias="5", default=None)
-    thread_info: Optional["SquareMessageThreadInfo"] = Field(alias="6", default=None)
+    fromType: Optional["MIDType"] = Field(alias="3", default=None)
+    squareMessageRevision: int = Field(alias="4", default=0)
+    state: Optional["SquareMessageState"] = Field(alias="5", default=None)
+    threadInfo: Optional["SquareMessageThreadInfo"] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
-
-class SquareMessageInfo(BaseModel):
-    message: Optional["SquareMessage"] = Field(alias="1", default=None)
-    square: Optional["Square"] = Field(alias="2", default=None)
-    chat: Optional["SquareChat"] = Field(alias="3", default=None)
-    sender: Optional["SquareMember"] = Field(alias="4", default=None)
-
-    class Config:
-        populate_by_name = True
-
 
 class SquareMessageReaction(BaseModel):
-    type: Optional[int] = Field(alias="1", default=None)
+    type_: Optional["MessageReactionType"] = Field(alias="1", default=None)
     reactor: Optional["SquareMember"] = Field(alias="2", default=None)
-    created_at: Optional[int] = Field(alias="3", default=None)
-    updated_at: Optional[int] = Field(alias="4", default=None)
+    createdAt: int = Field(alias="3", default=0)
+    updatedAt: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMessageReactionStatus(BaseModel):
-    total_count: Optional[int] = Field(alias="1", default=None)
-    count_by_reaction_type: Dict[int, int] = Field(alias="2", default_factory=dict)
-    my_reaction: Optional["SquareMessageReaction"] = Field(alias="3", default=None)
+    totalCount: int = Field(alias="1", default=0)
+    countByReactionType: Dict[int, int] = Field(alias="2", default_factory=dict)
+    myReaction: Optional["SquareMessageReaction"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMessageState(IntEnum):
     SENT = 1
@@ -3536,68 +2903,40 @@ class SquareMessageState(IntEnum):
     FORBIDDEN = 3
     UNSENT = 4
 
-
 class SquareMessageStatus(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="1", default=None)
-    global_message_id: Optional[str] = Field(alias="2", default=None)
-    type: Optional["MessageStatusType"] = Field(alias="3", default=None)
+    squareChatMid: Optional[str] = Field(alias="1", default=None)
+    globalMessageId: Optional[str] = Field(alias="2", default=None)
+    type_: Optional[Any] = Field(alias="3", default=None)
     contents: Optional["MessageStatusContents"] = Field(alias="4", default=None)
-    published_at: Optional[int] = Field(alias="5", default=None)
-    square_chat_thread_mid: Optional[str] = Field(alias="6", default=None)
+    publishedAt: int = Field(alias="5", default=0)
+    squareChatThreadMid: Optional[str] = Field(alias="6", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareMessageThreadInfo(BaseModel):
-    chat_thread_mid: Optional[str] = Field(alias="1", default=None)
-    thread_root: Optional[bool] = Field(alias="2", default=None)
+    chatThreadMid: Optional[str] = Field(alias="1", default=None)
+    threadRoot: bool = Field(alias="2", default=False)
 
     class Config:
         populate_by_name = True
-
-
-class SquareMetadata(BaseModel):
-    mid: Optional[str] = Field(alias="1", default=None)
-    excluded: List[int] = Field(alias="2", default_factory=list)
-    revision: Optional[int] = Field(alias="3", default=None)
-    no_ad: Optional[bool] = Field(alias="4", default=None)
-    updated_at: Optional[int] = Field(alias="5", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
-class SquareMetadataAttribute(IntEnum):
-    EXCLUDED = 1
-    NO_AD = 2
-
 
 class SquarePreference(BaseModel):
-    favorite_timestamp: Optional[int] = Field(alias="1", default=None)
-    noti_for_new_join_request: Optional[bool] = Field(alias="2", default=None)
+    favoriteTimestamp: int = Field(alias="1", default=0)
+    notiForNewJoinRequest: bool = Field(alias="2", default=False)
 
     class Config:
         populate_by_name = True
-
 
 class SquarePreferenceAttribute(IntEnum):
     FAVORITE = 1
     NOTI_FOR_NEW_JOIN_REQUEST = 2
-
-
-class SquareProviderType(IntEnum):
-    UNKNOWN = 1
-    YOUTUBE = 2
-    OA_FANSPACE = 3
-
 
 class SquareService_acceptSpeakers_args(BaseModel):
     request: Optional["AcceptSpeakersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_acceptSpeakers_result(BaseModel):
     success: Optional["AcceptSpeakersResponse"] = Field(alias="0", default=None)
@@ -3606,13 +2945,11 @@ class SquareService_acceptSpeakers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_acceptToChangeRole_args(BaseModel):
     request: Optional["AcceptToChangeRoleRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_acceptToChangeRole_result(BaseModel):
     success: Optional["AcceptToChangeRoleResponse"] = Field(alias="0", default=None)
@@ -3621,13 +2958,11 @@ class SquareService_acceptToChangeRole_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_acceptToListen_args(BaseModel):
     request: "AcceptToListenRequest" = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_acceptToListen_result(BaseModel):
     success: "AcceptToListenResponse" = Field(alias="0", default=None)
@@ -3636,13 +2971,11 @@ class SquareService_acceptToListen_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_acceptToSpeak_args(BaseModel):
     request: Optional["AcceptToSpeakRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_acceptToSpeak_result(BaseModel):
     success: Optional["AcceptToSpeakResponse"] = Field(alias="0", default=None)
@@ -3651,13 +2984,11 @@ class SquareService_acceptToSpeak_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_acquireLiveTalk_args(BaseModel):
     request: Optional["AcquireLiveTalkRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_acquireLiveTalk_result(BaseModel):
     success: Optional["AcquireLiveTalkResponse"] = Field(alias="0", default=None)
@@ -3666,13 +2997,11 @@ class SquareService_acquireLiveTalk_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_agreeToTerms_args(BaseModel):
     request: Optional["AgreeToTermsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_agreeToTerms_result(BaseModel):
     success: Optional["AgreeToTermsResponse"] = Field(alias="0", default=None)
@@ -3681,13 +3010,11 @@ class SquareService_agreeToTerms_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_approveSquareMembers_args(BaseModel):
     request: Optional["ApproveSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_approveSquareMembers_result(BaseModel):
     success: Optional["ApproveSquareMembersResponse"] = Field(alias="0", default=None)
@@ -3696,13 +3023,11 @@ class SquareService_approveSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_cancelToSpeak_args(BaseModel):
     request: Optional["CancelToSpeakRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_cancelToSpeak_result(BaseModel):
     success: Optional["CancelToSpeakResponse"] = Field(alias="0", default=None)
@@ -3711,13 +3036,11 @@ class SquareService_cancelToSpeak_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_checkJoinCode_args(BaseModel):
     request: Optional["CheckJoinCodeRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_checkJoinCode_result(BaseModel):
     success: Optional["CheckJoinCodeResponse"] = Field(alias="0", default=None)
@@ -3726,32 +3049,24 @@ class SquareService_checkJoinCode_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_createSquareChatAnnouncement_args(BaseModel):
-    create_square_chat_announcement_request: Optional[
-        "CreateSquareChatAnnouncementRequest"
-    ] = Field(alias="1", default=None)
+    createSquareChatAnnouncementRequest: Optional["CreateSquareChatAnnouncementRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_createSquareChatAnnouncement_result(BaseModel):
-    success: Optional["CreateSquareChatAnnouncementResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["CreateSquareChatAnnouncementResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_createSquareChat_args(BaseModel):
     request: Optional["CreateSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_createSquareChat_result(BaseModel):
     success: Optional["CreateSquareChatResponse"] = Field(alias="0", default=None)
@@ -3760,13 +3075,11 @@ class SquareService_createSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_createSquare_args(BaseModel):
     request: Optional["CreateSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_createSquare_result(BaseModel):
     success: Optional["CreateSquareResponse"] = Field(alias="0", default=None)
@@ -3775,32 +3088,24 @@ class SquareService_createSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_deleteSquareChatAnnouncement_args(BaseModel):
-    delete_square_chat_announcement_request: Optional[
-        "DeleteSquareChatAnnouncementRequest"
-    ] = Field(alias="1", default=None)
+    deleteSquareChatAnnouncementRequest: Optional["DeleteSquareChatAnnouncementRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_deleteSquareChatAnnouncement_result(BaseModel):
-    success: Optional["DeleteSquareChatAnnouncementResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["DeleteSquareChatAnnouncementResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_deleteSquareChat_args(BaseModel):
     request: Optional["DeleteSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_deleteSquareChat_result(BaseModel):
     success: Optional["DeleteSquareChatResponse"] = Field(alias="0", default=None)
@@ -3809,13 +3114,11 @@ class SquareService_deleteSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_deleteSquare_args(BaseModel):
     request: Optional["DeleteSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_deleteSquare_result(BaseModel):
     success: Optional["DeleteSquareResponse"] = Field(alias="0", default=None)
@@ -3824,13 +3127,11 @@ class SquareService_deleteSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_destroyMessage_args(BaseModel):
     request: Optional["DestroyMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_destroyMessage_result(BaseModel):
     success: Optional["DestroyMessageResponse"] = Field(alias="0", default=None)
@@ -3839,13 +3140,11 @@ class SquareService_destroyMessage_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_destroyMessages_args(BaseModel):
     request: Optional["DestroyMessagesRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_destroyMessages_result(BaseModel):
     success: Optional["DestroyMessagesResponse"] = Field(alias="0", default=None)
@@ -3854,13 +3153,11 @@ class SquareService_destroyMessages_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_fetchLiveTalkEvents_args(BaseModel):
     request: Optional["FetchLiveTalkEventsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_fetchLiveTalkEvents_result(BaseModel):
     success: Optional["FetchLiveTalkEventsResponse"] = Field(alias="0", default=None)
@@ -3869,13 +3166,11 @@ class SquareService_fetchLiveTalkEvents_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_fetchMyEvents_args(BaseModel):
     request: Optional["FetchMyEventsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_fetchMyEvents_result(BaseModel):
     success: Optional["FetchMyEventsResponse"] = Field(alias="0", default=None)
@@ -3884,13 +3179,11 @@ class SquareService_fetchMyEvents_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_fetchSquareChatEvents_args(BaseModel):
     request: Optional["FetchSquareChatEventsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_fetchSquareChatEvents_result(BaseModel):
     success: Optional["FetchSquareChatEventsResponse"] = Field(alias="0", default=None)
@@ -3899,34 +3192,24 @@ class SquareService_fetchSquareChatEvents_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_findLiveTalkByInvitationTicket_args(BaseModel):
-    request: Optional["FindLiveTalkByInvitationTicketRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["FindLiveTalkByInvitationTicketRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_findLiveTalkByInvitationTicket_result(BaseModel):
-    success: Optional["FindLiveTalkByInvitationTicketResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["FindLiveTalkByInvitationTicketResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_findSquareByEmid_args(BaseModel):
-    find_square_by_emid_request: Optional["FindSquareByEmidRequest"] = Field(
-        alias="1", default=None
-    )
+    findSquareByEmidRequest: Optional["FindSquareByEmidRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_findSquareByEmid_result(BaseModel):
     success: Optional["FindSquareByEmidResponse"] = Field(alias="0", default=None)
@@ -3935,51 +3218,37 @@ class SquareService_findSquareByEmid_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_findSquareByInvitationTicketV2_args(BaseModel):
-    request: Optional["FindSquareByInvitationTicketV2Request"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["FindSquareByInvitationTicketV2Request"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_findSquareByInvitationTicketV2_result(BaseModel):
-    success: Optional["FindSquareByInvitationTicketV2Response"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["FindSquareByInvitationTicketV2Response"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_findSquareByInvitationTicket_args(BaseModel):
-    request: Optional["FindSquareByInvitationTicketRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["FindSquareByInvitationTicketRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_findSquareByInvitationTicket_result(BaseModel):
-    success: Optional["FindSquareByInvitationTicketResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["FindSquareByInvitationTicketResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_forceEndLiveTalk_args(BaseModel):
     request: Optional["ForceEndLiveTalkRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_forceEndLiveTalk_result(BaseModel):
     success: Optional["ForceEndLiveTalkResponse"] = Field(alias="0", default=None)
@@ -3988,13 +3257,11 @@ class SquareService_forceEndLiveTalk_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getCategories_args(BaseModel):
     request: Optional["GetSquareCategoriesRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getCategories_result(BaseModel):
     success: Optional["GetSquareCategoriesResponse"] = Field(alias="0", default=None)
@@ -4003,13 +3270,11 @@ class SquareService_getCategories_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getGoogleAdOptions_args(BaseModel):
     request: Optional["GetGoogleAdOptionsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getGoogleAdOptions_result(BaseModel):
     success: Optional["GetGoogleAdOptionsResponse"] = Field(alias="0", default=None)
@@ -4018,13 +3283,11 @@ class SquareService_getGoogleAdOptions_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getInvitationTicketUrl_args(BaseModel):
     request: Optional["GetInvitationTicketUrlRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getInvitationTicketUrl_result(BaseModel):
     success: Optional["GetInvitationTicketUrlResponse"] = Field(alias="0", default=None)
@@ -4033,13 +3296,11 @@ class SquareService_getInvitationTicketUrl_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getJoinableSquareChats_args(BaseModel):
     request: Optional["GetJoinableSquareChatsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getJoinableSquareChats_result(BaseModel):
     success: Optional["GetJoinableSquareChatsResponse"] = Field(alias="0", default=None)
@@ -4048,13 +3309,11 @@ class SquareService_getJoinableSquareChats_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getJoinedSquareChats_args(BaseModel):
     request: Optional["GetJoinedSquareChatsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getJoinedSquareChats_result(BaseModel):
     success: Optional["GetJoinedSquareChatsResponse"] = Field(alias="0", default=None)
@@ -4063,13 +3322,11 @@ class SquareService_getJoinedSquareChats_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getJoinedSquares_args(BaseModel):
     request: Optional["GetJoinedSquaresRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getJoinedSquares_result(BaseModel):
     success: Optional["GetJoinedSquaresResponse"] = Field(alias="0", default=None)
@@ -4078,70 +3335,50 @@ class SquareService_getJoinedSquares_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getLiveTalkInfoForNonMember_args(BaseModel):
-    request: Optional["GetLiveTalkInfoForNonMemberRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["GetLiveTalkInfoForNonMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getLiveTalkInfoForNonMember_result(BaseModel):
-    success: Optional["GetLiveTalkInfoForNonMemberResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetLiveTalkInfoForNonMemberResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getLiveTalkInvitationUrl_args(BaseModel):
-    request: Optional["GetLiveTalkInvitationUrlRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["GetLiveTalkInvitationUrlRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getLiveTalkInvitationUrl_result(BaseModel):
-    success: Optional["GetLiveTalkInvitationUrlResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetLiveTalkInvitationUrlResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getLiveTalkSpeakersForNonMember_args(BaseModel):
-    request: Optional["GetLiveTalkSpeakersForNonMemberRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["GetLiveTalkSpeakersForNonMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getLiveTalkSpeakersForNonMember_result(BaseModel):
-    success: Optional["GetLiveTalkSpeakersForNonMemberResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetLiveTalkSpeakersForNonMemberResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getMessageReactions_args(BaseModel):
     request: Optional["GetMessageReactionsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getMessageReactions_result(BaseModel):
     success: Optional["GetMessageReactionsResponse"] = Field(alias="0", default=None)
@@ -4150,13 +3387,11 @@ class SquareService_getMessageReactions_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getNoteStatus_args(BaseModel):
     request: Optional["GetNoteStatusRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getNoteStatus_result(BaseModel):
     success: Optional["GetNoteStatusResponse"] = Field(alias="0", default=None)
@@ -4165,13 +3400,11 @@ class SquareService_getNoteStatus_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getPopularKeywords_args(BaseModel):
     request: Optional["GetPopularKeywordsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getPopularKeywords_result(BaseModel):
     success: Optional["GetPopularKeywordsResponse"] = Field(alias="0", default=None)
@@ -4180,13 +3413,11 @@ class SquareService_getPopularKeywords_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareAuthorities_args(BaseModel):
     request: Optional["GetSquareAuthoritiesRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareAuthorities_result(BaseModel):
     success: Optional["GetSquareAuthoritiesResponse"] = Field(alias="0", default=None)
@@ -4195,13 +3426,11 @@ class SquareService_getSquareAuthorities_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareAuthority_args(BaseModel):
     request: Optional["GetSquareAuthorityRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareAuthority_result(BaseModel):
     success: Optional["GetSquareAuthorityResponse"] = Field(alias="0", default=None)
@@ -4210,32 +3439,24 @@ class SquareService_getSquareAuthority_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatAnnouncements_args(BaseModel):
-    get_square_chat_announcements_request: Optional[
-        "GetSquareChatAnnouncementsRequest"
-    ] = Field(alias="1", default=None)
+    getSquareChatAnnouncementsRequest: Optional["GetSquareChatAnnouncementsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatAnnouncements_result(BaseModel):
-    success: Optional["GetSquareChatAnnouncementsResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetSquareChatAnnouncementsResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatEmid_args(BaseModel):
     request: Optional["GetSquareChatEmidRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatEmid_result(BaseModel):
     success: Optional["GetSquareChatEmidResponse"] = Field(alias="0", default=None)
@@ -4244,30 +3465,24 @@ class SquareService_getSquareChatEmid_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatFeatureSet_args(BaseModel):
     request: Optional["GetSquareChatFeatureSetRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatFeatureSet_result(BaseModel):
-    success: Optional["GetSquareChatFeatureSetResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetSquareChatFeatureSetResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatMember_args(BaseModel):
     request: Optional["GetSquareChatMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatMember_result(BaseModel):
     success: Optional["GetSquareChatMemberResponse"] = Field(alias="0", default=None)
@@ -4276,13 +3491,11 @@ class SquareService_getSquareChatMember_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatMembers_args(BaseModel):
     request: Optional["GetSquareChatMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatMembers_result(BaseModel):
     success: Optional["GetSquareChatMembersResponse"] = Field(alias="0", default=None)
@@ -4291,13 +3504,11 @@ class SquareService_getSquareChatMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChatStatus_args(BaseModel):
     request: Optional["GetSquareChatStatusRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChatStatus_result(BaseModel):
     success: Optional["GetSquareChatStatusResponse"] = Field(alias="0", default=None)
@@ -4306,13 +3517,11 @@ class SquareService_getSquareChatStatus_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareChat_args(BaseModel):
     request: Optional["GetSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareChat_result(BaseModel):
     success: Optional["GetSquareChatResponse"] = Field(alias="0", default=None)
@@ -4321,13 +3530,11 @@ class SquareService_getSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareEmid_args(BaseModel):
     request: Optional["GetSquareEmidRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareEmid_result(BaseModel):
     success: Optional["GetSquareEmidResponse"] = Field(alias="0", default=None)
@@ -4336,13 +3543,11 @@ class SquareService_getSquareEmid_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareFeatureSet_args(BaseModel):
     request: Optional["GetSquareFeatureSetRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareFeatureSet_result(BaseModel):
     success: Optional["GetSquareFeatureSetResponse"] = Field(alias="0", default=None)
@@ -4351,13 +3556,11 @@ class SquareService_getSquareFeatureSet_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareInfoByChatMid_args(BaseModel):
     request: Optional["GetSquareInfoByChatMidRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareInfoByChatMid_result(BaseModel):
     success: Optional["GetSquareInfoByChatMidResponse"] = Field(alias="0", default=None)
@@ -4366,49 +3569,37 @@ class SquareService_getSquareInfoByChatMid_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareMemberRelation_args(BaseModel):
     request: Optional["GetSquareMemberRelationRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareMemberRelation_result(BaseModel):
-    success: Optional["GetSquareMemberRelationResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetSquareMemberRelationResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareMemberRelations_args(BaseModel):
-    request: Optional["GetSquareMemberRelationsRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["GetSquareMemberRelationsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareMemberRelations_result(BaseModel):
-    success: Optional["GetSquareMemberRelationsResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetSquareMemberRelationsResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareMember_args(BaseModel):
     request: Optional["GetSquareMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareMember_result(BaseModel):
     success: Optional["GetSquareMemberResponse"] = Field(alias="0", default=None)
@@ -4417,32 +3608,24 @@ class SquareService_getSquareMember_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareMembersBySquare_args(BaseModel):
-    request: Optional["GetSquareMembersBySquareRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["GetSquareMembersBySquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareMembersBySquare_result(BaseModel):
-    success: Optional["GetSquareMembersBySquareResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["GetSquareMembersBySquareResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareMembers_args(BaseModel):
     request: Optional["GetSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareMembers_result(BaseModel):
     success: Optional["GetSquareMembersResponse"] = Field(alias="0", default=None)
@@ -4451,13 +3634,11 @@ class SquareService_getSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareStatus_args(BaseModel):
     request: Optional["GetSquareStatusRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareStatus_result(BaseModel):
     success: Optional["GetSquareStatusResponse"] = Field(alias="0", default=None)
@@ -4466,13 +3647,11 @@ class SquareService_getSquareStatus_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareThreadMid_args(BaseModel):
     request: Optional["GetSquareThreadMidRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareThreadMid_result(BaseModel):
     success: Optional["GetSquareThreadMidResponse"] = Field(alias="0", default=None)
@@ -4481,13 +3660,11 @@ class SquareService_getSquareThreadMid_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquareThread_args(BaseModel):
     request: Optional["GetSquareThreadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquareThread_result(BaseModel):
     success: Optional["GetSquareThreadResponse"] = Field(alias="0", default=None)
@@ -4496,13 +3673,11 @@ class SquareService_getSquareThread_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getSquare_args(BaseModel):
     request: Optional["GetSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getSquare_result(BaseModel):
     success: Optional["GetSquareResponse"] = Field(alias="0", default=None)
@@ -4511,13 +3686,11 @@ class SquareService_getSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_getUserSettings_args(BaseModel):
     request: Optional["GetUserSettingsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_getUserSettings_result(BaseModel):
     success: Optional["GetUserSettingsResponse"] = Field(alias="0", default=None)
@@ -4526,32 +3699,24 @@ class SquareService_getUserSettings_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_hideSquareMemberContents_args(BaseModel):
-    request: Optional["HideSquareMemberContentsRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["HideSquareMemberContentsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_hideSquareMemberContents_result(BaseModel):
-    success: Optional["HideSquareMemberContentsResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["HideSquareMemberContentsResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteIntoSquareChat_args(BaseModel):
     request: Optional["InviteIntoSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteIntoSquareChat_result(BaseModel):
     success: Optional["InviteIntoSquareChatResponse"] = Field(alias="0", default=None)
@@ -4560,13 +3725,11 @@ class SquareService_inviteIntoSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_inviteToChangeRole_args(BaseModel):
     request: Optional["InviteToChangeRoleRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteToChangeRole_result(BaseModel):
     success: Optional["InviteToChangeRoleResponse"] = Field(alias="0", default=None)
@@ -4575,13 +3738,11 @@ class SquareService_inviteToChangeRole_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_inviteToListen_args(BaseModel):
     request: "InviteToListenRequest" = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteToListen_result(BaseModel):
     success: "InviteToListenResponse" = Field(alias="0", default=None)
@@ -4590,13 +3751,11 @@ class SquareService_inviteToListen_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_inviteToLiveTalk_args(BaseModel):
     request: Optional["InviteToLiveTalkRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteToLiveTalk_result(BaseModel):
     success: Optional["InviteToLiveTalkResponse"] = Field(alias="0", default=None)
@@ -4605,13 +3764,11 @@ class SquareService_inviteToLiveTalk_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_inviteToSpeak_args(BaseModel):
     request: Optional["InviteToSpeakRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteToSpeak_result(BaseModel):
     success: Optional["InviteToSpeakResponse"] = Field(alias="0", default=None)
@@ -4620,13 +3777,11 @@ class SquareService_inviteToSpeak_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_inviteToSquare_args(BaseModel):
     request: Optional["InviteToSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_inviteToSquare_result(BaseModel):
     success: Optional["InviteToSquareResponse"] = Field(alias="0", default=None)
@@ -4635,13 +3790,11 @@ class SquareService_inviteToSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_joinLiveTalk_args(BaseModel):
     request: Optional["JoinLiveTalkRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_joinLiveTalk_result(BaseModel):
     success: Optional["JoinLiveTalkResponse"] = Field(alias="0", default=None)
@@ -4650,13 +3803,11 @@ class SquareService_joinLiveTalk_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_joinSquareChat_args(BaseModel):
     request: Optional["JoinSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_joinSquareChat_result(BaseModel):
     success: Optional["JoinSquareChatResponse"] = Field(alias="0", default=None)
@@ -4665,13 +3816,11 @@ class SquareService_joinSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_joinSquareThread_args(BaseModel):
     request: Optional["JoinSquareThreadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_joinSquareThread_result(BaseModel):
     success: Optional["JoinSquareThreadResponse"] = Field(alias="0", default=None)
@@ -4680,13 +3829,11 @@ class SquareService_joinSquareThread_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_joinSquare_args(BaseModel):
     request: Optional["JoinSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_joinSquare_result(BaseModel):
     success: Optional["JoinSquareResponse"] = Field(alias="0", default=None)
@@ -4695,32 +3842,24 @@ class SquareService_joinSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_kickOutLiveTalkParticipants_args(BaseModel):
-    request: Optional["KickOutLiveTalkParticipantsRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["KickOutLiveTalkParticipantsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_kickOutLiveTalkParticipants_result(BaseModel):
-    success: Optional["KickOutLiveTalkParticipantsResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["KickOutLiveTalkParticipantsResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_leaveSquareChat_args(BaseModel):
     request: Optional["LeaveSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_leaveSquareChat_result(BaseModel):
     success: Optional["LeaveSquareChatResponse"] = Field(alias="0", default=None)
@@ -4729,13 +3868,11 @@ class SquareService_leaveSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_leaveSquareThread_args(BaseModel):
     request: Optional["LeaveSquareThreadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_leaveSquareThread_result(BaseModel):
     success: Optional["LeaveSquareThreadResponse"] = Field(alias="0", default=None)
@@ -4744,13 +3881,11 @@ class SquareService_leaveSquareThread_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_leaveSquare_args(BaseModel):
     request: Optional["LeaveSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_leaveSquare_result(BaseModel):
     success: Optional["LeaveSquareResponse"] = Field(alias="0", default=None)
@@ -4759,13 +3894,11 @@ class SquareService_leaveSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_manualRepair_args(BaseModel):
     request: Optional["ManualRepairRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_manualRepair_result(BaseModel):
     success: Optional["ManualRepairResponse"] = Field(alias="0", default=None)
@@ -4774,13 +3907,11 @@ class SquareService_manualRepair_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_markAsRead_args(BaseModel):
     request: Optional["MarkAsReadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_markAsRead_result(BaseModel):
     success: Optional["MarkAsReadResponse"] = Field(alias="0", default=None)
@@ -4789,13 +3920,11 @@ class SquareService_markAsRead_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_markChatsAsRead_args(BaseModel):
     request: Optional["MarkChatsAsReadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_markChatsAsRead_result(BaseModel):
     success: Optional["MarkChatsAsReadResponse"] = Field(alias="0", default=None)
@@ -4804,13 +3933,11 @@ class SquareService_markChatsAsRead_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_markThreadsAsRead_args(BaseModel):
     request: Optional["MarkThreadsAsReadRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_markThreadsAsRead_result(BaseModel):
     success: Optional["MarkThreadsAsReadResponse"] = Field(alias="0", default=None)
@@ -4819,13 +3946,11 @@ class SquareService_markThreadsAsRead_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reactToMessage_args(BaseModel):
     request: Optional["ReactToMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reactToMessage_result(BaseModel):
     success: Optional["ReactToMessageResponse"] = Field(alias="0", default=None)
@@ -4834,13 +3959,11 @@ class SquareService_reactToMessage_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_refreshSubscriptions_args(BaseModel):
     request: Optional["RefreshSubscriptionsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_refreshSubscriptions_result(BaseModel):
     success: Optional["RefreshSubscriptionsResponse"] = Field(alias="0", default=None)
@@ -4849,13 +3972,11 @@ class SquareService_refreshSubscriptions_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_rejectSpeakers_args(BaseModel):
     request: Optional["RejectSpeakersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_rejectSpeakers_result(BaseModel):
     success: Optional["RejectSpeakersResponse"] = Field(alias="0", default=None)
@@ -4864,13 +3985,11 @@ class SquareService_rejectSpeakers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_rejectSquareMembers_args(BaseModel):
     request: Optional["RejectSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_rejectSquareMembers_result(BaseModel):
     success: Optional["RejectSquareMembersResponse"] = Field(alias="0", default=None)
@@ -4879,13 +3998,11 @@ class SquareService_rejectSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_rejectToSpeak_args(BaseModel):
     request: Optional["RejectToSpeakRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_rejectToSpeak_result(BaseModel):
     success: Optional["RejectToSpeakResponse"] = Field(alias="0", default=None)
@@ -4894,32 +4011,24 @@ class SquareService_rejectToSpeak_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_removeLiveTalkSubscription_args(BaseModel):
-    request: Optional["RemoveLiveTalkSubscriptionRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["RemoveLiveTalkSubscriptionRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_removeLiveTalkSubscription_result(BaseModel):
-    success: Optional["RemoveLiveTalkSubscriptionResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["RemoveLiveTalkSubscriptionResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_removeSubscriptions_args(BaseModel):
     request: Optional["RemoveSubscriptionsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_removeSubscriptions_result(BaseModel):
     success: Optional["RemoveSubscriptionsResponse"] = Field(alias="0", default=None)
@@ -4928,13 +4037,11 @@ class SquareService_removeSubscriptions_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportLiveTalkSpeaker_args(BaseModel):
     request: Optional["ReportLiveTalkSpeakerRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportLiveTalkSpeaker_result(BaseModel):
     success: Optional["ReportLiveTalkSpeakerResponse"] = Field(alias="0", default=None)
@@ -4943,13 +4050,11 @@ class SquareService_reportLiveTalkSpeaker_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportLiveTalk_args(BaseModel):
     request: Optional["ReportLiveTalkRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportLiveTalk_result(BaseModel):
     success: Optional["ReportLiveTalkResponse"] = Field(alias="0", default=None)
@@ -4958,13 +4063,11 @@ class SquareService_reportLiveTalk_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportMessageSummary_args(BaseModel):
     request: Optional["ReportMessageSummaryRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportMessageSummary_result(BaseModel):
     success: Optional["ReportMessageSummaryResponse"] = Field(alias="0", default=None)
@@ -4973,13 +4076,11 @@ class SquareService_reportMessageSummary_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportSquareChat_args(BaseModel):
     request: Optional["ReportSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportSquareChat_result(BaseModel):
     success: Optional["ReportSquareChatResponse"] = Field(alias="0", default=None)
@@ -4988,13 +4089,11 @@ class SquareService_reportSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportSquareMember_args(BaseModel):
     request: Optional["ReportSquareMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportSquareMember_result(BaseModel):
     success: Optional["ReportSquareMemberResponse"] = Field(alias="0", default=None)
@@ -5003,13 +4102,11 @@ class SquareService_reportSquareMember_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportSquareMessage_args(BaseModel):
     request: Optional["ReportSquareMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportSquareMessage_result(BaseModel):
     success: Optional["ReportSquareMessageResponse"] = Field(alias="0", default=None)
@@ -5018,13 +4115,11 @@ class SquareService_reportSquareMessage_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_reportSquare_args(BaseModel):
     request: Optional["ReportSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_reportSquare_result(BaseModel):
     success: Optional["ReportSquareResponse"] = Field(alias="0", default=None)
@@ -5033,13 +4128,11 @@ class SquareService_reportSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_requestToListen_args(BaseModel):
     request: "RequestToListenRequest" = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_requestToListen_result(BaseModel):
     success: "RequestToListenResponse" = Field(alias="0", default=None)
@@ -5048,13 +4141,11 @@ class SquareService_requestToListen_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_requestToSpeak_args(BaseModel):
     request: Optional["RequestToSpeakRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_requestToSpeak_result(BaseModel):
     success: Optional["RequestToSpeakResponse"] = Field(alias="0", default=None)
@@ -5063,49 +4154,37 @@ class SquareService_requestToSpeak_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_searchSquareChatMembers_args(BaseModel):
     request: Optional["SearchSquareChatMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_searchSquareChatMembers_result(BaseModel):
-    success: Optional["SearchSquareChatMembersResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["SearchSquareChatMembersResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_searchSquareChatMentionables_args(BaseModel):
-    request: Optional["SearchSquareChatMentionablesRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["SearchSquareChatMentionablesRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_searchSquareChatMentionables_result(BaseModel):
-    success: Optional["SearchSquareChatMentionablesResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["SearchSquareChatMentionablesResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_searchSquareMembers_args(BaseModel):
     request: Optional["SearchSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_searchSquareMembers_result(BaseModel):
     success: Optional["SearchSquareMembersResponse"] = Field(alias="0", default=None)
@@ -5114,13 +4193,11 @@ class SquareService_searchSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_searchSquares_args(BaseModel):
     request: Optional["SearchSquaresRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_searchSquares_result(BaseModel):
     success: Optional["SearchSquaresResponse"] = Field(alias="0", default=None)
@@ -5129,13 +4206,11 @@ class SquareService_searchSquares_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_sendMessage_args(BaseModel):
     request: Optional["SendMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_sendMessage_result(BaseModel):
     success: Optional["SendMessageResponse"] = Field(alias="0", default=None)
@@ -5144,30 +4219,24 @@ class SquareService_sendMessage_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_sendSquareThreadMessage_args(BaseModel):
     request: Optional["SendSquareThreadMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_sendSquareThreadMessage_result(BaseModel):
-    success: Optional["SendSquareThreadMessageResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["SendSquareThreadMessageResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_syncSquareMembers_args(BaseModel):
     request: Optional["SyncSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_syncSquareMembers_result(BaseModel):
     success: Optional["SyncSquareMembersResponse"] = Field(alias="0", default=None)
@@ -5176,32 +4245,24 @@ class SquareService_syncSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_unhideSquareMemberContents_args(BaseModel):
-    request: Optional["UnhideSquareMemberContentsRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["UnhideSquareMemberContentsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_unhideSquareMemberContents_result(BaseModel):
-    success: Optional["UnhideSquareMemberContentsResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["UnhideSquareMemberContentsResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_unsendMessage_args(BaseModel):
     request: Optional["UnsendMessageRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_unsendMessage_result(BaseModel):
     success: Optional["UnsendMessageResponse"] = Field(alias="0", default=None)
@@ -5210,13 +4271,11 @@ class SquareService_unsendMessage_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateLiveTalkAttrs_args(BaseModel):
     request: Optional["UpdateLiveTalkAttrsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateLiveTalkAttrs_result(BaseModel):
     success: Optional["UpdateLiveTalkAttrsResponse"] = Field(alias="0", default=None)
@@ -5225,13 +4284,11 @@ class SquareService_updateLiveTalkAttrs_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareAuthority_args(BaseModel):
     request: Optional["UpdateSquareAuthorityRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareAuthority_result(BaseModel):
     success: Optional["UpdateSquareAuthorityResponse"] = Field(alias="0", default=None)
@@ -5240,13 +4297,11 @@ class SquareService_updateSquareAuthority_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareChatMember_args(BaseModel):
     request: Optional["UpdateSquareChatMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareChatMember_result(BaseModel):
     success: Optional["UpdateSquareChatMemberResponse"] = Field(alias="0", default=None)
@@ -5255,13 +4310,11 @@ class SquareService_updateSquareChatMember_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareChat_args(BaseModel):
     request: Optional["UpdateSquareChatRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareChat_result(BaseModel):
     success: Optional["UpdateSquareChatResponse"] = Field(alias="0", default=None)
@@ -5270,13 +4323,11 @@ class SquareService_updateSquareChat_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareFeatureSet_args(BaseModel):
     request: Optional["UpdateSquareFeatureSetRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareFeatureSet_result(BaseModel):
     success: Optional["UpdateSquareFeatureSetResponse"] = Field(alias="0", default=None)
@@ -5285,32 +4336,24 @@ class SquareService_updateSquareFeatureSet_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareMemberRelation_args(BaseModel):
-    request: Optional["UpdateSquareMemberRelationRequest"] = Field(
-        alias="1", default=None
-    )
+    request: Optional["UpdateSquareMemberRelationRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareMemberRelation_result(BaseModel):
-    success: Optional["UpdateSquareMemberRelationResponse"] = Field(
-        alias="0", default=None
-    )
+    success: Optional["UpdateSquareMemberRelationResponse"] = Field(alias="0", default=None)
     e: Optional["SquareException"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareMember_args(BaseModel):
     request: Optional["UpdateSquareMemberRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareMember_result(BaseModel):
     success: Optional["UpdateSquareMemberResponse"] = Field(alias="0", default=None)
@@ -5319,13 +4362,11 @@ class SquareService_updateSquareMember_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquareMembers_args(BaseModel):
     request: Optional["UpdateSquareMembersRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquareMembers_result(BaseModel):
     success: Optional["UpdateSquareMembersResponse"] = Field(alias="0", default=None)
@@ -5334,13 +4375,11 @@ class SquareService_updateSquareMembers_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateSquare_args(BaseModel):
     request: Optional["UpdateSquareRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateSquare_result(BaseModel):
     success: Optional["UpdateSquareResponse"] = Field(alias="0", default=None)
@@ -5349,13 +4388,11 @@ class SquareService_updateSquare_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareService_updateUserSettings_args(BaseModel):
     request: Optional["UpdateUserSettingsRequest"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareService_updateUserSettings_result(BaseModel):
     success: Optional["UpdateUserSettingsResponse"] = Field(alias="0", default=None)
@@ -5364,124 +4401,94 @@ class SquareService_updateUserSettings_result(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class SquareState(IntEnum):
     ALIVE = 0
     DELETED = 1
     SUSPENDED = 2
 
-
 class SquareStatus(BaseModel):
-    member_count: Optional[int] = Field(alias="1", default=None)
-    join_request_count: Optional[int] = Field(alias="2", default=None)
-    last_join_request_at: Optional[int] = Field(alias="3", default=None)
-    open_chat_count: Optional[int] = Field(alias="4", default=None)
+    memberCount: int = Field(alias="1", default=0)
+    joinRequestCount: int = Field(alias="2", default=0)
+    lastJoinRequestAt: int = Field(alias="3", default=0)
+    openChatCount: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SquareThread(BaseModel):
-    thread_mid: Optional[str] = Field(alias="1", default=None)
-    chat_mid: Optional[str] = Field(alias="2", default=None)
-    square_mid: Optional[str] = Field(alias="3", default=None)
-    message_id: Optional[str] = Field(alias="4", default=None)
-    state: Optional[int] = Field(alias="5", default=None)
-    expires_at: Optional[int] = Field(alias="6", default=None)
-    read_only_at: Optional[int] = Field(alias="7", default=None)
-    revision: Optional[int] = Field(alias="8", default=None)
+    threadMid: Optional[str] = Field(alias="1", default=None)
+    chatMid: Optional[str] = Field(alias="2", default=None)
+    squareMid: Optional[str] = Field(alias="3", default=None)
+    messageId: Optional[str] = Field(alias="4", default=None)
+    state: Optional["SquareThreadState"] = Field(alias="5", default=None)
+    expiresAt: int = Field(alias="6", default=0)
+    readOnlyAt: int = Field(alias="7", default=0)
+    revision: int = Field(alias="8", default=0)
 
     class Config:
         populate_by_name = True
-
-
-class SquareThreadAttribute(IntEnum):
-    STATE = 1
-    EXPIRES_AT = 2
-    READ_ONLY_AT = 3
-
 
 class SquareThreadMember(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
-    thread_mid: Optional[str] = Field(alias="2", default=None)
-    chat_mid: Optional[str] = Field(alias="3", default=None)
-    revision: Optional[int] = Field(alias="4", default=None)
-    membership_state: Optional[int] = Field(alias="5", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
+    threadMid: Optional[str] = Field(alias="2", default=None)
+    chatMid: Optional[str] = Field(alias="3", default=None)
+    revision: int = Field(alias="4", default=0)
+    membershipState: Optional["SquareThreadMembershipState"] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class SquareThreadMembershipState(IntEnum):
     JOINED = 1
     LEFT = 2
 
-
 class SquareThreadState(IntEnum):
     ALIVE = 1
     DELETED = 2
-
 
 class SquareType(IntEnum):
     CLOSED = 0
     OPEN = 1
 
-
 class SquareUserSettings(BaseModel):
-    live_talk_notification: Optional[int] = Field(alias="1", default=None)
+    liveTalkNotification: Optional["BooleanState"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
-
-class SquareVisibility(BaseModel):
-    common: Optional[bool] = Field(alias="1", default=None)
-    search: Optional[bool] = Field(alias="2", default=None)
-
-    class Config:
-        populate_by_name = True
-
 
 class SubscriptionState(BaseModel):
-    subscription_id: Optional[int] = Field(alias="1", default=None)
-    ttl_millis: Optional[int] = Field(alias="2", default=None)
+    subscriptionId: int = Field(alias="1", default=0)
+    ttlMillis: int = Field(alias="2", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class SyncSquareMembersRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    square_members: Dict[str, int] = Field(alias="2", default_factory=dict)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    squareMembers: Dict[str, int] = Field(alias="2", default_factory=dict)
 
     class Config:
         populate_by_name = True
-
 
 class SyncSquareMembersResponse(BaseModel):
-    updated_square_members: List["SquareMember"] = Field(
-        alias="1", default_factory=list
-    )
+    updatedSquareMembers: List["SquareMember"] = Field(alias="1", default_factory=list)
 
     class Config:
         populate_by_name = True
-
 
 class TermsAgreement(BaseModel):
-    ai_qn_a_bot: Optional["_any"] = Field(alias="1", default=None)
+    aiQnABot: Optional[Any] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class TermsAgreementExtraInfo(BaseModel):
-    terms_type: Optional["TermsType"] = Field(alias="1", default=None)
-    terms_version: Optional[int] = Field(alias="2", default=None)
-    lan_url: Optional[str] = Field(alias="3", default=None)
+    termsType: Optional[Any] = Field(alias="1", default=None)
+    termsVersion: int = Field(alias="2", default=0)
+    lanUrl: Optional[str] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class TextButton(BaseModel):
     text: Optional[str] = Field(alias="1", default=None)
@@ -5489,30 +4496,26 @@ class TextButton(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class TextMessageAnnouncementContents(BaseModel):
-    message_id: Optional[str] = Field(alias="1", default=None)
+    messageId: Optional[str] = Field(alias="1", default=None)
     text: Optional[str] = Field(alias="2", default=None)
-    sender_square_member_mid: Optional[str] = Field(alias="3", default=None)
-    created_at: Optional[int] = Field(alias="4", default=None)
+    senderSquareMemberMid: Optional[str] = Field(alias="3", default=None)
+    createdAt: int = Field(alias="4", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class TryAgainLaterExtraInfo(BaseModel):
-    block_secs: Optional[int] = Field(alias="1", default=None)
+    blockSecs: int = Field(alias="1", default=0)
 
     class Config:
         populate_by_name = True
-
 
 class UnhideSquareMemberContentsRequest(BaseModel):
-    square_member_mid: Optional[str] = Field(alias="1", default=None)
+    squareMemberMid: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UnhideSquareMemberContentsResponse(BaseModel):
     pass
@@ -5520,30 +4523,26 @@ class UnhideSquareMemberContentsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class UnsendMessageRequest(BaseModel):
-    square_chat_mid: Optional[str] = Field(alias="2", default=None)
-    message_id: Optional[str] = Field(alias="3", default=None)
-    thread_mid: Optional[str] = Field(alias="4", default=None)
+    squareChatMid: Optional[str] = Field(alias="2", default=None)
+    messageId: Optional[str] = Field(alias="3", default=None)
+    threadMid: Optional[str] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UnsendMessageResponse(BaseModel):
-    unsent_message: Optional["SquareMessage"] = Field(alias="1", default=None)
+    unsentMessage: Optional["SquareMessage"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateLiveTalkAttrsRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="1", default_factory=list)
-    live_talk: Optional["LiveTalk"] = Field(alias="2", default=None)
+    updatedAttrs: List["LiveTalkAttribute"] = Field(alias="1", default_factory=list)
+    liveTalk: Optional["LiveTalk"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateLiveTalkAttrsResponse(BaseModel):
     pass
@@ -5551,157 +4550,136 @@ class UpdateLiveTalkAttrsResponse(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareAuthorityRequest(BaseModel):
-    update_attributes: List[int] = Field(alias="2", default_factory=list)
+    updateAttributes: List["SquareAuthorityAttribute"] = Field(alias="2", default_factory=list)
     authority: Optional["SquareAuthority"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareAuthorityResponse(BaseModel):
-    updatd_attributes: List[int] = Field(alias="1", default_factory=list)
+    updatdAttributes: List[int] = Field(alias="1", default_factory=list)
     authority: Optional["SquareAuthority"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareChatMemberRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="2", default_factory=list)
-    chat_member: Optional["SquareChatMember"] = Field(alias="3", default=None)
+    updatedAttrs: List["SquareChatMemberAttribute"] = Field(alias="2", default_factory=list)
+    chatMember: Optional["SquareChatMember"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareChatMemberResponse(BaseModel):
-    updated_chat_member: Optional["SquareChatMember"] = Field(alias="1", default=None)
+    updatedChatMember: Optional["SquareChatMember"] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareChatRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="2", default_factory=list)
-    square_chat: Optional["SquareChat"] = Field(alias="3", default=None)
+    updatedAttrs: List["SquareChatAttribute"] = Field(alias="2", default_factory=list)
+    squareChat: Optional["SquareChat"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareChatResponse(BaseModel):
-    updated_attrs: List[int] = Field(alias="1", default_factory=list)
-    square_chat: Optional["SquareChat"] = Field(alias="2", default=None)
+    updatedAttrs: List[int] = Field(alias="1", default_factory=list)
+    squareChat: Optional["SquareChat"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareFeatureSetRequest(BaseModel):
-    update_attributes: List[int] = Field(alias="2", default_factory=list)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="3", default=None)
+    updateAttributes: List["SquareFeatureSetAttribute"] = Field(alias="2", default_factory=list)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareFeatureSetResponse(BaseModel):
-    update_attributes: List[int] = Field(alias="1", default_factory=list)
-    square_feature_set: Optional["SquareFeatureSet"] = Field(alias="2", default=None)
+    updateAttributes: List[int] = Field(alias="1", default_factory=list)
+    squareFeatureSet: Optional["SquareFeatureSet"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareMemberRelationRequest(BaseModel):
-    square_mid: Optional[str] = Field(alias="2", default=None)
-    target_square_member_mid: Optional[str] = Field(alias="3", default=None)
-    updated_attrs: List[int] = Field(alias="4", default_factory=list)
+    squareMid: Optional[str] = Field(alias="2", default=None)
+    targetSquareMemberMid: Optional[str] = Field(alias="3", default=None)
+    updatedAttrs: List[int] = Field(alias="4", default_factory=list)
     relation: Optional["SquareMemberRelation"] = Field(alias="5", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareMemberRelationResponse(BaseModel):
-    square_mid: Optional[str] = Field(alias="1", default=None)
-    target_square_member_mid: Optional[str] = Field(alias="2", default=None)
-    updated_attrs: List[int] = Field(alias="3", default_factory=list)
+    squareMid: Optional[str] = Field(alias="1", default=None)
+    targetSquareMemberMid: Optional[str] = Field(alias="2", default=None)
+    updatedAttrs: List[int] = Field(alias="3", default_factory=list)
     relation: Optional["SquareMemberRelation"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareMemberRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="2", default_factory=list)
-    updated_preference_attrs: List[int] = Field(alias="3", default_factory=list)
-    square_member: Optional["SquareMember"] = Field(alias="4", default=None)
+    updatedAttrs: List["SquareMemberAttribute"] = Field(alias="2", default_factory=list)
+    updatedPreferenceAttrs: List["SquarePreferenceAttribute"] = Field(alias="3", default_factory=list)
+    squareMember: Optional["SquareMember"] = Field(alias="4", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateSquareMemberResponse(BaseModel):
-    updated_attrs: List[int] = Field(alias="1", default_factory=list)
-    square_member: Optional["SquareMember"] = Field(alias="2", default=None)
-    updated_preference_attrs: List[int] = Field(alias="3", default_factory=list)
+    updatedAttrs: List[int] = Field(alias="1", default_factory=list)
+    squareMember: Optional["SquareMember"] = Field(alias="2", default=None)
+    updatedPreferenceAttrs: List[int] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareMembersRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="2", default_factory=list)
+    updatedAttrs: List["SquareMemberAttribute"] = Field(alias="2", default_factory=list)
     members: List["SquareMember"] = Field(alias="3", default_factory=list)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareMembersResponse(BaseModel):
-    updated_attrs: List[int] = Field(alias="1", default_factory=list)
+    updatedAttrs: List[int] = Field(alias="1", default_factory=list)
     editor: Optional["SquareMember"] = Field(alias="2", default=None)
     members: Dict[str, "SquareMember"] = Field(alias="3", default_factory=dict)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareRequest(BaseModel):
-    updated_attrs: List[int] = Field(alias="2", default_factory=list)
+    updatedAttrs: List["SquareAttribute"] = Field(alias="2", default_factory=list)
     square: Optional["Square"] = Field(alias="3", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateSquareResponse(BaseModel):
-    updated_attrs: List[int] = Field(alias="1", default_factory=list)
+    updatedAttrs: List[int] = Field(alias="1", default_factory=list)
     square: Optional["Square"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
 
-
 class UpdateUserSettingsRequest(BaseModel):
-    updated_attrs: List["SquareUserSettingsAttribute"] = Field(
-        alias="1", default_factory=list
-    )
-    user_settings: Optional["SquareUserSettings"] = Field(alias="2", default=None)
+    updatedAttrs: List[Any] = Field(alias="1", default_factory=list)
+    userSettings: Optional["SquareUserSettings"] = Field(alias="2", default=None)
 
     class Config:
         populate_by_name = True
-
 
 class UpdateUserSettingsResponse(BaseModel):
     pass
 
     class Config:
         populate_by_name = True
-
 
 class UrlButton(BaseModel):
     text: Optional[str] = Field(alias="1", default=None)
@@ -5710,36 +4688,8 @@ class UrlButton(BaseModel):
     class Config:
         populate_by_name = True
 
-
 class UserRestrictionExtraInfo(BaseModel):
-    link_url: Optional[str] = Field(alias="1", default=None)
+    linkUrl: Optional[str] = Field(alias="1", default=None)
 
     class Config:
         populate_by_name = True
-
-
-class getSquareBot_args(BaseModel):
-    req: Optional["GetSquareBotRequest"] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
-class getSquareBot_result(BaseModel):
-    success: Optional["GetSquareBotResponse"] = Field(alias="0", default=None)
-    e: Optional["BotException"] = Field(alias="1", default=None)
-
-    class Config:
-        populate_by_name = True
-
-
-class wm_EnumC38497a(IntEnum):
-    UNKNOWN = 0
-    INTERNAL_ERROR = 500
-    ILLEGAL_ARGUMENT = 400
-    AUTHENTICATION_FAILED = 401
-    BOT_NOT_FOUND = 1
-    BOT_NOT_AVAILABLE = 2
-    NOT_A_MEMBER = 3
-    SQUARECHAT_NOT_FOUND = 4
-    FORBIDDEN = 5

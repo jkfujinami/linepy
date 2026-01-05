@@ -1,7 +1,7 @@
 from linepy.base import BaseClient
 from linepy.models.square import FindSquareByInvitationTicketResponse
 
-client = BaseClient(device="IOSIPAD", storage=".linepy_test.json")
+client = BaseClient(device="ANDROID", storage=".linepy_bot.json")
 if not client.auto_login():
     print("❌ Need login")
     client.login_with_qr()
@@ -9,9 +9,9 @@ if not client.auto_login():
 print(f"Logged in as: {client.profile.display_name}")
 
 try:
-    ticket = "juhuuv_G3WCk1KRUeJKpRKCi_9mx9lB4lJJ2dQ"
+    ticket = "IFW8cbNn6-FksnF2rTS-x0T_CuHJG88VxQY9zg"
     print(f"Finding square by ticket: {ticket}")
-    response = client.square.find_square_by_invitation_ticket(ticket)
+    response = client.square.findSquareByInvitationTicketV2(ticket)
 
     if response.chat:
         target_chat_mid = response.chat.squareChatMid
@@ -21,9 +21,9 @@ try:
         # Send message test
         print("Sending message...")
         try:
-            res = client.square.send_message(target_chat_mid, "Hello from LINEPY!")
             print("✅ Message sent!")
-            print(res)
+            client.square.sendSquareMessage(target_chat_mid, "Hello from linepy!")
+
         except Exception as e:
             print(f"❌ Send Error: {e}")
     else:

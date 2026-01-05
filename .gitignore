@@ -208,7 +208,8 @@ __marimo__/
 CHRLINE/
 CHRLINE-Patch/
 linejs/
-base/
+resource/
+
 # LINEPY specific
 .linepy_storage.json
 .linepy_test.json

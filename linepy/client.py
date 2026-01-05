@@ -150,3 +150,97 @@ class Client:
             Sent message object
         """
         return self.base.talk.send_message(to, text)
+
+    def send_image(self, to: str, path: str) -> str:
+        """
+        Send an image.
+
+        Args:
+            to: Target mid (Square Chat)
+            path: Path to image file
+
+        Returns:
+            Object ID
+        """
+        return self._send_media(to, path, "image")
+
+    def start_push(self, chat_mids: List[str], on_event: Callable = None, fetch_type: int = 1):
+        """
+        Start LEGY Push for realtime event reception.
+
+        Args:
+            chat_mids: Square chat MIDs to watch
+            on_event: Callback function(service_type, event_data)
+            fetch_type: 1=Default (Sync), 2=Prefetch By Server
+        """
+        from .push import PushManager
+
+        if self.push is None:
+            self.push = PushManager(self)
+
+        for mid in chat_mids:
+            self.push.add_watched_chat(mid)
+
+        if on_event:
+            self.push.on_event = on_event
+
+        self.push.start(services=[3], fetch_type=fetch_type)  # Square only
+
+    def send_video(self, to: str, path: str) -> str:
+        """
+        Send a video.
+
+        Args:
+            to: Target mid (Square Chat)
+            path: Path to video file
+
+        Returns:
+            Object ID
+        """
+        return self._send_media(to, path, "video")
+
+    def send_audio(self, to: str, path: str) -> str:
+        """
+        Send an audio.
+
+        Args:
+            to: Target mid (Square Chat)
+            path: Path to audio file
+
+        Returns:
+            Object ID
+        """
+        return self._send_media(to, path, "audio")
+
+    def send_file(self, to: str, path: str, filename: Optional[str] = None) -> str:
+        """
+        Send a file.
+
+        Args:
+            to: Target mid (Square Chat)
+            path: Path to file
+            filename: Optional filename override
+
+        Returns:
+            Object ID
+        """
+        return self._send_media(to, path, "file", filename=filename)
+
+    def _send_media(
+        self,
+        to: str,
+        path: str,
+        content_type: str,
+        filename: Optional[str] = None
+    ) -> str:
+        """Internal media sender"""
+        # Check if target is a Square Chat (starts with 'm')
+        if to.startswith("m"):
+            return self.base.obs.upload_obj_square_chat(
+                square_chat_mid=to,
+                path_or_bytes=path,
+                content_type=content_type,
+                filename=filename
+            )
+        else:
+            raise NotImplementedError("Media sending is currently only supported for Square Chats (mid starts with 'm')")

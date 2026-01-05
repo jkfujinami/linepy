@@ -249,6 +249,27 @@ class TokenManager:
         """Clear all stored tokens"""
         self.storage.clear()
 
+    def get_next_reqseq(self, key: str = "reqseq") -> int:
+        """
+        Get and increment the next request sequence number.
+
+        Args:
+            key: Key identifier for the sequence (default: "reqseq")
+
+        Returns:
+            The new sequence number (int)
+        """
+        key_name = f"{key}_seq"
+        current = self.storage.get(key_name)
+        if current is None:
+            current = 0
+        else:
+            current = int(current)
+
+        next_val = current + 1
+        self.storage.set(key_name, next_val)
+        return next_val
+
 
 # Convenient default storage path
 DEFAULT_STORAGE_PATH = ".linepy_storage.json"

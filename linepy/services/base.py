@@ -36,6 +36,7 @@ class ServiceBase:
         method: str,
         params: Optional[List] = None,
         response_model: Optional[Type[T]] = None,
+        endpoint: Optional[str] = None
     ) -> Any:
         """Make an API call"""
         from ..thrift import write_thrift
@@ -43,10 +44,12 @@ class ServiceBase:
         if params is None:
             params = []
 
+        target_endpoint = endpoint if endpoint is not None else self.ENDPOINT
+
         data = write_thrift(params, method, self.PROTOCOL)
 
         response = self.client.request.request(
-            path=self.ENDPOINT,
+            path=target_endpoint,
             data=data,
             protocol=self.PROTOCOL,
         )
@@ -70,8 +73,11 @@ class ServiceBase:
         """Validate and parse response data into Pydantic model."""
         if response_model and data is not None:
             # Convert integer keys to string keys for Pydantic alias compatibility
+
+            # Convert integer keys to string keys for Pydantic alias compatibility
             if isinstance(data, dict):
                 data = _convert_int_keys_to_str(data)
+
             return response_model.model_validate(data)
 
         return data
