@@ -5,13 +5,14 @@ Based on linejs implementation.
 Supports Binary (protocol 3) and Compact (protocol 4) protocols.
 """
 
+import logging
+import os
 import struct
 from typing import Any, Tuple, List, Dict, Optional, Union
 
+logger = logging.getLogger("linepy.thrift")
 
-import os
-
-# Debug mode
+# Debug mode (controls verbose hex dumps in debug_log)
 DEBUG = os.getenv("LINEPY_DEBUG", "false").lower() == "true"
 
 
@@ -22,15 +23,16 @@ def set_debug(enabled: bool):
 
 
 def debug_log(msg: str, data: Any = None):
-    """Print debug message"""
+    """Debug log (only when DEBUG=True and logger level is DEBUG)"""
     if DEBUG:
         if data is not None:
             if isinstance(data, bytes):
-                print(f"[DEBUG] {msg}: {data.hex()}")
+                logger.debug("%s: %s", msg, data.hex()[:50])
             else:
-                print(f"[DEBUG] {msg}: {data}")
+                logger.debug("%s: %s", msg, data)
         else:
-            print(f"[DEBUG] {msg}")
+            logger.debug(msg)
+
 
 
 class TType:
@@ -282,6 +284,31 @@ def write_thrift(params: List, method_name: str, protocol: int = 4) -> bytes:
     result = header + body
     debug_log("request bytes", result)
     return result
+
+
+def read_thrift(data: bytes, protocol: int = 4) -> Any:
+    """
+    Read Thrift response.
+
+    Args:
+        data: Thrift-encoded bytes
+        protocol: 3=binary, 4=compact
+
+    Returns:
+        Parsed data (Dict or List or Primitives)
+    """
+    if protocol == 4:
+        reader = CompactReader(data)
+    else:
+        reader = ThriftReader(data)
+
+    # Try to skip header if present (Compact starts with 0x82 0x21 or simple struct)
+    # If the first byte is 0x82, it's a message header, we use parse_response()
+    if data and data[0] == 0x82:
+        return reader.parse_response()
+
+    # Otherwise, it might be a raw struct
+    return reader.read_struct()
 
 
 def _write_struct(writer: CompactWriter, params: Union[List, Any]):

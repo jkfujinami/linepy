@@ -44,6 +44,10 @@ DEFAULT_VERSIONS = {
 # Devices that support token v3
 TOKEN_V3_SUPPORT = ["DESKTOPWIN", "DESKTOPMAC", "IOS", "ANDROID"]
 
+# Primary devices (should not refresh token if using extracted token)
+PRIMARY_DEVICES = ["ANDROID", "IOS"]
+
+
 
 def get_device_details(
     device: Device,

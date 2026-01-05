@@ -4,7 +4,10 @@ Base Client for LINEPY
 Low-level API client that handles authentication and service calls.
 """
 
+import logging
 from typing import Optional, Dict, Any, Callable, List, Union
+
+logger = logging.getLogger("linepy")
 
 from .config import Device, get_device_details, build_app_name, is_v3_support
 from .request import RequestClient
@@ -111,6 +114,21 @@ class BaseClient:
         self.channel = ChannelService(self)
         self.timeline = Timeline(self)
 
+        # OBS Client (Object Storage)
+        from .obs import ObsBase
+        self.obs = ObsBase(self)
+
+        # Auth service
+        from .services.auth import AuthService
+        self.auth_service = AuthService(self)
+
+        # Square helper (high-level APIs)
+        from .helpers.square import SquareHelper
+        self.square_helper = SquareHelper(self)
+
+        # Push manager (LEGY Push for realtime events)
+        self.push: Optional["PushManager"] = None  # Lazy init
+
         # User state
         self.auth_token: Optional[str] = None
         self.mid: Optional[str] = None
@@ -157,7 +175,7 @@ class BaseClient:
         self.profile = self.get_profile()
         self.mid = self.profile.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
         return auth_token
 
     def login_with_qr(self, v3: Optional[bool] = None, save: bool = True) -> str:
@@ -192,7 +210,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
         return auth_token
 
     def login_with_token(self, auth_token: str, save: bool = True):
@@ -217,7 +235,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
 
     def auto_login(self) -> bool:
         """
@@ -240,10 +258,10 @@ class BaseClient:
             self.profile = self.get_profile()
             self.mid = self.profile.mid
 
-            print(f"Auto-logged in as: {self.profile.display_name}")
+            logger.info("Auto-logged in as: %s", self.profile.display_name)
             return True
         except Exception as e:
-            print(f"Auto-login failed: {e}")
+            logger.warning("Auto-login failed: %s", e)
             return False
 
     def logout(self, clear_storage: bool = True):
@@ -279,9 +297,90 @@ class BaseClient:
         return self.auth_token is not None
 
     def set_auth_token(self, token: str):
-        """Set authentication token"""
+        """Set authentication token for requests"""
         self.auth_token = token
         self.request.auth_token = token
+        self.token_manager.auth_token = token
+
+    def refresh_access_token(self) -> str:
+        """
+        Refresh the current access token.
+
+        Using the stored refresh token, it fetches a new access token
+        and updates the client authentication state.
+
+        NOTE: Disabled for Primary Devices (ANDROID, IOS) to avoid
+        session conflicts with the actual physical device.
+
+        Returns:
+            New access token string
+        """
+        from .config import PRIMARY_DEVICES
+
+        if self.device in PRIMARY_DEVICES:
+            print(f"[WARN] Token refresh is DISABLED for Primary Device ({self.device})")
+            print("       Refreshing would invalidate the session on your physical phone.")
+            print("       If the token is expired, please extract a new one via ADB.")
+            # Return current token as is (effectively doing nothing)
+            return self.auth_token if self.auth_token else ""
+
+        refresh_token = self.token_manager.refresh_token
+        if not refresh_token:
+            # 抽出したトークン(JWT)からリフレッシュトークンを取り出すロジックが必要だが
+            # 現状はrefresh_tokenとして保存されていることを前提とする
+            raise LineException(0, "No refresh token available")
+
+        try:
+            response = self.auth_service.refresh(refresh_token)
+
+            new_access_token = response.access_token
+            new_refresh_token = response.refresh_token
+
+            if new_access_token:
+                print("[Auth] Access token refreshed")
+                self.set_auth_token(new_access_token)
+
+            if new_refresh_token:
+                print("[Auth] Refresh token updated")
+                self.token_manager.refresh_token = new_refresh_token
+            else:
+                # リフレッシュトークンが変わらない場合もあるが、Durationだけ更新されるかも
+                pass
+
+            return new_access_token
+
+        except Exception as e:
+            raise LineException(0, f"Failed to refresh token: {e}")
+
+    # ========== Push (Realtime Events) ==========
+
+    def start_push(self, chat_mids: List[str], on_event: Callable = None, fetch_type: int = 1):
+        """
+        Start LEGY Push for realtime event reception.
+
+        Args:
+            chat_mids: Square chat MIDs to watch
+            on_event: Callback function(service_type, event_data)
+            fetch_type: 1=Default (Sync), 2=Prefetch By Server
+        """
+        from .push import PushManager
+
+        if self.push is None:
+            self.push = PushManager(self)
+
+        for mid in chat_mids:
+            self.push.add_watched_chat(mid)
+
+        if on_event:
+            self.push.on_event = on_event
+
+        self.push.start(services=[3], fetch_type=fetch_type)  # Square only
+        logger.info("Push started watching %d chat(s)", len(chat_mids))
+
+    def stop_push(self):
+        """Stop LEGY Push."""
+        if self.push:
+            self.push.stop()
 
     # ========== Service Calls ==========
 
