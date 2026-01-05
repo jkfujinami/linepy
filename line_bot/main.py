@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from linepy import BaseClient
 
 from core import Bot
-from modules import TestModule, ReadCheckerModule, BanHandlerModule, AdminModule
+from modules import TestModule, ReadCheckerModule, BanHandlerModule, AdminModule, JoinModule
 
 
 # ログ設定（DEBUGで詳細ログ、INFOで通常）
@@ -72,6 +72,7 @@ def main():
     bot.register(AdminModule)
     bot.register(TestModule)
     bot.register(ReadCheckerModule)
+    bot.register(JoinModule)
 
     # チャットMIDを取得
     chat_mids = []

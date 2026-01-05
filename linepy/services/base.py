@@ -40,6 +40,7 @@ class ServiceBase:
     ) -> Any:
         """Make an API call"""
         from ..thrift import write_thrift
+        import httpx
 
         if params is None:
             params = []
@@ -48,13 +49,30 @@ class ServiceBase:
 
         data = write_thrift(params, method, self.PROTOCOL)
 
-        response = self.client.request.request(
-            path=target_endpoint,
-            data=data,
-            protocol=self.PROTOCOL,
-        )
+        try:
+            response = self.client.request.request(
+                path=target_endpoint,
+                data=data,
+                protocol=self.PROTOCOL,
+            )
+        except httpx.HTTPStatusError as e:
+            # HTTP error (4xx, 5xx)
+            from ..base import LineException
 
-        # Check for error
+            # Try to parse response body for more info
+            body = ""
+            try:
+                body = e.response.text[:500]  # First 500 chars
+            except:
+                pass
+
+            raise LineException(
+                code=e.response.status_code,
+                message=f"HTTP {e.response.status_code}: {e.response.reason_phrase}",
+                metadata={"body": body, "url": str(e.request.url)},
+            )
+
+        # Check for Thrift-level error
         if isinstance(response, dict) and "error" in response:
             err = response["error"]
             from ..base import LineException
