@@ -414,6 +414,7 @@ class SquareService(ServiceBase):
         displayName: Any,
         ableToReceiveMessage: bool = False,
         passCode: Optional[str] = None,
+        joinMessage: Optional[str] = None,
         squareChatMid: Optional[str] = None,
         claimAdult: Optional[int] = None,
     ) -> "JoinSquareResponse":
@@ -434,6 +435,7 @@ class SquareService(ServiceBase):
                 [11, 1, passCode],
             ]
             squareJoinMethodValue = [
+                [11, 1, joinMessage],
                 [12, 2, codeValue],
             ]
             params.append([12, 5, squareJoinMethodValue])

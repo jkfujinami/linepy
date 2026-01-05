@@ -1,0 +1,125 @@
+# -*- coding: utf-8 -*-
+"""
+Admin module for LINE OC Bot
+
+管理用コマンド（BAN, Kick, Role等）を提供。
+"""
+
+import logging
+from typing import Optional, List
+
+from core.context import MessageContext
+from core.base import BaseModule
+from core.storage import Role
+
+logger = logging.getLogger("line_bot.admin")
+
+
+class AdminModule(BaseModule):
+    """
+    管理モジュール
+
+    Commands:
+        !mute <MID|mention>    - ユーザーをミュート (ADMIN以上)
+        !role <MID|mention> <role> - ユーザーの権限を変更 (ADMIN以上)
+    """
+
+    name = "admin"
+    description = "管理用コマンド"
+    priority = 60  # 通常モジュールより少し高め
+
+    def on_message(self, ctx: MessageContext) -> bool:
+        if not ctx.command:
+            return False
+
+        cmd = ctx.command.lower()
+
+        # 権限チェックを伴うディスパッチ
+        if cmd == "mute" and ctx.has_permission(Role.MODERATOR):
+            return self._cmd_mute(ctx)
+        elif cmd == "role" and ctx.has_permission(Role.ADMIN):
+            return self._cmd_role(ctx)
+        return False
+
+    def _get_target_mids(self, ctx: MessageContext) -> Optional[str]:
+        """引数またはメンションから MID を取得"""
+        if ctx.mentions:
+            mids = []
+            for i in ctx.mentions:
+                mids.append(i['M'])
+            return mids
+        return None
+
+    def _cmd_mute(self, ctx: MessageContext) -> bool:
+        """!mute <MID|mention>"""
+        target_mids = self._get_target_mids(ctx)
+        if not target_mids:
+            ctx.reply("⚠️ 対象をメンションで指定してください。")
+            return True
+
+        try:
+            for i in target_mids:
+                storage = self.bot.get_square_storage(ctx.square_mid)
+                storage.set_role(i, Role.BANNED)
+            ctx.reply(f"✅ ミュートに追加しました: {i[:12]}...")
+            logger.info("User %s muted by %s in %s", i, ctx.sender_mid, ctx.square_mid)
+        except Exception as e:
+            ctx.reply(f"❌ ミュートの追加に失敗しました: {e}")
+
+        return True
+
+    def _cmd_role(self, ctx: MessageContext) -> bool:
+        """!role <MID|mention> <role_name>"""
+        args = ctx.command_args.split()
+        if len(args) < 2 and (not ctx.mentions or len(args) < 1):
+            ctx.reply("⚠️ 使い方: !role <mention> <role_name>\n役職: guest, member, trusted, moderator, admin")
+            return True
+
+        target_mids = self._get_target_mids(ctx)
+        role_name = args[-1].lower() # 最後の引数を役職名とみなす
+
+        role_map = {
+            "banned": Role.BANNED,
+            "guest": Role.GUEST,
+            "member": Role.MEMBER,
+            "trusted": Role.TRUSTED,
+            "moderator": Role.MODERATOR,
+            "admin": Role.ADMIN,
+        }
+
+        if role_name not in role_map:
+            ctx.reply(f"❌ 不正な役職名です: {role_name},役職例: guest, member, trusted, moderator, admin")
+            return True
+
+        new_role = role_map[role_name]
+
+        # 権限レベルチェック（自分以上の権限は設定できない）
+        my_role = ctx.get_role()
+        if new_role >= my_role and not self.bot.global_storage.is_global_admin(ctx.sender_mid):
+            ctx.reply("❌ 自分以上の権限を設定することはできません。")
+            return True
+        for i in target_mids:
+            storage = self.bot.get_square_storage(ctx.square_mid)
+            storage.set_role(i, new_role)
+        ctx.reply(f"✅ 役職を更新しました: {new_role.display_name}\n💃Target: \n{self._get_names(target_mids)}")
+        return True
+
+
+    def _get_names(self, mids: List[str]) -> str:
+        """メンバー名一覧を取得"""
+        if not mids:
+            return "（なし）"
+
+        names = []
+        for mid in mids[:30]:
+            try:
+                m = self.client.square.getSquareMember(squareMemberMid=mid)
+                name = m.squareMember.displayName
+                names.append(f"・{name}")
+            except Exception:
+                names.append("・???")
+
+        if len(mids) > 30:
+            names.append(f"...他{len(mids)-30}人")
+
+        return "\n".join(names)

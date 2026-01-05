@@ -470,3 +470,8 @@ class SquareHelper:
             Square MID string
         """
         return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.squareMid
+
+    def joinSquareByInvitationTicket(self, InvitationTicket: str,displayName:str,displayImagePath:str) -> Any:
+        squareMid=self.getSquareMidbyInvitationTicket(InvitationTicket)
+
+        return self.square.joinSquare(squareMid=squareMid,displayName=displayName)

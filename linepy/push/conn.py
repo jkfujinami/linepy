@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Optional
 try:
     import h2.connection
     from h2.config import H2Configuration
-    from h2.events import DataReceived, StreamEnded, StreamReset
+    from h2.events import DataReceived, StreamEnded, StreamReset, PingAckReceived
     H2_AVAILABLE = True
 except ImportError:
     H2_AVAILABLE = False
@@ -55,6 +55,8 @@ class PushConnection:
         self.not_fin_payloads = {}
 
         self._last_send_time = 0.0
+        self._last_ping_send_time = 0.0
+        self._awaiting_pong = False
         self._closed = False
 
     @property
@@ -76,6 +78,9 @@ class PushConnection:
 
         sock = socket.create_connection((host, port))
         self.writer = ctx.wrap_socket(sock, server_hostname=host)
+
+        # タイムアウトを設定（ブロッキング回避）
+        self.writer.settimeout(5.0)
 
         config = H2Configuration(client_side=True)
         self.conn = h2.connection.H2Connection(config=config)
@@ -131,16 +136,53 @@ class PushConnection:
         header = struct.pack("!HB", size & 32767, packet_type)
         return header + payload
 
+    def send_h2_ping(self):
+        """Send HTTP/2 PING frame for keep-alive."""
+        if self.conn:
+            self.conn.ping(b'KEEP_ALI')
+            self.send_data_to_socket()
+            self._last_ping_send_time = time.time()
+            logger.debug("Sent H2 PING")
+
     def read_loop(self):
         """
         Read loop for handling incoming data.
         Blocks until connection is closed.
         """
+        self._last_receive_time = time.time()
+
         try:
             response_stream_ended = False
             while not response_stream_ended and not self._closed:
-                # Read raw data from socket
-                data = self.writer.recv(65536)
+                try:
+                    # Read raw data from socket
+                    data = self.writer.recv(65536)
+                    self._last_receive_time = time.time()
+                except socket.timeout:
+                    # タイムアウト（正常なアイドル状態含む）
+                    now = time.time()
+
+                    # Keep-Alive Ping (every 30s)
+                    if now - self._last_ping_send_time > 30:
+                        if self._awaiting_pong:
+                            # 前回のPingに対する応答がない -> 切断
+                            logger.warning("Ping timeout (no PONG received). Reconnecting...")
+                            break
+
+                        try:
+                            self.send_h2_ping()
+                            self._awaiting_pong = True
+                        except Exception as e:
+                            logger.warning("Failed to send keep-alive ping: %s", e)
+                            break
+
+                    # 最後の受信から一定時間以上経過していたら切断とみなす
+                    idle_time = now - self._last_receive_time
+                    if idle_time > 120:  # 2分間パケットなし
+                         logger.warning("Connection timed out (idle for %.1fs)", idle_time)
+                         break
+                    continue
+
                 if not data:
                     logger.debug("Socket closed by server")
                     break
@@ -160,6 +202,9 @@ class PushConnection:
                     elif isinstance(event, StreamReset):
                         logger.warning("Stream reset by server: %s", event.error_code)
                         raise RuntimeError(f"Stream reset: {event.error_code}")
+                    elif isinstance(event, PingAckReceived):
+                        self._awaiting_pong = False
+                        logger.debug("Received H2 PONG")
 
                 self.send_data_to_socket()
 
