@@ -298,8 +298,8 @@ class Bot:
         """
         self.watched_chats = chat_mids
 
-        logger.info("Starting bot with %d chat(s)...", len(chat_mids))
-        self.client.start_push(
+        logger.info("Starting bot with %d chat(s) [Polling mode]...", len(chat_mids))
+        self.client.start_polling(
             chat_mids,
             on_event=self._on_push_event,
             fetch_type=fetch_type,
@@ -308,7 +308,7 @@ class Bot:
     def stop(self) -> None:
         """Bot を停止"""
         logger.info("Stopping bot...")
-        self.client.stop_push()
+        self.client.stop_polling()
 
         # モジュールをアンロード
         for module in self.modules:

@@ -18,7 +18,12 @@ class LineException(Exception):
         self.code = code
         self.message = message
         self.metadata = metadata or {}
-        super().__init__(f"[{code}] {message}")
+
+        # Build detailed message
+        msg = f"[{code}] {message}"
+        if self.metadata:
+            msg += f"\nMetadata: {self.metadata}"
+        super().__init__(msg)
 
 
 class BaseClient:
@@ -378,6 +383,36 @@ class BaseClient:
         """Stop LEGY Push."""
         if self.push:
             self.push.stop()
+
+    # ========== Polling (High-frequency alternative) ==========
+
+    def start_polling(self, chat_mids: List[str], on_event: Callable = None, fetch_type: int = 2):
+        """
+        Start high-frequency polling for Square events.
+
+        Alternative to Push connection. Creates one thread per chat
+        for maximum throughput.
+
+        Args:
+            chat_mids: Square chat MIDs to watch
+            on_event: Callback function(service_type, event_data)
+            fetch_type: 1=Default, 2=Prefetch By Server (recommended)
+        """
+        from .polling import PollingManager
+
+        if not hasattr(self, 'polling') or self.polling is None:
+            self.polling = PollingManager(self)
+
+        self.polling.start(
+            watched_chats=chat_mids,
+            on_event=on_event,
+            fetch_type=fetch_type,
+        )
+
+    def stop_polling(self):
+        """Stop polling."""
+        if hasattr(self, 'polling') and self.polling:
+            self.polling.stop()
 
     # ========== Service Calls ==========
 
