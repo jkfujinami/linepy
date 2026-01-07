@@ -45,20 +45,21 @@ class MessageContext:
 
     # ========== 便利メソッド ==========
 
-    def reply(self, text: str) -> None:
-        """返信を送信"""
-        self.bot.client.square.sendSquareMessage(
+    def reply(self, text: str, append_id: bool = True) -> None:
+        """返信を送信（ランダムID付きでBAN回避）"""
+        self.bot.client.square_helper.sendMessage(
             squareChatMid=self.chat_mid,
             text=text,
             relatedMessageId=self.message_id,
+            appendRandomId=append_id,
         )
 
-    def send(self, text: str) -> None:
-        """メッセージを送信（返信なし）"""
-        text = text
-        self.bot.client.square.sendSquareMessage(
+    def send(self, text: str, append_id: bool = True) -> None:
+        """メッセージを送信（返信なし、ランダムID付きでBAN回避）"""
+        self.bot.client.square_helper.sendMessage(
             squareChatMid=self.chat_mid,
             text=text,
+            appendRandomId=append_id,
         )
 
     # ========== 権限関連 ==========
@@ -132,10 +133,11 @@ class JoinContext:
     member_name: str = ""
 
     def send_welcome(self, text: str) -> None:
-        """入室メッセージを送信"""
-        self.bot.client.square.sendSquareMessage(
+        """入室メッセージを送信（ランダムID付き）"""
+        self.bot.client.square_helper.sendMessage(
             squareChatMid=self.chat_mid,
             text=text,
+            appendRandomId=True,
         )
 
 

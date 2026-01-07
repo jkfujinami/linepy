@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from linepy import BaseClient
 
 from core import Bot
-from modules import TestModule, ReadCheckerModule, BanHandlerModule, AdminModule, JoinModule
+from core.watch_storage import WatchStorage
+from modules import TestModule, ReadCheckerModule, BanHandlerModule, AdminModule, JoinModule, RateLimiterModule
 
 
 # ログ設定（DEBUGで詳細ログ、INFOで通常）
@@ -69,6 +70,7 @@ def main():
 
     # モジュール登録
     bot.register(BanHandlerModule)
+    bot.register(RateLimiterModule)
     bot.register(AdminModule)
     bot.register(TestModule)
     bot.register(ReadCheckerModule)
@@ -85,6 +87,14 @@ def main():
             print(f"📌 Watching: {mid[:16]}... (Ticket: {ticket[:10]}...)")
         except Exception as e:
             print(f"⚠️ Could not get MID for ticket {ticket[:10]}...: {e}")
+
+    # ストレージから保存済みチャットを読み込んでマージ
+    watch_storage = WatchStorage()
+    stored_chats = watch_storage.get_watched()
+    for mid in stored_chats:
+        if mid not in chat_mids:
+            chat_mids.append(mid)
+            print(f"📌 Watching (stored): {mid[:16]}...")
 
     if not chat_mids:
         print("❌ No chats to watch. Exiting.")

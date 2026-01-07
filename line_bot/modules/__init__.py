@@ -9,6 +9,7 @@ from .read_checker import ReadCheckerModule
 from .ban_handler import BanHandlerModule
 from .admin import AdminModule
 from .join import JoinModule
+from .rate_limiter import RateLimiterModule
 
 __all__ = [
     "BaseModule",
@@ -17,4 +18,5 @@ __all__ = [
     "BanHandlerModule",
     "AdminModule",
     "JoinModule",
+    "RateLimiterModule",
 ]

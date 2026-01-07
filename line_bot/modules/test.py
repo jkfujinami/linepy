@@ -35,6 +35,8 @@ class TestModule(BaseModule):
             return self._cmd_myid(ctx)
         elif ctx.command == "stats":
             return self._cmd_stats(ctx)
+        elif ctx.command == "おっぱいみせて":
+            return self._cmd_oppai(ctx)
         elif ctx.command == "setrole" and ctx.has_permission(Role.ADMIN):
             return self._cmd_setrole(ctx)
 
@@ -56,6 +58,11 @@ class TestModule(BaseModule):
         ctx.reply(text)
         return True
 
+    def _cmd_oppai(self, ctx: MessageContext) -> bool:
+        """!oppai - おっぱい見せて"""
+        ctx.reply("""自分のみとけ😆""")
+        return True
+
     def _cmd_help(self, ctx: MessageContext) -> bool:
         """!help - ヘルプの表示"""
         ctx.reply("""
@@ -68,7 +75,14 @@ class TestModule(BaseModule):
 
 ✅管理用コマンド
     !mute <MID|mention>    - ユーザーをミュート（モデレーター以上）
+    !unmute <MID|mention>  - ユーザーをミュート解除（モデレーター以上）
+    !broadcast <text>      - メッセージを全チャットに送信（モデレーター以上）
     !role <MID|mention> <role> - ユーザーの権限を変更（モデレーター以上）
+
+✅他オプ招待機能
+    !join <ticket> [displayName] [code]
+    !update - 参加待機中のOCをチェックして入室済みならリストに追加
+    !pending - 参加待機中リストを表示
 
 📖 既読チェッカー
     !rp set    - チェックポイントを設置
@@ -76,6 +90,7 @@ class TestModule(BaseModule):
     !rp list   - チェックポイント以降の既読者を表示
     !rp bad    - 既読したが発言していないメンバーを表示
     !rp reset  - 既読追跡をリセット
+
         """)
         return True
 

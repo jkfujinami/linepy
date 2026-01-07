@@ -177,21 +177,28 @@ class PollingManager:
         self._event_queue: queue.Queue = queue.Queue()
 
     def add_watched_chat(self, chat_mid: str):
-        """Add a chat to watch list."""
+        """Add a chat to watch list and start worker if running."""
+        logger.debug("[%s] add_watched_chat called, running=%s, in_workers=%s, in_watched=%s",
+                     chat_mid[:8], self._running, chat_mid in self._workers, chat_mid in self.watched_chats)
+
+        # Add to watched list if not present
         if chat_mid not in self.watched_chats:
             self.watched_chats.append(chat_mid)
 
-            # If already running, spawn a new worker immediately
-            if self._running and chat_mid not in self._workers:
-                worker = ChatWorker(
-                    self.client,
-                    chat_mid,
-                    self._event_queue,
-                    self.token_manager,
-                    self.fetch_type,
-                )
-                self._workers[chat_mid] = worker
-                worker.start()
+        # If running and worker doesn't exist, create one
+        if self._running and chat_mid not in self._workers:
+            logger.info("[%s] Creating new ChatWorker", chat_mid[:8])
+            worker = ChatWorker(
+                self.client,
+                chat_mid,
+                self._event_queue,
+                self.token_manager,
+                self.fetch_type,
+            )
+            self._workers[chat_mid] = worker
+            worker.start()
+        elif chat_mid in self._workers:
+            logger.debug("[%s] Worker already exists", chat_mid[:8])
 
     def remove_watched_chat(self, chat_mid: str):
         """Remove a chat from watch list."""
