@@ -430,13 +430,20 @@ class SquareService(ServiceBase):
         ]
         if squareChatMid is not None:
             params.append([11, 4, squareChatMid])
-        if passCode is not None:
+        if passCode is not None :
             codeValue = [
                 [11, 1, passCode],
             ]
             squareJoinMethodValue = [
-                [11, 1, joinMessage],
                 [12, 2, codeValue],
+            ]
+            params.append([12, 5, squareJoinMethodValue])
+        if joinMessage is not None:
+            ApprovalValue = [
+                [11, 1, joinMessage],
+            ]
+            squareJoinMethodValue = [
+                [12, 1, ApprovalValue],
             ]
             params.append([12, 5, squareJoinMethodValue])
         if claimAdult is not None:

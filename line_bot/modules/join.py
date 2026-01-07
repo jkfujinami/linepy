@@ -3,12 +3,14 @@
 Join Module - OC参加・監視追加機能
 
 Usage:
-    !join <ticket>
+    !join <ticket> [displayName] [code]
+    !update - 参加待機中のOCをチェックして入室済みならPollingに追加
+    !pending - 参加待機中リストを表示
 """
 
 from core.base import BaseModule
 from core.context import MessageContext
-from linepy.models.square import SquareJoinMethodType
+from core.watch_storage import WatchStorage
 
 
 class JoinModule(BaseModule):
@@ -17,126 +19,176 @@ class JoinModule(BaseModule):
     name = "join"
     priority = 50
 
-    def on_message(self, ctx: MessageContext) -> bool:
-        if ctx.command != "join":
-            return False
+    def __init__(self, bot):
+        super().__init__(bot)
+        self.watch_storage = WatchStorage()
 
-        # 引数チェック
-        if not ctx.args:
-            ctx.reply("使い方: !join <ticket>")
+    def on_message(self, ctx: MessageContext) -> bool:
+        if ctx.command == "join":
+            return self._handle_join_command(ctx)
+        elif ctx.command == "update":
+            return self._handle_update_command(ctx)
+        elif ctx.command == "pending":
+            return self._handle_pending_command(ctx)
+        return False
+
+    def _handle_join_command(self, ctx: MessageContext) -> bool:
+        """!join コマンド処理"""
+        args = ctx.command_args.split() if ctx.command_args else []
+
+        if not args:
+            ctx.reply("使い方: !join <ticket> [code]")
             return True
 
-        ticket = ctx.args[0]
-        self._handle_join(ctx, ticket)
+        ticket = args[0]
+        join_code = args[1] if len(args) > 1 else ""
+
+        self._handle_join(ctx, ticket, join_code)
         return True
 
-    def _handle_join(self, ctx: MessageContext, ticket: str):
+    def _handle_join(self, ctx: MessageContext, ticket: str, join_code: str):
         """参加処理"""
         try:
-            square = ctx.bot.client.square
+            helper = ctx.bot.client.square_helper
+            result = helper.joinSquareByInvitationTicket(
+                InvitationTicket=ticket,
+                displayName="Mira",
+                profileImagePath="/Users/fujinami/github/linepy/line_bot/assets/IMG_0001.jpg",
+                defaultApprovalMessage="I'm Mira!よろしくお願いします！",
+                defaultJoinCode=join_code,
+            )
 
-            # 1. Ticket から情報取得
-            ctx.reply(f"🔍 チケット確認中...")
-            response = square.findSquareByInvitationTicketV2(ticket)
+            status = result["status"]
+            message = result["message"]
+            chat_mid = result["chat_mid"]
+            square_mid = result["square_mid"]
+            square_name = result["square_name"]
+            chat_name = result["chat_name"]
 
-            square_name = response.square.name
-            chat_name = response.chat.name
-            chat_mid = response.chat.squareChatMid
-            square_mid = response.square.mid
-            join_method = response.square.joinMethod.type_
-            membership = response.myMembership
+            # 結果を通知
+            if status == "JOINED":
+                ctx.reply(f"✅ {message}")
+                # 監視リストに追加 & Pollingに追加
+                self._add_to_watch(ctx, chat_mid)
 
-            # 2. 状態判定
-            if membership is None:
-                # OC自体に未参加
-                self._join_square(ctx, response, square_mid, chat_mid)
-            else:
-                # OC参加済み
-                state = membership.membershipState
-                if state == 1:  # PENDING
-                    ctx.reply(f"⏳ 承認待ち中です: {square_name}")
-                elif state == 2:  # JOINED
-                    # サブトークに参加を試みる
-                    self._join_chat(ctx, chat_mid, chat_name)
-                else:
-                    ctx.reply(f"❓ 不明な状態 (state={state})")
+            elif status == "ALREADY_MEMBER":
+                ctx.reply(f"ℹ️ {message}")
+                # 既に参加済みでも監視に追加
+                self._add_to_watch(ctx, chat_mid)
+
+            elif status == "PENDING":
+                ctx.reply(f"📨 {message}")
+                # 待機リストに追加
+                self.watch_storage.add_pending(
+                    square_mid=square_mid,
+                    chat_mid=chat_mid,
+                    square_name=square_name,
+                    chat_name=chat_name,
+                )
+                ctx.reply(f"⏳ 待機リストに追加しました。!update で入室チェックできます。")
+
+            elif status == "CODE_REQUIRED":
+                ctx.reply(f"🔐 {message}\n使い方: !join <ticket> <displayName> <code>")
+
+            else:  # ERROR
+                ctx.reply(f"❌ {message}")
 
         except Exception as e:
             ctx.reply(f"❌ エラー: {e}")
 
-    def _join_square(self, ctx: MessageContext, response, square_mid: str, chat_mid: str):
-        """OC自体に参加する"""
-        square = ctx.bot.
-        join_method = response.square.joinMethod.type_
-        square_name = response.square.name
+    def _handle_update_command(self, ctx: MessageContext) -> bool:
+        """!update コマンド - 待機リストをチェック"""
+        pending_list = self.watch_storage.get_pending()
 
-        if join_method == SquareJoinMethodType.NONE:
-            # 公開OC → 直接参加可能（デフォルトチャットに参加）
+        if not pending_list:
+            ctx.reply("📭 待機リストは空です")
+            return True
+
+        ctx.reply(f"🔄 {len(pending_list)}件の待機中OCをチェック中...")
+
+        joined_count = 0
+        still_pending = 0
+
+        for item in pending_list:
+            square_mid = item["square_mid"]
+            chat_mid = item["chat_mid"]
+            chat_name = item["chat_name"]
+
             try:
-                # まずSquareに参加
-                square.joinSquare(square_mid)
-                ctx.reply(f"✅ 参加しました: {square_name}")
-
-                # チャットにも参加
-                self._join_chat(ctx, chat_mid, response.chat.name)
+                # 入室確認: getSquareMembers で自分がいるかチェック
+                if self._check_membership(ctx, square_mid):
+                    # 入室済み → 監視に追加
+                    self.watch_storage.move_pending_to_watched(chat_mid)
+                    self._add_to_polling(ctx, chat_mid)
+                    ctx.reply(f"✅ 入室確認: {chat_name}")
+                    joined_count += 1
+                else:
+                    still_pending += 1
             except Exception as e:
-                ctx.reply(f"❌ 参加失敗: {e}")
+                ctx.reply(f"⚠️ チェック失敗 ({chat_name}): {e}")
+                still_pending += 1
 
-        elif join_method == SquareJoinMethodType.APPROVAL:
-            # 承認制OC → リクエスト送信
-            try:
-                approval_msg = ""
-                if response.square.joinMethod.value and response.square.joinMethod.value.approvalValue:
-                    approval_msg = response.square.joinMethod.value.approvalValue.message or ""
+        ctx.reply(f"📊 結果: 入室={joined_count}, 待機中={still_pending}")
+        return True
 
-                square.requestToJoinSquare(square_mid, displayName="Bot", profileImageObsHash="")
-                ctx.reply(f"📨 参加リクエスト送信: {square_name}\n承認メッセージ: {approval_msg}")
-            except Exception as e:
-                ctx.reply(f"❌ リクエスト失敗: {e}")
-
-        elif join_method == SquareJoinMethodType.CODE:
-            # 鍵付きOC → パスコードが必要
-            ctx.reply(f"🔐 パスコードが必要です: {square_name}\n使い方: !join <ticket> <code>")
-
-        else:
-            ctx.reply(f"❓ 不明な参加方法: {join_method}")
-
-    def _join_chat(self, ctx: MessageContext, chat_mid: str, chat_name: str):
-        """サブトーク/チャットに参加する"""
-        square = ctx.bot.client.square
-
+    def _check_membership(self, ctx: MessageContext, square_mid: str) -> bool:
+        """Squareのメンバーかどうかをチェック"""
         try:
-            square.joinSquareChat(chat_mid)
-            ctx.reply(f"✅ チャット参加: {chat_name}")
+            square = ctx.bot.client.square
 
-            # 監視リストに追加
-            self._add_to_watch(ctx, chat_mid)
+            # getSquare で自分のメンバーシップ情報を取得
+            res = square.getSquare(square_mid)
 
+            if res and hasattr(res, 'myMembership') and res.myMembership:
+                state = getattr(res.myMembership, 'membershipState', None)
+                # state == 2 は JOINED
+                return state == 2
+            return False
         except Exception as e:
-            error_msg = str(e)
-            if "既に" in error_msg or "already" in error_msg.lower() or "メンバー" in error_msg:
-                # 既に参加済み → 監視に追加するだけ
-                ctx.reply(f"ℹ️ 既に参加済み: {chat_name}")
-                self._add_to_watch(ctx, chat_mid)
-            else:
-                ctx.reply(f"❌ チャット参加失敗: {e}")
+            # エラーの場合は未参加とみなす
+            error_str = str(e).lower()
+            if "not a member" in error_str or "メンバーではありません" in str(e):
+                return False
+            raise
+
+    def _handle_pending_command(self, ctx: MessageContext) -> bool:
+        """!pending コマンド - 待機リストを表示"""
+        pending_list = self.watch_storage.get_pending()
+
+        if not pending_list:
+            ctx.reply("📭 待機リストは空です")
+            return True
+
+        lines = [f"⏳ 待機中: {len(pending_list)}件"]
+        for item in pending_list:
+            lines.append(f"  • {item['square_name']} / {item['chat_name']}")
+
+        ctx.reply("\n".join(lines))
+        return True
 
     def _add_to_watch(self, ctx: MessageContext, chat_mid: str):
-        """監視リストに追加"""
+        """監視リストに追加 & Pollingに追加"""
+        if not chat_mid:
+            return
+
+        # ストレージに追加
+        self.watch_storage.add_watched(chat_mid)
+
+        # Pollingに追加
+        self._add_to_polling(ctx, chat_mid)
+
+    def _add_to_polling(self, ctx: MessageContext, chat_mid: str):
+        """Pollingに動的追加"""
         bot = ctx.bot
 
         # 既に監視中ならスキップ
         if chat_mid in bot.watched_chats:
-            ctx.reply(f"ℹ️ 既に監視中: {chat_mid[:12]}...")
             return
 
-        # 1. Bot の watched_chats に追加
+        # Bot の watched_chats に追加
         bot.watched_chats.append(chat_mid)
 
-        # 2. 実行中の Polling に動的追加（新しい ChatWorker スレッドが起動）
+        # 実行中の Polling に動的追加
         if hasattr(bot.client, 'polling') and bot.client.polling:
             bot.client.polling.add_watched_chat(chat_mid)
             ctx.reply(f"👁️ 監視開始: {chat_mid[:12]}...")
-
-        # 3. 永続化（任意）
-        # TODO: 設定ファイルに保存して再起動後も維持

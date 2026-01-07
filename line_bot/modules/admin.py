@@ -37,8 +37,12 @@ class AdminModule(BaseModule):
         # 権限チェックを伴うディスパッチ
         if cmd == "mute" and ctx.has_permission(Role.MODERATOR):
             return self._cmd_mute(ctx)
-        elif cmd == "role" and ctx.has_permission(Role.ADMIN):
+        if cmd == "unmute" and ctx.has_permission(Role.MODERATOR):
+            return self._cmd_unmute(ctx)
+        elif cmd == "role" and ctx.has_permission(Role.MODERATOR):
             return self._cmd_role(ctx)
+        elif cmd == "broadcast" and ctx.has_permission(Role.ADMIN):
+            return self._cmd_broadcast(ctx)
         return False
 
     def _get_target_mids(self, ctx: MessageContext) -> Optional[str]:
@@ -65,6 +69,24 @@ class AdminModule(BaseModule):
             logger.info("User %s muted by %s in %s", i, ctx.sender_mid, ctx.square_mid)
         except Exception as e:
             ctx.reply(f"❌ ミュートの追加に失敗しました: {e}")
+
+        return True
+
+    def _cmd_unmute(self, ctx: MessageContext) -> bool:
+        """!unmute <MID|mention>"""
+        target_mids = self._get_target_mids(ctx)
+        if not target_mids:
+            ctx.reply("⚠️ 対象をメンションで指定してください。")
+            return True
+
+        try:
+            for i in target_mids:
+                storage = self.bot.get_square_storage(ctx.square_mid)
+                storage.set_role(i, Role.MEMBER)
+            ctx.reply(f"✅ ミュート解除しました: {i[:12]}...")
+            logger.info("User %s unmuted by %s in %s", i, ctx.sender_mid, ctx.square_mid)
+        except Exception as e:
+            ctx.reply(f"❌ ミュートの解除に失敗しました: {e}")
 
         return True
 
@@ -123,3 +145,34 @@ class AdminModule(BaseModule):
             names.append(f"...他{len(mids)-30}人")
 
         return "\n".join(names)
+
+    def _cmd_broadcast(self, ctx: MessageContext) -> bool:
+        """!broadcast <message> - 監視中の全OCにメッセージを送信"""
+        message = ctx.command_args
+        if not message:
+            ctx.reply("⚠️ 使い方: !broadcast <メッセージ>")
+            return True
+
+        watched_chats = getattr(self.bot, 'watched_chats', [])
+        if not watched_chats:
+            ctx.reply("❌ 監視中のチャットがありません。")
+            return True
+
+        success_count = 0
+        fail_count = 0
+        helper = self.bot.client.square_helper
+        for chat_mid in watched_chats:
+            try:
+                # ランダムID付きで送信（BAN回避）
+                helper.sendMessage(
+                    squareChatMid=chat_mid,
+                    text=f"{message}",
+                    appendRandomId=True,
+                )
+                success_count += 1
+            except Exception as e:
+                logger.warning("Broadcast failed for %s: %s", chat_mid[:12], e)
+                fail_count += 1
+
+        ctx.reply(f"✅ 配信完了\n成功: {success_count}\n失敗: {fail_count}")
+        return True

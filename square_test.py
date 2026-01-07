@@ -9,9 +9,12 @@ if not client.auto_login():
 print(f"Logged in as: {client.profile.display_name}")
 
 try:
-    ticket = "vcGjO56M-9HIc2P02raGa-uQhn6UJgiQxhh6oA"
+    ticket = "fJ9gJfS-j2n54n1soFX8xkLecR0Fo1Pa9GcYAQ"
     print(f"Finding square by ticket: {ticket}")
     response = client.square.findSquareByInvitationTicketV2(ticket)
+
+    res = client.square_helper.joinSquareByInvitationTicket(InvitationTicket=ticket, displayName="Mira", )
+    print(res)
     join_type:SquareJoinMethodType = response.square.joinMethod.type_
     if join_type == SquareJoinMethodType.NONE:
         print("✅ Join square by None")
@@ -24,7 +27,6 @@ try:
 
 
 
-    # 構造化して表示
     print(response.model_dump_json(indent=2))
 
     if response.chat:

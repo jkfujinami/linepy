@@ -125,9 +125,10 @@ class ObsBase:
         member_mid: str,
         path_or_bytes: Union[str, bytes],
         filename: Optional[str] = None
-    ) -> Dict[str, str]:
+    ) -> list[str, str]:
         """
         Upload profile image to Square Member OBS.
+        Returns obj_id and obj_hash
         path: /r/g2/member/{member_mid}
         """
 
@@ -175,6 +176,6 @@ class ObsBase:
             obj_id = response.headers.get("x-obs-oid", "")
             obj_hash = response.headers.get("x-obs-hash", "")
 
-            return obj_id, obj_hash
+            return [obj_id, obj_hash]
         except Exception as e:
             raise Exception(f"OBS Member Image Upload Failed: {e}")

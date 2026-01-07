@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from ..base import BaseClient
 
 from linepy.models.square_structs import SquareEvent as PydanticSquareEvent, SquareEventType
+from linepy.models.square import SquareJoinMethodType
 
 logger = logging.getLogger("linepy.square")
 
@@ -471,7 +472,205 @@ class SquareHelper:
         """
         return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.squareMid
 
-    def joinSquareByInvitationTicket(self, InvitationTicket: str,displayName:str,displayImagePath:str) -> Any:
-        squareMid=self.getSquareMidbyInvitationTicket(InvitationTicket)
+    def sendMessage(
+        self,
+        squareChatMid: str,
+        text: str,
+        relatedMessageId: Optional[str] = None,
+        appendRandomId: bool = True,
+    ) -> Any:
+        """
+        Send a message to a Square chat with optional random ID suffix.
 
-        return self.square.joinSquare(squareMid=squareMid,displayName=displayName)
+        Appends an 8-character random ID to the message to avoid
+        duplicate message detection (BAN evasion).
+
+        Args:
+            squareChatMid: Target chat MID
+            text: Message text
+            relatedMessageId: Optional message ID to reply to
+            appendRandomId: If True, append random ID (default: True)
+
+        Returns:
+            SendMessageResponse
+        """
+        import random
+        import string
+
+        if appendRandomId:
+            random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            text = f"{text}\n\nid:[{random_id}]"
+
+        return self.square.sendSquareMessage(
+            squareChatMid=squareChatMid,
+            text=text,
+            relatedMessageId=relatedMessageId,
+        )
+
+    def joinSquareByInvitationTicket(
+        self,
+        InvitationTicket: str,
+        displayName: str,
+        profileImagePath: str = None,
+        defaultApprovalMessage: str = "I'm Mira!よろしくお願いします！",
+        defaultJoinCode: str = "",
+    ) -> Dict[str, Any]:
+        """
+        Join a Square (OC) and its chat using an invitation ticket.
+
+        Automatically handles:
+        - Join method detection (FREE/APPROVAL/CODE)
+        - Square joining or request submission
+        - Chat (subtalk) joining
+
+        Args:
+            InvitationTicket: Invitation ticket string
+            displayName: Display name for the Square
+            profileImagePath: Profile image path (optional)
+            defaultApprovalMessage: Message for approval requests
+            defaultJoinCode: Code for CODE-protected Squares
+
+        Returns:
+            Dict with status and details:
+            {
+                "status": "JOINED" | "PENDING" | "ALREADY_MEMBER" | "CODE_REQUIRED" | "ERROR",
+                "square_mid": str,
+                "chat_mid": str,
+                "square_name": str,
+                "chat_name": str,
+                "message": str,
+            }
+        """
+        result = {
+            "status": "ERROR",
+            "square_mid": None,
+            "chat_mid": None,
+            "square_name": None,
+            "chat_name": None,
+            "message": "",
+        }
+
+        try:
+            # 1. Get Square/Chat info from ticket
+            response = self.square.findSquareByInvitationTicketV2(InvitationTicket)
+
+            square_mid = response.square.mid
+            chat_mid = response.chat.squareChatMid
+            square_name = response.square.name
+            chat_name = response.chat.name
+            join_method = response.square.joinMethod.type_
+            membership = response.myMembership
+            print(response.model_dump_json(indent=2))
+            result["square_mid"] = square_mid
+            result["chat_mid"] = chat_mid
+            result["square_name"] = square_name
+            result["chat_name"] = chat_name
+
+            # 2. Check membership status
+            if membership is not None:
+                # Already a member of the Square
+                state = membership.membershipState
+
+                if state == 1:  # PENDING
+                    result["status"] = "PENDING"
+                    result["message"] = "承認待ち中です"
+                    return result
+
+                elif state == 2:  # JOINED
+                    # Already in Square, try to join the chat
+                    return self._join_chat_only(result, chat_mid, chat_name)
+                else:
+                    result["message"] = f"不明な状態: state={state}"
+                    return result
+
+            # 3. Not a member - join based on join method
+            if join_method == SquareJoinMethodType.NONE:
+                # FREE - direct join
+                try:
+                    join_result = self.square.joinSquare(
+                        squareMid=square_mid,
+                        displayName=displayName,
+                        squareChatMid=chat_mid,
+                    )
+                    print(join_result.model_dump_json(indent=2))
+                    try:
+                        member_mid = join_result.squareMember.squareMemberMid
+                        self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
+                    except Exception as e:
+                        print(f"画像のアップロードに失敗しました: {e}")
+                    result["status"] = "JOINED"
+                    result["message"] = f"Squareに参加しました: {square_name}"
+
+                except Exception as e:
+                    result["message"] = f"参加失敗: {e}"
+
+            elif join_method == SquareJoinMethodType.APPROVAL:
+                # APPROVAL - send request with joinMessage
+                try:
+                    join_result = self.square.joinSquare(
+                        squareMid=square_mid,
+                        displayName=displayName,
+                        squareChatMid=chat_mid,
+                        joinMessage=defaultApprovalMessage,
+                    )
+                    print(join_result.model_dump_json(indent=2))
+                    try:
+                        member_mid = join_result.squareChatMember.squareMemberMid
+                        self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
+                    except Exception as e:
+                        print(f"画像のアップロードに失敗しました: {e}")
+                    result["status"] = "PENDING"
+                    result["message"] = f"参加リクエストを送信しました: {square_name}"
+
+                except Exception as e:
+                    error_str = str(e)
+                    if "既に" in error_str or "already" in error_str.lower():
+                        result["status"] = "PENDING"
+                        result["message"] = "既にリクエスト済みです"
+                    else:
+                        result["message"] = f"リクエスト失敗: {e}"
+
+            elif join_method == SquareJoinMethodType.CODE:
+                # CODE - need passcode
+                if defaultJoinCode:
+                    try:
+                        join_result = self.square.joinSquare(
+                            squareMid=square_mid,
+                            displayName=displayName,
+                            squareChatMid=chat_mid,
+                            passCode=defaultJoinCode,
+                        )
+                        member_mid = join_result.squareChatMember.squareMemberMid
+                        self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
+                        result["status"] = "JOINED"
+                        result["message"] = f"Squareに参加しました: {square_name}"
+
+                    except Exception as e:
+                        result["message"] = f"参加失敗 (コード不正?): {e}"
+                else:
+                    result["status"] = "CODE_REQUIRED"
+                    result["message"] = "パスコードが必要です"
+
+            else:
+                result["message"] = f"不明な参加方法: {join_method}"
+
+        except Exception as e:
+            result["message"] = f"エラー: {e}"
+
+        return result
+
+    def _join_chat_only(self, result: Dict, chat_mid: str, chat_name: str) -> Dict:
+        """Join only the chat (when already a Square member)"""
+        try:
+            self.square.joinSquareChat(chat_mid)
+            result["status"] = "JOINED"
+            result["message"] = f"チャットに参加しました: {chat_name}"
+        except Exception as e:
+            error_str = str(e)
+            # 410 = Already member / 既に参加済み
+            if "[410]" in error_str or "既に" in error_str or "already" in error_str.lower() or "メンバー" in error_str:
+                result["status"] = "ALREADY_MEMBER"
+                result["message"] = f"既に参加済み: {chat_name}"
+            else:
+                result["message"] = f"チャット参加失敗: {e}"
+        return result

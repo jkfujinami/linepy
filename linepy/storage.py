@@ -67,6 +67,7 @@ class FileStorage(BaseStorage):
     File-based JSON storage.
 
     Persists data to a JSON file, allowing token reuse across sessions.
+    Thread-safe via internal lock.
     """
 
     def __init__(self, path: str = ".linepy_storage.json"):
@@ -76,7 +77,9 @@ class FileStorage(BaseStorage):
         Args:
             path: Path to the storage file
         """
+        import threading
         self.path = path
+        self._lock = threading.Lock()  # Thread safety
         self._ensure_file()
 
     def _ensure_file(self) -> None:
@@ -89,9 +92,19 @@ class FileStorage(BaseStorage):
         """Read data from file"""
         try:
             with open(self.path, "r") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
+                content = f.read()
+                if not content.strip():
+                    return {}
+                return json.loads(content)
+        except FileNotFoundError:
             return {}
+        except json.JSONDecodeError as e:
+            # Log error but don't silently return empty - this could cause data loss
+            import logging
+            logging.getLogger("linepy.storage").error(
+                "JSON decode error in %s: %s. NOT overwriting file.", self.path, e
+            )
+            raise  # Re-raise to prevent set() from overwriting with partial data
 
     def _write(self, data: Dict[str, Any]) -> None:
         """Write data to file"""
@@ -99,24 +112,29 @@ class FileStorage(BaseStorage):
             json.dump(data, f, indent=2, ensure_ascii=False)
 
     def get(self, key: str) -> Optional[Any]:
-        data = self._read()
-        return data.get(key)
+        with self._lock:
+            data = self._read()
+            return data.get(key)
 
     def set(self, key: str, value: Any) -> None:
-        data = self._read()
-        data[key] = value
-        self._write(data)
+        with self._lock:
+            data = self._read()
+            data[key] = value
+            self._write(data)
 
     def delete(self, key: str) -> None:
-        data = self._read()
-        data.pop(key, None)
-        self._write(data)
+        with self._lock:
+            data = self._read()
+            data.pop(key, None)
+            self._write(data)
 
     def clear(self) -> None:
-        self._write({})
+        with self._lock:
+            self._write({})
 
     def get_all(self) -> Dict[str, Any]:
-        return self._read()
+        with self._lock:
+            return self._read()
 
 
 class TokenManager:
