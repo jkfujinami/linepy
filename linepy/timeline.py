@@ -182,7 +182,14 @@ class Timeline:
             json_data = resp.json()
 
             if response_model:
-                return response_model.model_validate(json_data)
+                from pydantic import TypeAdapter
+
+                # TypeAdapter (not response_model.model_validate directly)
+                # so a generic response_model (List[X]/Dict[K, V]) validates
+                # too -- a plain typing alias has no .model_validate of its
+                # own. See services/base.py's validate_response_model for
+                # the same fix applied to the thrift-based services.
+                return TypeAdapter(response_model).validate_python(json_data)
             return json_data
 
     def create_post(

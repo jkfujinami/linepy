@@ -89,6 +89,10 @@ class BaseClient:
 
         self.token_manager = TokenManager(self.storage)
 
+        # Wire LEGY transport token-lifecycle hooks (Phase 1 Step 2.3)
+        self.request.on_next_access = self._on_next_access_token
+        self.request.refresh_hook = self._legy_refresh_hook
+
         # Login handler
         from .login import Login
 
@@ -119,6 +123,13 @@ class BaseClient:
         # OBS Client (Object Storage)
         from .obs import ObsBase
         self.obs = ObsBase(self)
+
+        # LIFF & VOOM (Phase 3)
+        from .liff import LiffClient
+        from .voom import VoomClient
+
+        self.liff = LiffClient(self)
+        self.voom = VoomClient(self)
 
         # Auth service
         from .services.auth import AuthService
@@ -173,6 +184,19 @@ class BaseClient:
         )
         self.set_auth_token(auth_token)
 
+        # Persist refresh_token/expire captured during the E2EE handshake
+        # (loginV2 path) or via the outer login_result plumbing.
+        last_response = getattr(self.login_handler, "_last_login_response", None)
+        if last_response:
+            self.token_manager.save_login_result(last_response)
+
+        # 本家's withPassword() unconditionally verifies the just-installed
+        # E2EE login key against the server after every successful login.
+        try:
+            self.e2ee.verify_login_key()
+        except Exception as exc:
+            print(f"[Login] verify_login_key failed: {exc}")
+
         # Get profile
         self.profile = self.get_profile()
         self.mid = self.profile.mid
@@ -199,10 +223,16 @@ class BaseClient:
             self.token_manager.auth_token = auth_token
 
         # Save login result (for refresh token etc.)
-        if save and hasattr(self.login_handler, "_last_login_response"):
-            self.token_manager.save_login_result(
-                self.login_handler._last_login_response
-            )
+        last_response = getattr(self.login_handler, "_last_login_response", None)
+        if save and last_response:
+            self.token_manager.save_login_result(last_response)
+
+        # 本家's withQrCode() unconditionally verifies the just-installed
+        # E2EE login key against the server after every successful login.
+        try:
+            self.e2ee.verify_login_key()
+        except Exception as exc:
+            print(f"[Login] verify_login_key failed: {exc}")
 
         # Get profile
         self.profile = self.get_profile()
@@ -303,6 +333,26 @@ class BaseClient:
         self.auth_token = token
         self.request.auth_token = token
         self.token_manager.auth_token = token
+
+    def _on_next_access_token(self, token: str) -> None:
+        """Handle server-issued ``x-line-next-access`` rotation."""
+        if token and token != self.auth_token:
+            self.set_auth_token(token)
+
+    def _legy_refresh_hook(self) -> bool:
+        """Refresh callback invoked when a request hits MUST_REFRESH_V3_TOKEN."""
+        from .config import PRIMARY_DEVICES
+
+        if self.device in PRIMARY_DEVICES:
+            return False
+        if not self.token_manager.refresh_token:
+            return False
+        try:
+            old = self.auth_token
+            new_token = self.refresh_access_token()
+            return bool(new_token) and new_token != old
+        except Exception:
+            return False
 
     def refresh_access_token(self) -> str:
         """
@@ -542,42 +592,164 @@ class BaseClient:
             ],
         )
 
+    def get_reqseq(self) -> int:
+        """Next request sequence number (persisted)."""
+        return self.token_manager.get_next_reqseq("talk")
+
+    # Message relation / service codes for replies (Phase 2 Step 5.2)
+    _REPLY_RELATION_TYPE = 3   # MessageRelationType.REPLY
+    _TALK_SERVICE_CODE = 1     # ServiceCode.TALK
+
     def send_message(
         self,
         to: str,
-        text: str,
+        text: Optional[str] = None,
         content_type: int = 0,
-    ) -> Dict:
+        content_metadata: Optional[Dict[str, str]] = None,
+        related_message_id: Optional[str] = None,
+        location=None,
+        chunks: Optional[List[bytes]] = None,
+        e2ee: Optional[bool] = None,
+    ) -> Any:
         """
-        Send a message.
+        Send a message with automatic E2EE encryption and failover.
 
-        Args:
-            to: Target mid (user/group/room)
-            text: Message text
-            content_type: 0=text, 1=image, etc.
-
-        Returns:
-            Message response
+        Faithful port of 本家 ``TalkService.sendMessage``:
+        * When ``e2ee`` is requested for text/location and no chunks are given,
+          the payload is encrypted via the E2EE engine and re-sent as chunks.
+        * A plain send that fails with an ``E2EE`` error automatically retries
+          with ``e2ee=True`` (only when ``e2ee`` was left unspecified).
+        * ``related_message_id`` adds REPLY relation metadata.
         """
-        # sendMessage_args: [[8, 1, seq], [12, 2, message]]
-        return self._call_service(
-            path="/S4",
-            method="sendMessage",
-            params=[
-                [8, 1, 0],  # seq
-                [
-                    12,
-                    2,
-                    [
-                        [11, 2, to],
-                        [11, 10, text],
-                        [8, 15, content_type],
-                    ],
-                ],
-            ],
-        )
+        content_metadata = dict(content_metadata or {})
+
+        # Encrypt-and-resend pass.
+        if e2ee and not chunks and (location is not None or text is not None):
+            enc_chunks = self.e2ee.encrypt_e2ee_message(
+                to, text if text is not None else location, content_type
+            )
+            meta = dict(content_metadata)
+            meta.update({
+                "e2eeVersion": "2",
+                "contentType": str(content_type or 0),
+                "e2eeMark": "2",
+            })
+            return self.send_message(
+                to=to,
+                content_type=content_type,
+                content_metadata=meta,
+                related_message_id=related_message_id,
+                chunks=enc_chunks,
+                e2ee=e2ee,
+            )
+
+        message_fields = [
+            [11, 2, to],
+            [8, 15, content_type or 0],
+        ]
+        if text is not None:
+            message_fields.append([11, 10, text])
+        if content_metadata:
+            message_fields.append([13, 18, content_metadata])
+        if chunks:
+            message_fields.append([15, 20, [11, list(chunks)]])
+        if related_message_id is not None:
+            message_fields.append([11, 21, related_message_id])
+            message_fields.append([8, 22, self._REPLY_RELATION_TYPE])
+            message_fields.append([8, 24, self._TALK_SERVICE_CODE])
+
+        params = [[8, 1, self.get_reqseq()], [12, 2, message_fields]]
+
+        try:
+            return self._call_service(path="/S4", method="sendMessage", params=params)
+        except Exception as error:
+            if e2ee is None and "E2EE" in str(getattr(error, "message", error)):
+                return self.send_message(
+                    to=to,
+                    text=text,
+                    content_type=content_type,
+                    content_metadata=content_metadata,
+                    related_message_id=related_message_id,
+                    location=location,
+                    chunks=chunks,
+                    e2ee=True,
+                )
+            raise
+
+    # ========== Compact message protocol (/CA5, /ECA5) ==========
+
+    def send_compact_message(
+        self,
+        to: str,
+        text: Optional[str] = None,
+        chunks: Optional[List[bytes]] = None,
+        e2ee: Optional[bool] = None,
+    ):
+        """Send via the fast compact protocol, with E2EE failover (codes 82/99)."""
+        if chunks or e2ee is True:
+            return self.send_compact_e2ee_message(to=to, text=text, chunks=chunks)
+        if text is None:
+            raise ValueError("send_compact_message requires text or chunks")
+        try:
+            return self.send_compact_plain_message(to, text)
+        except Exception as error:
+            code = getattr(error, "code", None)
+            if e2ee is None and code in (82, 99):
+                return self.send_compact_e2ee_message(to=to, text=text)
+            raise
+
+    def send_compact_plain_message(self, to: str, text: str):
+        from .compact import pack_compact_plain_message, decode_compact_message_response, \
+            COMPACT_PLAIN_MESSAGE_ENDPOINT
+
+        seq_id = self.get_reqseq()
+        body = pack_compact_plain_message(seq_id, to, text)
+        raw = self.request.compact_request(COMPACT_PLAIN_MESSAGE_ENDPOINT, seq_id, body)
+        return decode_compact_message_response(raw)
+
+    def send_compact_e2ee_message(
+        self, to: str, text: Optional[str] = None, chunks: Optional[List[bytes]] = None
+    ):
+        from .compact import pack_compact_e2ee_message, decode_compact_message_response, \
+            COMPACT_E2EE_MESSAGE_ENDPOINT
+
+        if not chunks:
+            if text is None:
+                raise ValueError("send_compact_e2ee_message requires text or chunks")
+            chunks = self.e2ee.encrypt_e2ee_message(to, text)
+        seq_id = self.get_reqseq()
+        body = pack_compact_e2ee_message(seq_id, to, chunks)
+        raw = self.request.compact_request(COMPACT_E2EE_MESSAGE_ENDPOINT, seq_id, body)
+        return decode_compact_message_response(raw)
 
     # ========== Events ==========
+
+    def get_dispatcher(self):
+        """Lazily create the PUSH event dispatcher (Phase 3 Step 10)."""
+        dispatcher = getattr(self, "_dispatcher", None)
+        if dispatcher is None:
+            from .listener import EventDispatcher
+
+            dispatcher = EventDispatcher(self)
+            self._dispatcher = dispatcher
+        return dispatcher
+
+    def listen(self, talk: bool = True, square: bool = True) -> None:
+        """Start the PUSH stream and dispatch decrypted events.
+
+        Talk operations are auto-decrypted and emitted as ``message`` events
+        (``TalkMessage``); Square notifications as ``square:message``
+        (``SquareMessage``). Register handlers via :meth:`on`.
+        """
+        dispatcher = self.get_dispatcher()
+
+        def _on_event(op):
+            dispatcher.dispatch_talk_operation(op)
+
+        # Reuse the existing PUSH machinery; each operation flows through the
+        # dispatcher so E2EE decryption and event fan-out happen centrally.
+        chat_mids = list(getattr(self, "_watch_chat_mids", []) or [])
+        return self.start_push(chat_mids, on_event=_on_event)
 
     def on(self, event: str, callback: Optional[Callable] = None):
         """

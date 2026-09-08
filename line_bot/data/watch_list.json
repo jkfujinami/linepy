@@ -1,0 +1,26 @@
+{
+  "watched": [
+    "mf6ffdde0b86674545b74201afdac2126",
+    "mf8873baa88cd537243350e397eadb15e",
+    "mf7631b05189e31597c43bd26014af4b4",
+    "m129c98f5b4dc1bd59963012adfedb680",
+    "m00d1908670966f95456109f8635b512f",
+    "m59260f8ce74405a3c0ccabf37910f6b0"
+  ],
+  "pending": [
+    {
+      "square_mid": "s212736bb49cdc0920ab61f8873ab8b27",
+      "chat_mid": "m14cb065b688c56a42c404be27657ca36",
+      "square_name": "White Circle(対黒丸軍",
+      "chat_name": "White Circle(対黒丸軍",
+      "requested_at": 1767685300
+    },
+    {
+      "square_mid": "sa647b723c2783a7d5e5f595bd0044931",
+      "chat_mid": "m129c98f5b4dc1bd59963012adfedb680",
+      "square_name": "死穢八斎會",
+      "chat_name": "死穢八斎會",
+      "requested_at": 1767685736
+    }
+  ]
+}

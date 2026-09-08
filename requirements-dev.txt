@@ -1,0 +1,5 @@
+# Development / test dependencies
+-r requirements.txt
+pytest>=7.0.0
+# Cross-validation against 本家 (linejs) also requires Deno on PATH:
+#   https://deno.com  (used by tools/gen_vectors.ts and tools/interop.ts)

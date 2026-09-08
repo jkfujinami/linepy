@@ -208,7 +208,6 @@ __marimo__/
 CHRLINE/
 CHRLINE-Patch/
 linejs/
-resource/
 
 # LINEPY specific
 .linepy_storage.json
@@ -220,3 +219,7 @@ test_*.py
 !test_square.py
 !test_timeline.py
 !test_polling.py
+docs/
+resource/
+# macOS
+.DS_Store

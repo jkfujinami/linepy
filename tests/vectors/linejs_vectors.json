@@ -1,0 +1,288 @@
+{
+  "e2ee": {
+    "pubA": "07a37cbc142093c8b755dc1b10e86cb426374ad16aa853ed0bdfc0b2b86d1c7c",
+    "pubB": "5869aff450549732cbaaed5e5df9b30a6da31cb0e5742bad5ad4a1a768f1a67b",
+    "privA": "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+    "privB": "2122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f40",
+    "shared": "a84dc7c3c8f058b1b2dc4cd1e9b5dc0a7987f88b6a9564cde3391fc421159e77",
+    "sha256": [
+      {
+        "args": [
+          {
+            "t": "str",
+            "v": "abc"
+          }
+        ],
+        "out": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+      },
+      {
+        "args": [
+          {
+            "t": "hex",
+            "v": "a84dc7c3c8f058b1b2dc4cd1e9b5dc0a7987f88b6a9564cde3391fc421159e77"
+          },
+          {
+            "t": "str",
+            "v": "Key"
+          }
+        ],
+        "out": "b1cd5bc677accdf649bacc878cb71b0aa7487b0442ff648d3ed08750cb2552a9"
+      },
+      {
+        "args": [
+          {
+            "t": "hex",
+            "v": "a84dc7c3c8f058b1b2dc4cd1e9b5dc0a7987f88b6a9564cde3391fc421159e77"
+          },
+          {
+            "t": "str",
+            "v": "IV"
+          }
+        ],
+        "out": "6abcea497e1921596585932ccfc5f456c1945f9e0134096553210f4125458993"
+      }
+    ],
+    "xor_input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa55555555555555555555555555555555",
+    "xor_out": "ffffffffffffffffffffffffffffffff",
+    "intBytes": [
+      {
+        "i": 0,
+        "out": "00000000"
+      },
+      {
+        "i": 1,
+        "out": "00000001"
+      },
+      {
+        "i": 255,
+        "out": "000000ff"
+      },
+      {
+        "i": 256,
+        "out": "00000100"
+      },
+      {
+        "i": 65536,
+        "out": "00010000"
+      },
+      {
+        "i": 2147483647,
+        "out": "7fffffff"
+      },
+      {
+        "i": -1,
+        "out": "ffffffff"
+      }
+    ],
+    "aad": {
+      "to": "u-to",
+      "from": "u-from",
+      "c": 3,
+      "d": 7,
+      "e": 2,
+      "f": 0,
+      "out": "752d746f752d66726f6d00000003000000070000000200000000"
+    },
+    "gcm_v2": {
+      "salt": "00112233445566778899aabbccddeeff",
+      "nonce": "aabbccddeeff001122334455",
+      "gcmKey": "ca27701b3b289eeb0142b013aa31e2b989f5a287d44968e981fd6d8efbcef451",
+      "data_utf8": "{\"text\":\"hello 本家\"}",
+      "aad": "752d746f752d66726f6d00000003000000070000000200000000",
+      "out": "59e01625c8a71e20079012e58551ea7eff69f4ec19403c39916d6950f912c0e8c63372ae212154"
+    },
+    "cbc_v1": {
+      "salt": "00112233445566778899aabbccddeeff",
+      "aesKey": "ca27701b3b289eeb0142b013aa31e2b989f5a287d44968e981fd6d8efbcef451",
+      "aesIv": "9d262ce6fe024fb26a64cab323496b71",
+      "plain_utf8": "{\"text\":\"v1 本家 message\"}",
+      "ciphertext": "7f54286a514ceb49e74166af7c79b613e48a5fb75bf79135b2909d0ec25a7ec0"
+    },
+    "keyMaterial": {
+      "input": "00070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9",
+      "encKey": "04dfa152eb14b2204e709850239ee5fcfb9960857b54681ee388fae8957bc869",
+      "macKey": "0026f7f9eb7c056579b23e4ac49fa7e04cd7a74114c397170a5525b85ca5abac",
+      "nonce": "ed1dca9b6eaf0326b4285b8c00000000",
+      "raw_utf8": "secret media payload 本家 12345",
+      "keyMaterial_b64": "AAcOFRwjKjE4P0ZNVFtiaXB3foWMk5qhqK+2vcTL0tk=",
+      "encryptedData": "de1fd1e1fd84bf90d3b79dfa0a3ddf0b847f6f5e2447dfb7e3d8d56ac175ab62c9d9ad3c3a168f4601b5b3c4a0e8bed26c91f5389f57f75283ef1a783f25c1879f"
+    },
+    "signData": {
+      "key": "0909090909090909090909090909090909090909090909090909090909090909",
+      "data": "6461746120746f207369676e",
+      "out": "f24bf3b53113a9211f03b4401e6e6552b9e45e336ccbde015ee1068067f90f01"
+    }
+  },
+  "legy": {
+    "xxhash32": [
+      {
+        "input_utf8": "",
+        "seed": 0,
+        "out": 46947589
+      },
+      {
+        "input_utf8": "a",
+        "seed": 0,
+        "out": 1426945110
+      },
+      {
+        "input_utf8": "hello",
+        "seed": 0,
+        "out": 4211111929
+      },
+      {
+        "input_utf8": "The quick brown fox",
+        "seed": 0,
+        "out": 2859069182
+      },
+      {
+        "input_utf8": "0123456789abcdef0123",
+        "seed": 0,
+        "out": 1666225742
+      }
+    ],
+    "encodeLegyHeaders": {
+      "headers": {
+        "x-lpqs": "/S4?v=1",
+        "x-lt": "token-本家"
+      },
+      "out": "002700020006782d6c70717300072f53343f763d310004782d6c74000c746f6b656e2de69cace5aeb6"
+    },
+    "decodeLegyHeaders": {
+      "encoded": "001600020004782d6c6300033230300004782d6c65000137544852494654424f4459",
+      "headers": {
+        "x-lc": "200",
+        "x-le": "7"
+      },
+      "data": "544852494654424f4459"
+    }
+  },
+  "compact": {
+    "plain": {
+      "seqId": 7,
+      "to": "u0123456789abcdef0123456789abcdef",
+      "text": "hello 本家 🌸",
+      "out": "02000e0123456789abcdef0123456789abcdef14efbbbf68656c6c6f20e69cace5aeb620f09f8cb800"
+    },
+    "plain_ascii": {
+      "seqId": 1,
+      "to": "cfedcba9876543210fedcba9876543210",
+      "text": "abc",
+      "out": "020202fedcba9876543210fedcba987654321006efbbbf61626300"
+    },
+    "e2ee": {
+      "seqId": 99,
+      "to": "u0123456789abcdef0123456789abcdef",
+      "msgType": 5,
+      "chunks": [
+        "11111111111111111111111111111111",
+        "636970686572746578742b74616720627974657320e69cace5aeb6",
+        "222222222222222222222222",
+        "00000003",
+        "fffffff9"
+      ],
+      "out": "0500c6010123456789abcdef0123456789abcdef0210111111111111111111111111111111111b636970686572746578742b74616720627974657320e69cace5aeb60c222222222222222222222222060d"
+    },
+    "encodeCompactText": [
+      {
+        "text": "abc",
+        "out": "efbbbf616263"
+      },
+      {
+        "text": "日本語テキスト",
+        "out": "fffee5652c679e8ac630ad30b930c830"
+      },
+      {
+        "text": "🌸🌟",
+        "out": "fffe3cd838df3cd81fdf"
+      },
+      {
+        "text": "mixed 混在 text",
+        "out": "efbbbf6d6978656420e6b7b7e59ca82074657874"
+      }
+    ],
+    "writeCompactI32": [
+      {
+        "v": 0,
+        "out": "00"
+      },
+      {
+        "v": 1,
+        "out": "02"
+      },
+      {
+        "v": -1,
+        "out": "01"
+      },
+      {
+        "v": 42,
+        "out": "54"
+      },
+      {
+        "v": 300,
+        "out": "d804"
+      },
+      {
+        "v": -300,
+        "out": "d704"
+      },
+      {
+        "v": 2147483647,
+        "out": "feffffff0f"
+      },
+      {
+        "v": -2147483648,
+        "out": "ffffffff0f"
+      }
+    ],
+    "response": {
+      "bytes": "0154aa84ccde8fbd88a22280a0abfef962",
+      "decoded": {
+        "sequenceId": 42,
+        "messageId": "1234567890123456789",
+        "createdTime": 1700000000
+      }
+    }
+  },
+  "auth_token": {
+    "isJwt": [
+      {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjEsInN1YiI6IngifQ.sig",
+        "out": true
+      },
+      {
+        "token": "a.b.c",
+        "out": false
+      },
+      {
+        "token": "notajwt",
+        "out": false
+      }
+    ],
+    "createPrimaryAccessToken": {
+      "authKey": "u0123456789abcdef0123456789abcdef:QkJCQkJCQkJCQkJCQkJCQkJCQkI=",
+      "now": 1700000000000,
+      "out": "u0123456789abcdef0123456789abcdef:aWF0OiAxMDIwMDAwMDAwMDAK..+6zv1Sryt9FpreyISiXgqlotwWU="
+    },
+    "resolveLineAccessToken": [
+      {
+        "token": "u123:eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjF9.sig",
+        "out": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjF9.sig"
+      },
+      {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjF9.sig",
+        "out": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjF9.sig"
+      }
+    ],
+    "shouldUseLegyEncryptedAccess": [
+      {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjF9.sig",
+        "out": true
+      },
+      {
+        "token": "plain",
+        "out": false
+      }
+    ]
+  }
+}

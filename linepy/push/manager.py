@@ -213,9 +213,70 @@ class PushManager:
         logger.debug("Square service initialized (subscription=%d)", self.subscription_id)
 
     def _init_talk_service(self, conn: PushConnection, service_type: int):
-        """Initialize Talk service."""
-        # TODO: implement sync request
-        logger.debug("Talk service %d (not implemented)", service_type)
+        """Initialize Talk service (Service 5/8) with an in-stream sync request.
+
+        Sends a ``sync`` SignOnRequest carrying the last-known revisions; the
+        response (TMoreCompactProtocol) is decoded in :meth:`on_sign_on_response`
+        and the next sync request is re-issued on the same stream.
+        """
+        request = self._build_talk_sync_request()
+        self._send_sign_on_request(conn, service_type, request, "sync")
+        logger.debug("Talk service %d initialized (in-stream sync)", service_type)
+
+    def _build_talk_sync_request(self) -> bytes:
+        """Build a Talk ``sync`` request payload from stored revisions."""
+        from ..thrift import write_thrift
+
+        rev = getattr(self, "last_revision", 0) or 0
+        global_rev = getattr(self, "last_global_revision", 0) or 0
+        individual_rev = getattr(self, "last_individual_revision", 0) or 0
+        params = [
+            [12, 1, [
+                [10, 1, rev],
+                [8, 2, 100],  # count
+                [10, 3, global_rev],
+                [10, 4, individual_rev],
+            ]]
+        ]
+        return bytes(write_thrift(params, "sync", 4))
+
+    def decode_talk_sync(self, data: bytes):
+        """Decode a Talk sync SignOn payload.
+
+        Talk sync responses arrive as TMoreCompactProtocol; fall back to the
+        standard compact protocol when TMC decoding fails.
+        """
+        from ..thrift.tmc import TMoreCompactProtocol
+
+        try:
+            return TMoreCompactProtocol(data).res
+        except Exception as tmc_err:
+            logger.debug("TMC decode failed (%s), falling back to compact", tmc_err)
+            try:
+                from ..thrift import read_thrift
+
+                return read_thrift(data, 4)
+            except Exception as compact_err:
+                logger.warning("Talk sync decode failed: %s", compact_err)
+                return None
+
+    @staticmethod
+    def extract_operations(decoded):
+        """Pull the operations list out of a decoded sync result."""
+        if decoded is None:
+            return []
+        # success struct at field 0; operations commonly at field 1 within it.
+        success = None
+        if isinstance(decoded, dict):
+            success = decoded.get(0, decoded)
+        else:
+            success = decoded
+        if isinstance(success, dict):
+            for fid in (1, 2, 3):
+                val = success.get(fid)
+                if isinstance(val, list):
+                    return val
+        return []
 
     def _build_fetch_my_events_request(self, subscription_id: int, sync_token: str) -> bytes:
         """Build fetchMyEvents request payload."""
@@ -291,6 +352,39 @@ class PushManager:
 
         if service_type == ServiceType.SQUARE:
             self._handle_square_response(data)
+        elif service_type in (ServiceType.TALK_FETCHOPS, ServiceType.TALK_SYNC):  # 5, 8
+            self._handle_talk_sync_response(data)
+
+    def _handle_talk_sync_response(self, data: bytes):
+        """Decode a Talk sync response (TMC) and dispatch its operations."""
+        decoded = self.decode_talk_sync(data)
+        operations = self.extract_operations(decoded)
+        dispatcher = self._get_dispatcher()
+        for op in operations:
+            try:
+                if dispatcher is not None:
+                    dispatcher.dispatch_talk_operation(op)
+                elif self.on_event:
+                    self.on_event(ServiceType.TALK_SYNC, op)
+            except Exception as exc:
+                logger.debug("Talk operation dispatch error: %s", exc)
+        # Advance revisions from the decoded result so the next sync continues.
+        self._advance_talk_revisions(decoded)
+
+    def _advance_talk_revisions(self, decoded):
+        if not isinstance(decoded, dict):
+            return
+        success = decoded.get(0, decoded)
+        if isinstance(success, dict):
+            for attr, fid in (("last_revision", 1), ("last_global_revision", 3),
+                              ("last_individual_revision", 4)):
+                val = success.get(fid)
+                if isinstance(val, int):
+                    setattr(self, attr, val)
+
+    def _get_dispatcher(self):
+        getter = getattr(self.client, "get_dispatcher", None)
+        return getter() if callable(getter) else None
 
     def _handle_square_response(self, data: bytes):
         """Handle Square (fetchMyEvents) response."""
@@ -431,7 +525,13 @@ class PushManager:
                             getattr(last_ev, 'squareEventId', '?'), getattr(last_ev, 'type', '?')
                         )
 
+                    dispatcher = self._get_dispatcher()
                     for event in events:
+                        if dispatcher is not None:
+                            try:
+                                dispatcher.dispatch_square_event(event)
+                            except Exception as exc:
+                                logger.debug("Square dispatch error: %s", exc)
                         if self.on_event:
                             self.on_event(ServiceType.SQUARE, event)
 

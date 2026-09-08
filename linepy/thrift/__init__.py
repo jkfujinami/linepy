@@ -248,6 +248,74 @@ class CompactWriter:
             self._buffer.append((kctype << 4) | vctype)
 
 
+# ========== Binary Protocol Writer (protocol 3) ==========
+
+
+class BinaryWriter:
+    """Thrift Binary Protocol writer (TBinaryProtocol).
+
+    Mirrors the CompactWriter method surface used by ``_write_struct`` /
+    ``_write_value`` so the same struct-building code serves both protocols.
+    """
+
+    def __init__(self):
+        self._buffer = bytearray()
+        self._last_fid = 0
+
+    def get_bytes(self) -> bytes:
+        return bytes(self._buffer)
+
+    # primitives (raw values; field header is written separately)
+    def write_bool(self, value: bool, fid: int):
+        self.write_field_begin(TType.BOOL, fid)
+        self._buffer.append(1 if value else 0)
+
+    def write_byte(self, value: int):
+        self._buffer.append(value & 0xFF)
+
+    def write_i16(self, value: int):
+        self._buffer += struct.pack(">h", value)
+
+    def write_i32(self, value: int):
+        self._buffer += struct.pack(">i", value)
+
+    def write_i64(self, value: int):
+        self._buffer += struct.pack(">q", value)
+
+    def write_double(self, value: float):
+        self._buffer += struct.pack(">d", value)
+
+    def write_binary(self, value: Union[str, bytes]):
+        if isinstance(value, str):
+            value = value.encode("utf-8")
+        self._buffer += struct.pack(">i", len(value))
+        self._buffer += value
+
+    # field / collection headers
+    def write_field_begin(self, ftype: int, fid: int):
+        self._buffer.append(ftype & 0xFF)
+        self._buffer += struct.pack(">h", fid)
+        self._last_fid = fid
+
+    def write_field_stop(self):
+        self._buffer.append(TType.STOP)
+
+    def write_struct_begin(self):
+        pass
+
+    def write_struct_end(self):
+        pass
+
+    def write_list_begin(self, etype: int, size: int):
+        self._buffer.append(etype & 0xFF)
+        self._buffer += struct.pack(">i", size)
+
+    def write_map_begin(self, ktype: int, vtype: int, size: int):
+        self._buffer.append(ktype & 0xFF)
+        self._buffer.append(vtype & 0xFF)
+        self._buffer += struct.pack(">i", size)
+
+
 # ========== High-Level Writer ==========
 
 
@@ -271,7 +339,7 @@ def write_thrift(params: List, method_name: str, protocol: int = 4) -> bytes:
         writer = CompactWriter()
     else:
         header = gen_header_binary(method_name)
-        writer = CompactWriter()  # TODO: Implement binary writer
+        writer = BinaryWriter()
 
     # Write struct
     _write_struct(writer, params)
@@ -299,15 +367,15 @@ def read_thrift(data: bytes, protocol: int = 4) -> Any:
     """
     if protocol == 4:
         reader = CompactReader(data)
-    else:
-        reader = ThriftReader(data)
+        # Compact message header starts with 0x82.
+        if data and data[0] == 0x82:
+            return reader.parse_response()
+        return reader.read_struct()
 
-    # Try to skip header if present (Compact starts with 0x82 0x21 or simple struct)
-    # If the first byte is 0x82, it's a message header, we use parse_response()
-    if data and data[0] == 0x82:
+    reader = ThriftReader(data)
+    # Strict binary message header has the high bit set (0x80...).
+    if data and (data[0] & 0x80):
         return reader.parse_response()
-
-    # Otherwise, it might be a raw struct
     return reader.read_struct()
 
 
@@ -802,13 +870,100 @@ class ThriftWriter:
 
 
 class ThriftReader:
-    """Legacy Binary Reader"""
+    """Thrift Binary Protocol reader (TBinaryProtocol, protocol 3)."""
 
     def __init__(self, data: bytes):
         self.data = data
         self._pos = 0
 
+    def _read(self, n: int) -> bytes:
+        b = self.data[self._pos:self._pos + n]
+        self._pos += n
+        return b
+
+    def _read_byte(self) -> int:
+        b = self.data[self._pos]
+        self._pos += 1
+        return b
+
+    def read_message_begin(self):
+        (size,) = struct.unpack(">i", self._read(4))
+        if size < 0:
+            # strict: high 16 bits = version, low byte = message type
+            msg_type = size & 0xFF
+            (name_len,) = struct.unpack(">i", self._read(4))
+            name = self._read(name_len).decode("utf-8", "replace")
+            (seqid,) = struct.unpack(">i", self._read(4))
+            return name, msg_type, seqid
+        # old (non-strict) encoding: size is the name length
+        name = self._read(size).decode("utf-8", "replace")
+        msg_type = self._read_byte()
+        (seqid,) = struct.unpack(">i", self._read(4))
+        return name, msg_type, seqid
+
+    def read_field_begin(self):
+        ftype = self._read_byte()
+        if ftype == TType.STOP:
+            return None, TType.STOP, 0
+        (fid,) = struct.unpack(">h", self._read(2))
+        return None, ftype, fid
+
+    def read_value(self, ftype: int) -> Any:
+        if ftype == TType.BOOL:
+            return self._read_byte() != 0
+        if ftype == TType.BYTE:
+            return self._read_byte()
+        if ftype == TType.I16:
+            return struct.unpack(">h", self._read(2))[0]
+        if ftype == TType.I32:
+            return struct.unpack(">i", self._read(4))[0]
+        if ftype == TType.I64:
+            return struct.unpack(">q", self._read(8))[0]
+        if ftype == TType.DOUBLE:
+            return struct.unpack(">d", self._read(8))[0]
+        if ftype == TType.STRING:
+            (length,) = struct.unpack(">i", self._read(4))
+            raw = self._read(length)
+            try:
+                return raw.decode("utf-8")
+            except UnicodeDecodeError:
+                return raw
+        if ftype == TType.STRUCT:
+            return self.read_struct()
+        if ftype == TType.MAP:
+            ktype = self._read_byte()
+            vtype = self._read_byte()
+            (size,) = struct.unpack(">i", self._read(4))
+            return {self.read_value(ktype): self.read_value(vtype) for _ in range(size)}
+        if ftype in (TType.LIST, TType.SET):
+            etype = self._read_byte()
+            (size,) = struct.unpack(">i", self._read(4))
+            return [self.read_value(etype) for _ in range(size)]
+        raise ValueError(f"Unknown binary TType: {ftype}")
+
+    def read_struct(self) -> Dict[int, Any]:
+        result: Dict[int, Any] = {}
+        while True:
+            _, ftype, fid = self.read_field_begin()
+            if ftype == TType.STOP:
+                break
+            result[fid] = self.read_value(ftype)
+        return result
+
     def parse_response(self) -> Any:
-        # Use compact reader as fallback
-        reader = CompactReader(self.data)
-        return reader.parse_response()
+        self.read_message_begin()
+        _, ftype, fid = self.read_field_begin()
+        if fid == 0:
+            return self.read_value(ftype)
+        if fid == 1:
+            error = self.read_value(ftype)
+            return {
+                "error": {
+                    "code": error.get(1) if isinstance(error, dict) else None,
+                    "message": error.get(2) if isinstance(error, dict) else str(error),
+                    "metadata": error.get(3) if isinstance(error, dict) else None,
+                    "_data": error,
+                }
+            }
+        # non 0/1 field: return as a single-field struct
+        return {fid: self.read_value(ftype)}

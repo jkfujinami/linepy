@@ -5,10 +5,15 @@ Handles all HTTP communication with LINE servers.
 Uses httpx for HTTP/2 support.
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 import httpx
 
 from .thrift import ThriftReader, ThriftWriter, CompactReader
+from .legy import (
+    LegyEncryptedTransport,
+    is_legy_talk_path,
+    should_use_legy_encrypted_access,
+)
 
 
 class RequestClient:
@@ -50,6 +55,20 @@ class RequestClient:
 
         # Request sequence numbers
         self._reqseq: Dict[str, int] = {}
+
+        # LEGY encrypted transport (Phase 1 Step 2)
+        #   None  -> auto (path + token based)
+        #   True  -> always encrypt
+        #   False -> never encrypt
+        self.legy_encrypted: Optional[bool] = None
+        self._legy_transport: Optional[LegyEncryptedTransport] = None
+        self.legy_endpoint: str = "https://gf.line.naver.jp/enc"
+
+        # Hooks wired by BaseClient for token lifecycle (Phase 1 Step 2.3)
+        #   on_next_access(token): called when server returns x-line-next-access
+        #   refresh_hook() -> bool: refresh access token, return True on success
+        self.on_next_access: Optional[Callable[[str], None]] = None
+        self.refresh_hook: Optional[Callable[[], bool]] = None
 
     def close(self):
         """Close HTTP client"""
@@ -131,28 +150,132 @@ class RequestClient:
         """
         target_host = host or self.HOST
         url = f"https://{target_host}{path}"
-        headers = self._build_headers(
-            host=target_host,
-            access_token=access_token,
+        token = access_token or self.auth_token
+
+        did_refresh = False
+        while True:
+            headers = self._build_headers(
+                host=target_host,
+                access_token=token,
+                method="POST",
+                extra=extra_headers,
+            )
+
+            if self._should_use_legy(path, token):
+                raw = self._legy_request(
+                    path=path,
+                    data=data,
+                    token=token,
+                    base_headers=headers,
+                    timeout=timeout or self.timeout,
+                )
+            else:
+                response = self._http.post(
+                    url,
+                    content=data,
+                    headers=headers,
+                    timeout=timeout or self.timeout,
+                )
+                self._handle_next_access(response.headers)
+                response.raise_for_status()
+                raw = response.content
+
+            # Auto token refresh + single retry (Phase 1 Step 2.3)
+            if (
+                not did_refresh
+                and self.refresh_hook is not None
+                and b"MUST_REFRESH_V3_TOKEN" in raw
+            ):
+                did_refresh = True
+                try:
+                    if self.refresh_hook():
+                        token = self.auth_token
+                        # A refreshed session key must be renegotiated.
+                        self._legy_transport = None
+                        continue
+                except Exception:
+                    pass
+
+            reader = CompactReader(raw) if protocol == 4 else ThriftReader(raw)
+            return reader.parse_response()
+
+    # ---- LEGY helpers -----------------------------------------------------
+
+    def _should_use_legy(self, path: str, token: Optional[str]) -> bool:
+        if self.legy_encrypted is False:
+            return False
+        if not token:
+            return False
+        if self.legy_encrypted is True:
+            return True
+        return is_legy_talk_path(path) and should_use_legy_encrypted_access(token)
+
+    def _get_legy_transport(self) -> LegyEncryptedTransport:
+        if self._legy_transport is None:
+            self._legy_transport = LegyEncryptedTransport(self.legy_endpoint)
+        return self._legy_transport
+
+    def _handle_next_access(self, response_headers) -> None:
+        try:
+            next_token = response_headers.get("x-line-next-access")
+        except Exception:
+            next_token = None
+        if next_token and self.on_next_access is not None:
+            try:
+                self.on_next_access(next_token)
+            except Exception:
+                pass
+
+    def _legy_request(
+        self,
+        path: str,
+        data: bytes,
+        token: Optional[str],
+        base_headers: Dict[str, str],
+        timeout: float,
+    ) -> bytes:
+        transport = self._get_legy_transport()
+        body = transport.encode_request_body(path, data, token)
+        outer = transport.build_outer_headers(
+            application=self.device_name,
+            user_agent=self._get_user_agent(),
+            source_headers=base_headers,
             method="POST",
-            extra=extra_headers,
         )
-
         response = self._http.post(
-            url,
-            content=data,
-            headers=headers,
-            timeout=timeout or self.timeout,
+            transport.endpoint,
+            content=body,
+            headers=outer,
+            timeout=timeout,
         )
+        self._handle_next_access(response.headers)
         response.raise_for_status()
+        _headers, thrift_body = transport.decode_response_body(response.content)
+        return thrift_body
 
-        # Parse response based on protocol
-        if protocol == 4:
-            reader = CompactReader(response.content)
-        else:
-            reader = ThriftReader(response.content)
+    def compact_request(
+        self,
+        path: str,
+        seq_id: int,
+        body: bytes,
+        host: Optional[str] = None,
+        timeout: Optional[float] = None,
+    ) -> bytes:
+        """POST a compact message frame (/CA5 or /ECA5).
 
-        return reader.parse_response()
+        Mirrors 本家 ``#requestCompactMessage``: a direct POST (not LEGY) with
+        the standard headers plus ``x-lai: <seqId>``. Returns raw response bytes.
+        """
+        target_host = host or self.HOST
+        url = f"https://{target_host}{path}"
+        headers = self._build_headers(host=target_host, method="POST")
+        headers["x-lai"] = str(seq_id)
+        response = self._http.post(
+            url, content=body, headers=headers, timeout=timeout or self.timeout
+        )
+        self._handle_next_access(response.headers)
+        response.raise_for_status()
+        return response.content
 
     def request_raw(
         self,

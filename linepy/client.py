@@ -70,6 +70,33 @@ class Client:
     def timeline(self):
         return self.base.timeline
 
+    @property
+    def liff(self):
+        return self.base.liff
+
+    @property
+    def voom(self):
+        return self.base.voom
+
+    @property
+    def obs(self):
+        return self.base.obs
+
+    @property
+    def e2ee(self):
+        return self.base.e2ee
+
+    def on(self, event: str, callback: Optional[Callable] = None):
+        """Register an event handler (delegates to the base client)."""
+        return self.base.on(event, callback)
+
+    def emit(self, event: str, *args, **kwargs):
+        return self.base.emit(event, *args, **kwargs)
+
+    def listen(self, talk: bool = True, square: bool = True):
+        """Start the PUSH listen loop (see BaseClient.listen)."""
+        return self.base.listen(talk=talk, square=square)
+
     def login(
         self,
         auth_token: Optional[str] = None,
@@ -89,14 +116,32 @@ class Client:
             keep_logged_in: Keep logged in (save token)
         """
         if auth_token:
-            self.base.login_with_token(auth_token, save=keep_logged_in)
+            return self.base.login_with_token(auth_token, save=keep_logged_in)
         elif email and password:
-            self.base.login_with_email(email, password, save=keep_logged_in)
+            return self.base.login_with_email(email, password)
         elif qr:
-            self.base.login_with_qr(save=keep_logged_in)
+            return self.base.login_with_qr(save=keep_logged_in)
         else:
             if not self.base.auto_login():
-                self.base.login_with_qr(save=keep_logged_in)
+                return self.base.login_with_qr(save=keep_logged_in)
+
+    def login_with_email(
+        self,
+        email: str,
+        password: str,
+        pincode: str = "114514",
+        e2ee: bool = True,
+    ) -> str:
+        """Login with email/password (delegates to the base client)."""
+        return self.base.login_with_email(email, password, pincode=pincode, e2ee=e2ee)
+
+    def login_with_qr(self, v3: Optional[bool] = None, save: bool = True) -> str:
+        """Login with a QR code (delegates to the base client)."""
+        return self.base.login_with_qr(v3=v3, save=save)
+
+    def login_with_token(self, auth_token: str, save: bool = True):
+        """Login with an existing auth token (delegates to the base client)."""
+        return self.base.login_with_token(auth_token, save=save)
 
     # ========== Profile ==========
 
@@ -149,7 +194,7 @@ class Client:
         Returns:
             Sent message object
         """
-        return self.base.talk.send_message(to, text)
+        return self.base.send_message(to, text)
 
     def send_image(self, to: str, path: str) -> str:
         """
@@ -233,14 +278,30 @@ class Client:
         content_type: str,
         filename: Optional[str] = None
     ) -> str:
-        """Internal media sender"""
-        # Check if target is a Square Chat (starts with 'm')
+        """Internal media sender.
+
+        Square chats (``m...``) upload plain to OBS; Talk targets (``u...`` /
+        ``c...``) go through E2EE media upload (Phase 2 Step 6).
+        """
         if to.startswith("m"):
             return self.base.obs.upload_obj_square_chat(
                 square_chat_mid=to,
                 path_or_bytes=path,
                 content_type=content_type,
-                filename=filename
+                filename=filename,
             )
-        else:
-            raise NotImplementedError("Media sending is currently only supported for Square Chats (mid starts with 'm')")
+        if to[:1] in ("u", "c"):
+            if isinstance(path, (bytes, bytearray)):
+                data = bytes(path)
+            else:
+                with open(path, "rb") as f:
+                    data = f.read()
+                if not filename:
+                    import os as _os
+                    filename = _os.path.basename(path)
+            return self.base.obs.upload_media_by_e2ee(
+                data=data, o_type=content_type, to=to, filename=filename
+            )
+        raise NotImplementedError(
+            "Media sending supports Square chats (m...) and Talk (u.../c...) only"
+        )

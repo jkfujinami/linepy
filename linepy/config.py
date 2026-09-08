@@ -13,6 +13,7 @@ Device = Literal[
     "DESKTOPMAC",
     "CHROMEOS",
     "ANDROID",
+    "ANDROIDSECONDARY",
     "IOS",
     "IOSIPAD",
     "WATCHOS",
@@ -31,18 +32,19 @@ class DeviceDetails(NamedTuple):
 
 # Default versions (from linejs - most up to date)
 DEFAULT_VERSIONS = {
-    "DESKTOPWIN": "9.2.0.3403",
-    "DESKTOPMAC": "9.2.0.3402",
+    "DESKTOPWIN": "9.7.0.3556",
+    "DESKTOPMAC": "26.2.0",
     "CHROMEOS": "3.0.3",
-    "ANDROID": "13.4.1",
-    "IOS": "15.19.0",
-    "IOSIPAD": "15.19.0",
-    "WATCHOS": "15.19.0",
+    "ANDROID": "26.6.2",
+    "ANDROIDSECONDARY": "26.6.2",
+    "IOS": "26.7.2",
+    "IOSIPAD": "26.7.2",
+    "WATCHOS": "26.7.2",
     "WEAROS": "13.4.1",
 }
 
 # Devices that support token v3
-TOKEN_V3_SUPPORT = ["DESKTOPWIN", "DESKTOPMAC", "IOS", "ANDROID"]
+TOKEN_V3_SUPPORT = ["DESKTOPWIN", "DESKTOPMAC", "IOS", "ANDROID", "ANDROIDSECONDARY"]
 
 # Primary devices (should not refresh token if using extracted token)
 PRIMARY_DEVICES = ["ANDROID", "IOS"]
@@ -72,6 +74,7 @@ def get_device_details(
     elif device == "DESKTOPMAC":
         app_version = version or DEFAULT_VERSIONS["DESKTOPMAC"]
         system_name = "MAC"
+        system_version = "13.0.0"
     elif device == "CHROMEOS":
         app_version = version or DEFAULT_VERSIONS["CHROMEOS"]
         system_name = "Chrome_OS"
@@ -79,20 +82,27 @@ def get_device_details(
     elif device == "ANDROID":
         app_version = version or DEFAULT_VERSIONS["ANDROID"]
         system_name = "Android OS"
+        system_version = "16"
+    elif device == "ANDROIDSECONDARY":
+        app_version = version or DEFAULT_VERSIONS["ANDROIDSECONDARY"]
+        system_name = "Android OS"
+        system_version = "16"
     elif device == "IOS":
         app_version = version or DEFAULT_VERSIONS["IOS"]
         system_name = "iOS"
-        system_version = "17.0"
+        system_version = "18.0"
     elif device == "IOSIPAD":
         app_version = version or DEFAULT_VERSIONS["IOSIPAD"]
         system_name = "iOS"
-        system_version = "17.0"
+        system_version = "18.0"
     elif device == "WATCHOS":
         app_version = version or DEFAULT_VERSIONS["WATCHOS"]
         system_name = "Watch OS"
+        system_version = "11.0"
     elif device == "WEAROS":
         app_version = version or DEFAULT_VERSIONS["WEAROS"]
         system_name = "Wear OS"
+        system_version = "3.0"
     else:
         return None
 

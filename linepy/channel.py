@@ -59,3 +59,7 @@ class ChannelService:
         """
         # approveChannelAndIssueChannelToken_args: [[11, 1, channelId]]
         return self._call("approveChannelAndIssueChannelToken", [[11, 1, channel_id]])
+
+    def issue_channel_token(self, channel_id: str) -> Any:
+        """Issue a channel token for a channel id (issueChannelToken_args)."""
+        return self._call("issueChannelToken", [[11, 1, channel_id]])

@@ -2,7 +2,7 @@
 """Base Service module for LINEPY."""
 
 from typing import List, Type, TypeVar, Optional, Dict, Any, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -20,6 +20,29 @@ def _convert_int_keys_to_str(data: Any) -> Any:
         return [_convert_int_keys_to_str(item) for item in data]
     else:
         return data
+
+
+def validate_response_model(data: Any, response_model: Any) -> Any:
+    """Validate thrift-decoded ``data`` against ``response_model``.
+
+    ``response_model`` may be a plain :class:`~pydantic.BaseModel` subclass
+    *or* a typing generic such as ``List[SomeModel]`` / ``Dict[str, Model]``.
+    A generic alias has no ``.model_validate`` of its own -- calling it
+    directly raises ``AttributeError: type object 'list' has no attribute
+    'model_validate'`` for e.g. ``response_model=List[Pb1_C13097n4]`` (used by
+    ~40 methods such as ``getE2EEPublicKeys``). :class:`~pydantic.TypeAdapter`
+    validates both shapes uniformly, so it replaces the direct
+    ``response_model.model_validate(...)`` call unconditionally.
+
+    Int-keyed thrift field dicts are recursively normalized to string keys
+    (matching each model's ``Field(alias="<id>")``) regardless of whether
+    ``data`` itself is a dict, a list of dicts, or a bare scalar -- the old
+    code only converted when the *top-level* value was a dict, so a
+    ``List[...]`` response's items (which carry the actual int-keyed dicts)
+    were silently left unconverted.
+    """
+    data = _convert_int_keys_to_str(data)
+    return TypeAdapter(response_model).validate_python(data)
 
 
 class ServiceBase:
@@ -88,14 +111,9 @@ class ServiceBase:
     def _validate_response(
         self, data: Any, response_model: Optional[Type[T]] = None
     ) -> Union[T, Any]:
-        """Validate and parse response data into Pydantic model."""
+        """Validate and parse response data into a Pydantic model (or a
+        generic such as ``List[Model]``/``Dict[str, Model]``)."""
         if response_model and data is not None:
-            # Convert integer keys to string keys for Pydantic alias compatibility
-
-            # Convert integer keys to string keys for Pydantic alias compatibility
-            if isinstance(data, dict):
-                data = _convert_int_keys_to_str(data)
-
-            return response_model.model_validate(data)
+            return validate_response_model(data, response_model)
 
         return data

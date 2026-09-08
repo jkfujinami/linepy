@@ -233,31 +233,46 @@ class TokenManager:
         Save login result to storage.
 
         Args:
-            response: qrCodeLoginV2 or loginV2 response
+            response: A qrCodeLoginV2/qrCodeLoginV2ForSecure response, as
+                either a raw Thrift field-id dict (int keys, e.g. from a
+                `parse=false` RPC) or a pydantic model's
+                ``model_dump(by_alias=True)`` (string keys, e.g. "3"). Both
+                are accepted since both shapes occur across the login flows.
         """
         import time
 
-        # Extract token info (field 3)
-        token_info = response.get(3, {})
+        def field(d, fid: int):
+            """Read a field id from either an int-keyed or str-keyed dict."""
+            if not isinstance(d, dict):
+                return None
+            return d.get(fid) if fid in d else d.get(str(fid))
+
+        # Extract token info (field 3: tokenV3IssueResult / TokenInfo)
+        token_info = field(response, 3) or {}
 
         if token_info:
             # Access token (field 1)
-            if token_info.get(1):
-                self.auth_token = token_info[1]
+            access_token = field(token_info, 1)
+            if access_token:
+                self.auth_token = access_token
 
             # Refresh token (field 2)
-            if token_info.get(2):
-                self.refresh_token = token_info[2]
+            refresh_token = field(token_info, 2)
+            if refresh_token:
+                self.refresh_token = refresh_token
 
             # Expiration (field 3 = expiresIn seconds, field 6 = iat timestamp)
-            expires_in = token_info.get(3, 0)
-            iat = token_info.get(6, int(time.time()))
+            expires_in = field(token_info, 3) or 0
+            iat = field(token_info, 6)
+            if iat is None:
+                iat = int(time.time())
             if expires_in:
                 self.expire = iat + expires_in
 
         # Extract MID (field 4)
-        if response.get(4):
-            self.mid = response[4]
+        mid = field(response, 4)
+        if mid:
+            self.mid = mid
 
         # Extract QR certificate (field 1)
         if response.get(1):
@@ -309,6 +324,45 @@ class TokenManager:
         tokens = self.storage.get("square_cont_tokens") or {}
         tokens[chat_mid] = token
         self.storage.set("square_cont_tokens", tokens)
+
+    # ========== E2EE Key Persistence (Phase 1 Step 1.2) ==========
+
+    def get_e2ee_key(self, key_id: int) -> Optional[Dict[str, Any]]:
+        """Get own E2EE keypair by key id (private/public/version)."""
+        keys = self.storage.get("e2ee_keys") or {}
+        return keys.get(f"e2ee_key_{key_id}")
+
+    def save_e2ee_key(self, key_id: int, key_data: Dict[str, Any]) -> None:
+        """Persist own E2EE keypair under its key id."""
+        keys = self.storage.get("e2ee_keys") or {}
+        keys[f"e2ee_key_{key_id}"] = key_data
+        self.storage.set("e2ee_keys", keys)
+
+    def get_all_e2ee_keys(self) -> Dict[str, Any]:
+        """Return the full mapping of persisted own E2EE keypairs."""
+        return self.storage.get("e2ee_keys") or {}
+
+    def get_user_public_key(self, mid: str) -> Optional[Dict[str, Any]]:
+        """Get a cached public key for another user/entity."""
+        keys = self.storage.get("e2ee_public_keys") or {}
+        return keys.get(f"e2ee_pub_{mid}")
+
+    def save_user_public_key(self, mid: str, pub_key: Dict[str, Any]) -> None:
+        """Cache another user's/entity's public key."""
+        keys = self.storage.get("e2ee_public_keys") or {}
+        keys[f"e2ee_pub_{mid}"] = pub_key
+        self.storage.set("e2ee_public_keys", keys)
+
+    def get_group_key(self, chat_mid: str) -> Optional[Dict[str, Any]]:
+        """Get the cached shared group key for a group/room chat."""
+        keys = self.storage.get("e2ee_group_keys") or {}
+        return keys.get(f"e2ee_group_{chat_mid}")
+
+    def save_group_key(self, chat_mid: str, group_key: Dict[str, Any]) -> None:
+        """Cache the shared group key for a group/room chat."""
+        keys = self.storage.get("e2ee_group_keys") or {}
+        keys[f"e2ee_group_{chat_mid}"] = group_key
+        self.storage.set("e2ee_group_keys", keys)
 
     def clear_square_tokens(self, chat_mid: str) -> None:
         """Clear tokens for a square chat"""
