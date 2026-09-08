@@ -24,14 +24,17 @@ import os
 import struct
 from typing import Any, Dict, List, Optional, Tuple
 
-from nacl.bindings import crypto_scalarmult, crypto_scalarmult_base
-
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256, HMAC
 import hashlib
 
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.x25519 import (
+    X25519PrivateKey,
+    X25519PublicKey,
+)
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 try:  # AES-GCM-SIV: cryptography >= 42
     from cryptography.hazmat.primitives.ciphers.aead import AESGCMSIV
@@ -111,12 +114,15 @@ class E2EE:
 
     def generate_shared_secret(self, private_key: bytes, public_key: bytes) -> bytes:
         """Raw X25519 shared secret (Curve25519 ``sharedKey``)."""
-        return crypto_scalarmult(bytes(private_key), bytes(public_key))
+        priv = X25519PrivateKey.from_private_bytes(bytes(private_key))
+        pub = X25519PublicKey.from_public_bytes(bytes(public_key))
+        return priv.exchange(pub)
 
     @staticmethod
     def public_from_private(private_key: bytes) -> bytes:
         """Derive the Curve25519 public key from a private key."""
-        return crypto_scalarmult_base(bytes(private_key))
+        priv = X25519PrivateKey.from_private_bytes(bytes(private_key))
+        return priv.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
 
     @staticmethod
     def get_sha256_sum(*args) -> bytes:
