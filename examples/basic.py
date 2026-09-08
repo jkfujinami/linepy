@@ -14,7 +14,7 @@ def main():
 
     # Login with auth token
     # Get your auth token from CHRLINE or other means
-    auth_token = "YOUR_AUTH_TOKEN_HERE"
+    auth_token = "your_auth_token"
 
     try:
         client.login(auth_token=auth_token)

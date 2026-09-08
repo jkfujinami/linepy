@@ -235,7 +235,7 @@ class TokenManager:
         Args:
             response: A qrCodeLoginV2/qrCodeLoginV2ForSecure response, as
                 either a raw Thrift field-id dict (int keys, e.g. from a
-                `parse=false` RPC) or a pydantic model's
+                `parse=false` RPC) or a ModelBase dataclass's
                 ``model_dump(by_alias=True)`` (string keys, e.g. "3"). Both
                 are accepted since both shapes occur across the login flows.
         """

@@ -13,7 +13,7 @@ def main():
     try:
         # Initialize Client
         client = BaseClient(
-            "IOSIPAD", storage="/Users/fujinami/github/linepy/.linepy_test.json"
+            "DESKTOPWIN", storage=".linepy_storage.json"
         )
 
         if not client.auto_login():
@@ -39,8 +39,8 @@ def start_polling(client: BaseClient):
     while True:
         try:
             # Flat argument style: No need for FetchMyEventsRequest!
-            response = client.square.fetch_my_events(
-                subscription_id=0, sync_token=sync_token, limit=50
+            response = client.square.fetchMyEvents(
+                subscriptionId=0, syncToken=sync_token, limit=50
             )
 
             # Update sync token

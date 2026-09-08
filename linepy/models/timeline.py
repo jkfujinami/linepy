@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Pydantic models for LINE Timeline API responses.
-These models provide type-safe, dot-accessible structures for the data returned
-by `Timeline.list_post`, `create_post`, `get_post`, etc.
+"""Models for LINE Timeline API responses.
+
+Plain stdlib ``@dataclass``es (see ``linepy._model_base``). These wrap real
+JSON REST responses (VOOM API) rather than Thrift structs, so field names
+match the JSON keys directly -- no ``alias`` mapping needed, just
+``ModelBase.from_dict``/``to_dict`` for the same dot-accessible construction
+LINEPY's ``Timeline.list_post``/``create_post``/``get_post`` etc. always had.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 
-from pydantic import BaseModel, Field
+from .._model_base import ModelBase
 
 
-class UserInfo(BaseModel):
+@dataclass(kw_only=True)
+class UserInfo(ModelBase):
     """Post author information."""
 
     mid: str
@@ -21,16 +27,18 @@ class UserInfo(BaseModel):
     writerMid: Optional[str] = None
 
 
-class ReadPermission(BaseModel):
+@dataclass(kw_only=True)
+class ReadPermission(ModelBase):
     """Read permission settings."""
 
     type: str = "ALL"
-    gids: List[str] = Field(default_factory=list)
+    gids: List[str] = field(default_factory=list)
     count: Optional[int] = None
     homeID: Optional[str] = None
 
 
-class GroupHome(BaseModel):
+@dataclass(kw_only=True)
+class GroupHome(ModelBase):
     """Group/Square home info."""
 
     groupId: str
@@ -39,14 +47,16 @@ class GroupHome(BaseModel):
     groupType: Optional[str] = None
 
 
-class UrlInfo(BaseModel):
+@dataclass(kw_only=True)
+class UrlInfo(ModelBase):
     """URL info for post."""
 
     type: str = "INTERNAL"
     targetUrl: str = ""
 
 
-class PostInfo(BaseModel):
+@dataclass(kw_only=True)
+class PostInfo(ModelBase):
     """Post metadata."""
 
     appSn: int = 0
@@ -56,8 +66,8 @@ class PostInfo(BaseModel):
     likeCount: int = 0
     commentCount: int = 0
     liked: bool = False
-    url: Optional[UrlInfo] = None
-    readPermission: ReadPermission = Field(default_factory=ReadPermission)
+    url: Optional["UrlInfo"] = None
+    readPermission: "ReadPermission" = field(default_factory=lambda: ReadPermission())
     allowShare: bool = True
     allowLikeShare: bool = False
     allowComment: bool = True
@@ -72,14 +82,15 @@ class PostInfo(BaseModel):
     hasSharedToPost: bool = False
     commentLinkPermission: str = "ALL"
     likeLinkPermission: str = "ALL"
-    groupHome: Optional[GroupHome] = None
-    editableContents: List[str] = Field(default_factory=list)
+    groupHome: Optional["GroupHome"] = None
+    editableContents: List[str] = field(default_factory=list)
     allowEdit: bool = True
     createdTime: int = 0
     updatedTime: int = 0
 
 
-class TextStyle(BaseModel):
+@dataclass(kw_only=True)
+class TextStyle(ModelBase):
     """Text styling options."""
 
     textSizeMode: str = "NORMAL"
@@ -87,21 +98,24 @@ class TextStyle(BaseModel):
     textAnimation: str = "NONE"
 
 
-class MediaStyle(BaseModel):
+@dataclass(kw_only=True)
+class MediaStyle(ModelBase):
     """Media display options."""
 
     displayType: str = "GRID_1_A"
 
 
-class ContentsStyle(BaseModel):
+@dataclass(kw_only=True)
+class ContentsStyle(ModelBase):
     """Content styling container."""
 
-    textStyle: Optional[TextStyle] = Field(default_factory=TextStyle)
-    stickerStyle: Dict[str, Any] = Field(default_factory=dict)
-    mediaStyle: Optional[MediaStyle] = Field(default_factory=MediaStyle)
+    textStyle: Optional["TextStyle"] = field(default_factory=lambda: TextStyle())
+    stickerStyle: Dict[str, Any] = field(default_factory=dict)
+    mediaStyle: Optional["MediaStyle"] = field(default_factory=lambda: MediaStyle())
 
 
-class Sticker(BaseModel):
+@dataclass(kw_only=True)
+class Sticker(ModelBase):
     """Sticker in post."""
 
     id: str
@@ -112,7 +126,8 @@ class Sticker(BaseModel):
     stickerResourceType: str = "ANIMATION"
 
 
-class Location(BaseModel):
+@dataclass(kw_only=True)
+class Location(ModelBase):
     """Location in post."""
 
     latitude: float
@@ -120,7 +135,8 @@ class Location(BaseModel):
     name: str
 
 
-class Media(BaseModel):
+@dataclass(kw_only=True)
+class Media(ModelBase):
     """Media item in post."""
 
     objectId: str
@@ -128,19 +144,21 @@ class Media(BaseModel):
     obsFace: str = "[]"
 
 
-class Contents(BaseModel):
+@dataclass(kw_only=True)
+class Contents(ModelBase):
     """Post contents."""
 
-    contentsStyle: Optional[ContentsStyle] = Field(default_factory=ContentsStyle)
-    stickers: List[Sticker] = Field(default_factory=list)
-    locations: List[Location] = Field(default_factory=list)
-    media: List[Media] = Field(default_factory=list)
+    contentsStyle: Optional["ContentsStyle"] = field(default_factory=lambda: ContentsStyle())
+    stickers: List["Sticker"] = field(default_factory=list)
+    locations: List["Location"] = field(default_factory=list)
+    media: List["Media"] = field(default_factory=list)
     text: Optional[str] = None
-    textMeta: List[Any] = Field(default_factory=list)
+    textMeta: List[Any] = field(default_factory=list)
     sharedPostId: Optional[str] = None
 
 
-class CpInfo(BaseModel):
+@dataclass(kw_only=True)
+class CpInfo(ModelBase):
     """Content provider info (line-square, etc.)."""
 
     # line-square specific
@@ -150,17 +168,19 @@ class CpInfo(BaseModel):
     announced: bool = False
 
 
-class Post(BaseModel):
+@dataclass(kw_only=True)
+class Post(ModelBase):
     """A timeline/note post."""
 
-    userInfo: UserInfo
-    postInfo: PostInfo
-    contents: Contents
-    cpInfo: Dict[str, Any] = Field(default_factory=dict)
-    statisticInfo: Dict[str, Any] = Field(default_factory=dict)
+    userInfo: "UserInfo"
+    postInfo: "PostInfo"
+    contents: "Contents"
+    cpInfo: Dict[str, Any] = field(default_factory=dict)
+    statisticInfo: Dict[str, Any] = field(default_factory=dict)
 
 
-class FeedInfo(BaseModel):
+@dataclass(kw_only=True)
+class FeedInfo(ModelBase):
     """Feed entry info."""
 
     type: str
@@ -169,87 +189,95 @@ class FeedInfo(BaseModel):
     score: Optional[int] = None
 
 
-class Feed(BaseModel):
+@dataclass(kw_only=True)
+class Feed(ModelBase):
     """A single feed entry containing post."""
 
-    feedInfo: FeedInfo
-    post: Post
+    feedInfo: "FeedInfo"
+    post: "Post"
 
 
-class FeedPost(BaseModel):
+@dataclass(kw_only=True)
+class FeedPost(ModelBase):
     """Feed container for single post (create/get response)."""
 
-    post: Post
+    post: "Post"
 
 
-class ListResult(BaseModel):
+@dataclass(kw_only=True)
+class ListResult(ModelBase):
     """Result for list_post."""
 
-    feeds: List[Feed] = Field(default_factory=list)
+    feeds: List["Feed"] = field(default_factory=list)
 
 
-class CreateResult(BaseModel):
+@dataclass(kw_only=True)
+class CreateResult(ModelBase):
     """Result for create_post."""
 
-    feed: FeedPost
+    feed: "FeedPost"
 
 
-class GetResult(BaseModel):
+@dataclass(kw_only=True)
+class GetResult(ModelBase):
     """Result for get_post."""
 
-    feed: FeedPost
+    feed: "FeedPost"
 
 
-class DeleteResult(BaseModel):
+@dataclass(kw_only=True)
+class DeleteResult(ModelBase):
     """Result for delete_post."""
 
-    pass
 
-
-class ShareResult(BaseModel):
+@dataclass(kw_only=True)
+class ShareResult(ModelBase):
     """Result for share_post."""
 
-    pass
 
-
-class ListPostResponse(BaseModel):
+@dataclass(kw_only=True)
+class ListPostResponse(ModelBase):
     """Response from list_post."""
 
     code: int
     message: str
-    result: ListResult
+    result: "ListResult"
 
 
-class CreatePostResponse(BaseModel):
+@dataclass(kw_only=True)
+class CreatePostResponse(ModelBase):
     """Response from create_post."""
 
     code: int
     message: str
-    result: CreateResult
+    result: "CreateResult"
 
 
-class GetPostResponse(BaseModel):
+@dataclass(kw_only=True)
+class GetPostResponse(ModelBase):
     """Response from get_post."""
 
     code: int
     message: str
-    result: GetResult
+    result: "GetResult"
 
 
-class DeletePostResponse(BaseModel):
+@dataclass(kw_only=True)
+class DeletePostResponse(ModelBase):
     """Response from delete_post."""
 
     code: int
     message: str
-    result: Optional[DeleteResult] = None
+    result: Optional["DeleteResult"] = None
 
 
-class SharePostResponse(BaseModel):
+@dataclass(kw_only=True)
+class SharePostResponse(ModelBase):
     """Response from share_post."""
 
     code: int
     message: str
-    result: Optional[ShareResult] = None
+    result: Optional["ShareResult"] = None
 
 
 # Backwards compatibility alias

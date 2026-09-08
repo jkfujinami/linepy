@@ -381,22 +381,23 @@ def read_thrift(data: bytes, protocol: int = 4) -> Any:
 
 def _write_struct(writer: CompactWriter, params: Union[List, Any]):
     """Write struct fields"""
-    from pydantic import BaseModel
+    import dataclasses
     from enum import Enum
 
     saved_fid = writer._last_fid
     writer._last_fid = 0
 
-    if isinstance(params, BaseModel):
-        # Handle Pydantic model
-        # Iterate over pydantic fields to get values and aliases (IDs)
-        for name, field in params.model_fields.items():
-            value = getattr(params, name)
+    if dataclasses.is_dataclass(params) and not isinstance(params, type):
+        # Handle a ModelBase dataclass instance (see linepy._model_base).
+        # Iterate over its fields to get values and Thrift field ids (alias).
+        for f in dataclasses.fields(params):
+            value = getattr(params, f.name)
             if value is None:
                 continue
 
             # Field ID (from alias)
-            fid = int(field.alias) if field.alias and field.alias.isdigit() else 0
+            alias = f.metadata.get("alias")
+            fid = int(alias) if alias and alias.isdigit() else 0
             if fid == 0:
                 continue
 
@@ -413,7 +414,7 @@ def _write_struct(writer: CompactWriter, params: Union[List, Any]):
                 ftype = TType.LIST
             elif isinstance(value, dict):
                 ftype = TType.MAP
-            elif isinstance(value, BaseModel):
+            elif dataclasses.is_dataclass(value):
                 ftype = TType.STRUCT
             elif isinstance(value, (bytes, bytearray)):
                 ftype = TType.STRING
@@ -503,9 +504,11 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
             len(value) == 2 and isinstance(value[0], int)
         ):
             # It's a raw list, infer element type
+            import dataclasses as _dc
+
             etype = (
                 TType.STRUCT
-                if value and hasattr(value[0], "model_fields")
+                if value and _dc.is_dataclass(value[0])
                 else TType.STRING
             )
             data = value
@@ -520,7 +523,6 @@ def _write_value(writer: CompactWriter, ftype: int, fid: int, value: Any):
 
 def _write_value_raw(writer: CompactWriter, ftype: int, value: Any):
     """Write value without field header"""
-    from pydantic import BaseModel
     from enum import Enum
 
     if value is None:

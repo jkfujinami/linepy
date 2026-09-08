@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field
 from enum import IntEnum
 
 # Import all auto-generated models from square_structs.py (Snake Case)

@@ -60,7 +60,7 @@ def get_to_type(mid: str) -> int:
 
 
 def _attr(obj, *names, default=None):
-    """Read a field from a pydantic model or dict, tolerating alias/int keys."""
+    """Read a field from a ModelBase dataclass or dict, tolerating alias/int keys."""
     if isinstance(obj, dict):
         for n in names:
             if n in obj:
@@ -826,7 +826,7 @@ class E2EE:
 
 
 # ---------------------------------------------------------------------------
-# Message-object helpers (support both pydantic models and dicts)
+# Message-object helpers (support both ModelBase dataclasses and dicts)
 # ---------------------------------------------------------------------------
 
 def _msg_attr(message, name: str):

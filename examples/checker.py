@@ -79,10 +79,10 @@ class ReadChecker:
             data: SquareEventData オブジェクト
         """
         try:
-            MaekAsRead:SquareEventNotifiedMarkAsRead = event.payload.notifiedMarkAsRead
-            square_chat_mid = MaekAsRead.squareChatMid
-            member_mid = MaekAsRead.sMemberMid
-            message_id = MaekAsRead.messageId
+            MaekAsRead:SquareEventNotifiedMarkAsRead = event.payload.notified_mark_as_read
+            square_chat_mid = MaekAsRead.square_chat_mid
+            member_mid = MaekAsRead.s_member_mid
+            message_id = MaekAsRead.message_id
             if not all([square_chat_mid, member_mid, message_id]):
                 return
 
@@ -197,7 +197,7 @@ class ReadChecker:
         for mid in mids[:30]:
             try:
                 m = self.square.getSquareMember(squareMemberMid=mid)
-                name = m.squareMember.displayName
+                name = m.square_member.display_name
                 names.append(f"・{name}")
             except:
                 names.append("・???")

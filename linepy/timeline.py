@@ -9,7 +9,7 @@ import json
 import urllib.parse
 from typing import Optional, Dict, List, Any, Union, Type, TypeVar
 
-from pydantic import BaseModel
+from ._model_base import ModelBase
 
 from .models.timeline import (
     ListPostResponse,
@@ -19,7 +19,7 @@ from .models.timeline import (
     SharePostResponse,
 )
 
-T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", bound=ModelBase)
 
 
 class Timeline:
@@ -182,14 +182,14 @@ class Timeline:
             json_data = resp.json()
 
             if response_model:
-                from pydantic import TypeAdapter
+                from ._model_base import validate_python
 
-                # TypeAdapter (not response_model.model_validate directly)
-                # so a generic response_model (List[X]/Dict[K, V]) validates
-                # too -- a plain typing alias has no .model_validate of its
-                # own. See services/base.py's validate_response_model for
-                # the same fix applied to the thrift-based services.
-                return TypeAdapter(response_model).validate_python(json_data)
+                # validate_python (not response_model.from_dict directly) so
+                # a generic response_model (List[X]/Dict[K, V]) validates too
+                # -- a plain typing alias has no .from_dict of its own. These
+                # models carry no alias (real JSON keys == field names), so
+                # ModelBase.from_dict's name-keyed lookup applies directly.
+                return validate_python(response_model, json_data)
             return json_data
 
     def create_post(

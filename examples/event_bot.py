@@ -4,6 +4,8 @@ LINEPY Example - Event-driven Bot
 This example shows how to create an event-driven bot.
 """
 
+import time
+
 from linepy import Client
 
 
@@ -18,7 +20,7 @@ def main():
     @client.on("message")
     def on_message(msg):
         """Handle incoming messages"""
-        print(f"[{msg.from_}] {msg.text}")
+        print(f"[{msg.sender_mid}] {msg.text}")
 
         # Simple command handler
         if msg.text == "!ping":
@@ -31,16 +33,19 @@ def main():
             text = msg.text[6:]
             msg.reply(text)
 
-    @client.on("event")
-    def on_event(event):
-        """Handle other events"""
-        print(f"Event: {event}")
+    @client.on("edit")
+    def on_edit(msg):
+        """Handle edited messages"""
+        print(f"Edited: {msg.text}")
 
     print("Bot started! Press Ctrl+C to stop.")
 
     try:
-        # Start polling (blocking)
-        client.poll()
+        # Start the PUSH listener (runs in a background thread) and block
+        # the main thread so the process stays alive.
+        client.listen()
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\nStopping...")
     finally:

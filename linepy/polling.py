@@ -79,8 +79,8 @@ class ChatWorker(threading.Thread):
             res = self.client.square.fetchSquareChatEvents(
                 self.chat_mid, limit=1, fetchType=self.fetch_type
             )
-            if hasattr(res, 'syncToken') and res.syncToken:
-                self.sync_token = res.syncToken
+            if hasattr(res, 'sync_token') and res.sync_token:
+                self.sync_token = res.sync_token
                 if self.token_manager:
                     self.token_manager.set_square_sync_token(self.chat_mid, self.sync_token)
                 logger.debug("[%s] Initialized token", self.chat_mid[:8])
@@ -102,17 +102,17 @@ class ChatWorker(threading.Thread):
         )
 
         # Update sync token
-        if hasattr(res, 'syncToken') and res.syncToken:
-            self.sync_token = res.syncToken
+        if hasattr(res, 'sync_token') and res.sync_token:
+            self.sync_token = res.sync_token
             if self.token_manager:
                 self.token_manager.set_square_sync_token(self.chat_mid, self.sync_token)
 
         # Update continuation token
-        if hasattr(res, 'continuationToken'):
-            self.continuation_token = res.continuationToken
-            if self.token_manager and res.continuationToken:
+        if hasattr(res, 'continuation_token'):
+            self.continuation_token = res.continuation_token
+            if self.token_manager and res.continuation_token:
                 self.token_manager.set_square_continuation_token(
-                    self.chat_mid, res.continuationToken
+                    self.chat_mid, res.continuation_token
                 )
 
         # Push events to queue

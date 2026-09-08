@@ -164,9 +164,9 @@ class PushManager:
 
             try:
                 res = self.client.square.fetchSquareChatEvents(chat_mid, limit=1)
-                if hasattr(res, 'syncToken') and res.syncToken:
-                    self.chat_sync_tokens[chat_mid] = res.syncToken
-                    logger.debug("Token for %s: %s...", chat_mid[:12], res.syncToken[:10])
+                if hasattr(res, 'sync_token') and res.sync_token:
+                    self.chat_sync_tokens[chat_mid] = res.sync_token
+                    logger.debug("Token for %s: %s...", chat_mid[:12], res.sync_token[:10])
             except Exception as e:
                 logger.warning("Failed to get sync token for %s: %s", chat_mid[:12], e)
 
@@ -450,14 +450,14 @@ class PushManager:
                     )
 
                     if hasattr(global_res, 'subscription'):
-                         if hasattr(global_res.subscription, 'subscriptionId'):
-                             new_sub = global_res.subscription.subscriptionId
+                         if hasattr(global_res.subscription, 'subscription_id'):
+                             new_sub = global_res.subscription.subscription_id
                              if new_sub != self.subscription_id:
                                  self.subscription_id = new_sub
                                  logger.info("Global Subscription ID updated to %d", new_sub)
 
-                    if hasattr(global_res, 'syncToken') and global_res.syncToken:
-                        self.event_sync_token = global_res.syncToken
+                    if hasattr(global_res, 'sync_token') and global_res.sync_token:
+                        self.event_sync_token = global_res.sync_token
                         # logger.debug("Global SyncToken updated")
 
                 except Exception as e:
@@ -478,9 +478,9 @@ class PushManager:
                     if not sync_token:
                         logger.debug("No sync token, fetching limit=1 to init.")
                         init_res = self.client.square.fetchSquareChatEvents(chat_mid, limit=1)
-                        if hasattr(init_res, 'syncToken') and init_res.syncToken:
-                            self.chat_sync_tokens[chat_mid] = init_res.syncToken
-                            logger.debug("Initialized Token: %s", init_res.syncToken)
+                        if hasattr(init_res, 'sync_token') and init_res.sync_token:
+                            self.chat_sync_tokens[chat_mid] = init_res.sync_token
+                            logger.debug("Initialized Token: %s", init_res.sync_token)
                         # 初期化時はcontinuationTokenもクリアすべきか？ -> 多分YES
                         if chat_mid in self.chat_continuation_tokens:
                             del self.chat_continuation_tokens[chat_mid]
@@ -495,8 +495,8 @@ class PushManager:
                     )
 
                     # Update sync token
-                    if hasattr(response, 'syncToken') and response.syncToken:
-                        new_token = response.syncToken
+                    if hasattr(response, 'sync_token') and response.sync_token:
+                        new_token = response.sync_token
                         self.chat_sync_tokens[chat_mid] = new_token
                         if new_token != sync_token:
                             logger.debug("Token UPDATED.")
@@ -505,13 +505,13 @@ class PushManager:
                                 self.client.token_manager.set_square_sync_token(chat_mid, new_token)
 
                     # Update continuation token
-                    if hasattr(response, 'continuationToken'):
+                    if hasattr(response, 'continuation_token'):
                          # Noneの場合もあるので注意。Noneならクリアするか、単に上書きするか。
-                         # linejsの実装: continuationToken = response.continuationToken
+                         # linejsの実装: continuationToken = response.continuation_token
                          # Noneなら次はないということなので、保持しているものを更新する
-                         self.chat_continuation_tokens[chat_mid] = response.continuationToken
-                         if hasattr(self.client, 'token_manager') and response.continuationToken:
-                             self.client.token_manager.set_square_continuation_token(chat_mid, response.continuationToken)
+                         self.chat_continuation_tokens[chat_mid] = response.continuation_token
+                         if hasattr(self.client, 'token_manager') and response.continuation_token:
+                             self.client.token_manager.set_square_continuation_token(chat_mid, response.continuation_token)
 
                     # Process events
                     events = response.events if hasattr(response, 'events') else []

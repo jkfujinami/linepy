@@ -159,7 +159,7 @@ class SquareService(ServiceBase):
         contentType: int = 0,
         contentMetadata: dict = {},
         relatedMessageId: Optional[str] = None,
-    ) -> "SendSquareMessageResponse":
+    ) -> "SendMessageResponse":
         """Send message for square chat (OLD)."""
         METHOD_NAME = "sendMessage"
         message = [
@@ -978,8 +978,8 @@ class SquareService(ServiceBase):
     ) -> "UpdateSquareMemberResponse":
         """Update profile image."""
         fresh_member_resp = self.getSquareMember(squareMemberMid)
-        squareMid = fresh_member_resp.squareMember.squareMemberMid
-        current_revision = fresh_member_resp.squareMember.revision
+        squareMid = fresh_member_resp.square_member.square_member_mid
+        current_revision = fresh_member_resp.square_member.revision
 
         updated_attrs = [2]  # PROFILE_IMAGE
         return self.updateSquareMember(

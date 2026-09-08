@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 
 def _field(raw, name):
-    """Read a message field from a pydantic model or a dict, tolerating aliases."""
+    """Read a message field from a ModelBase dataclass or a dict, tolerating aliases."""
     aliases = {
         "from": ("from_mid", "_from", "from_", "from"),
         "to": ("to", "to_mid"),

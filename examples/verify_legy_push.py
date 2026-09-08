@@ -40,15 +40,15 @@ def on_push_event(service_type: int, event: SquareEvent):
         # Note: NOTIFIED_MARK_AS_READ logic wasn't fully added to SquareEventData yet,
         # so we might need to fallback or add it to helper.
         # But for now let's just show what we have or raw event slightly.
-        if event.payload.notifiedMarkAsRead:
-            read = event.payload.notifiedMarkAsRead
+        if event.payload.notified_mark_as_read:
+            read = event.payload.notified_mark_as_read
             print(f"👀 READ MARK (NOTIFIED_MARK_AS_READ):")
-            print(f"   Mid: {read.sMemberMid}")
-            print(f"   MsgId: {read.messageId}")
+            print(f"   Mid: {read.s_member_mid}")
+            print(f"   MsgId: {read.message_id}")
 
     elif data.square_event_type == SquareEventType.NOTIFIED_JOIN_SQUARE_CHAT:
         print(f"👋 JOIN (NOTIFIED_JOIN_SQUARE_CHAT)")
-        print(f"   SquareChatMid: {data.square_chat_mid or event.payload.notifiedJoinSquareChat.squareChatMid}")
+        print(f"   SquareChatMid: {data.square_chat_mid or event.payload.notified_join_square_chat.square_chat_mid}")
 
     elif data.square_event_type == SquareEventType.NOTIFIED_LEAVE_SQUARE_CHAT:
         print(f"👋 LEAVE (NOTIFIED_LEAVE_SQUARE_CHAT)")

@@ -96,45 +96,45 @@ class SquareEventData:
         data = cls()
 
         # Basic info
-        data.square_event_type = int(event.type) if event.type is not None else None
-        data.sync_token = event.syncToken
+        data.square_event_type = int(event.type_) if event.type_ is not None else None
+        data.sync_token = event.sync_token
 
         payload = event.payload
         if not payload:
             return data
 
         # Handle ReceiveMessage (Type 0)
-        if event.type == SquareEventType.RECEIVE_MESSAGE and payload.receiveMessage:
-            recv = payload.receiveMessage
-            data.square_mid = recv.squareMid
-            data.square_chat_mid = recv.squareChatMid
-            data.sender_name = recv.senderDisplayName
+        if event.type_ == SquareEventType.RECEIVE_MESSAGE and payload.receive_message:
+            recv = payload.receive_message
+            data.square_mid = recv.square_mid
+            data.square_chat_mid = recv.square_chat_mid
+            data.sender_name = recv.sender_display_name
 
-            sq_msg = recv.squareMessage
+            sq_msg = recv.square_message
             if sq_msg and sq_msg.message:
                 msg = sq_msg.message
                 data.member_mid = msg.from_
                 data.message_id = msg.id_
                 data.message_text = msg.text
-                data.content_type = int(msg.contentType) if msg.contentType is not None else 0
-                data.reply_message_id = msg.relatedMessageId
+                data.content_type = int(msg.content_type) if msg.content_type is not None else 0
+                data.reply_message_id = msg.related_message_id
 
                 # Mentions
-                if msg.contentMetadata and 'MENTION' in msg.contentMetadata:
+                if msg.content_metadata and 'MENTION' in msg.content_metadata:
                     import json
                     try:
-                        mentions = json.loads(msg.contentMetadata['MENTION'])
+                        mentions = json.loads(msg.content_metadata['MENTION'])
                         data.mention_data = mentions
                         data.mention_mids = mentions.get('MENTIONEES', [])
                     except Exception:
                         pass
 
         # Handle NotifiedMarkAsRead (Type 6)
-        elif event.type == SquareEventType.NOTIFIED_MARK_AS_READ and payload.notifiedMarkAsRead:
-            read = payload.notifiedMarkAsRead
-            data.square_chat_mid = read.squareChatMid
-            data.member_mid = read.sMemberMid
-            data.message_id = read.messageId
+        elif event.type_ == SquareEventType.NOTIFIED_MARK_AS_READ and payload.notified_mark_as_read:
+            read = payload.notified_mark_as_read
+            data.square_chat_mid = read.square_chat_mid
+            data.member_mid = read.s_member_mid
+            data.message_id = read.message_id
 
         return data
 
@@ -296,7 +296,7 @@ class SquareHelper:
                 squareChatMid=chat_mid,
                 limit=1  # Just to get initial sync token
             )
-            sync_token = response.syncToken if hasattr(response, 'syncToken') else response.get('syncToken')
+            sync_token = response.sync_token if hasattr(response, 'sync_token') else response.get('syncToken')
             self.set_sync_token(chat_mid, sync_token)
         except Exception as e:
             logger.warning("Initial fetch failed for %s: %s", chat_mid[:12], e)
@@ -314,7 +314,7 @@ class SquareHelper:
                 )
 
                 # Update sync token
-                new_sync_token = response.syncToken if hasattr(response, 'syncToken') else response.get('syncToken')
+                new_sync_token = response.sync_token if hasattr(response, 'sync_token') else response.get('syncToken')
                 if new_sync_token:
                     self.set_sync_token(chat_mid, new_sync_token)
 
@@ -458,7 +458,7 @@ class SquareHelper:
         Returns:
             Square Chat MID string
         """
-        return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.squareChatMid
+        return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.square_chat_mid
 
     def getSquareMidbyInvitationTicket(self, InvitationTicket: str) -> Any:
         """
@@ -470,7 +470,7 @@ class SquareHelper:
         Returns:
             Square MID string
         """
-        return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.squareMid
+        return self.square.findSquareByInvitationTicketV2(InvitationTicket).chat.square_mid
 
     def sendMessage(
         self,
@@ -555,11 +555,11 @@ class SquareHelper:
             response = self.square.findSquareByInvitationTicketV2(InvitationTicket)
 
             square_mid = response.square.mid
-            chat_mid = response.chat.squareChatMid
+            chat_mid = response.chat.square_chat_mid
             square_name = response.square.name
             chat_name = response.chat.name
-            join_method = response.square.joinMethod.type_
-            membership = response.myMembership
+            join_method = response.square.join_method.type_
+            membership = response.my_membership
             print(response.model_dump_json(indent=2))
             result["square_mid"] = square_mid
             result["chat_mid"] = chat_mid
@@ -569,7 +569,7 @@ class SquareHelper:
             # 2. Check membership status
             if membership is not None:
                 # Already a member of the Square
-                state = membership.membershipState
+                state = membership.membership_state
 
                 if state == 1:  # PENDING
                     result["status"] = "PENDING"
@@ -594,7 +594,7 @@ class SquareHelper:
                     )
                     print(join_result.model_dump_json(indent=2))
                     try:
-                        member_mid = join_result.squareMember.squareMemberMid
+                        member_mid = join_result.square_member.square_member_mid
                         self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
                     except Exception as e:
                         print(f"画像のアップロードに失敗しました: {e}")
@@ -615,7 +615,7 @@ class SquareHelper:
                     )
                     print(join_result.model_dump_json(indent=2))
                     try:
-                        member_mid = join_result.squareChatMember.squareMemberMid
+                        member_mid = join_result.square_chat_member.square_member_mid
                         self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
                     except Exception as e:
                         print(f"画像のアップロードに失敗しました: {e}")
@@ -640,7 +640,7 @@ class SquareHelper:
                             squareChatMid=chat_mid,
                             passCode=defaultJoinCode,
                         )
-                        member_mid = join_result.squareChatMember.squareMemberMid
+                        member_mid = join_result.square_chat_member.square_member_mid
                         self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
                         result["status"] = "JOINED"
                         result["message"] = f"Squareに参加しました: {square_name}"

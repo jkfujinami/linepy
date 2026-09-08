@@ -2,9 +2,10 @@
 """Base Service module for LINEPY."""
 
 from typing import List, Type, TypeVar, Optional, Dict, Any, Union
-from pydantic import BaseModel, TypeAdapter
 
-T = TypeVar("T", bound=BaseModel)
+from .._model_base import ModelBase, validate_python as _validate_python
+
+T = TypeVar("T", bound=ModelBase)
 
 
 def _convert_int_keys_to_str(data: Any) -> Any:
@@ -25,24 +26,23 @@ def _convert_int_keys_to_str(data: Any) -> Any:
 def validate_response_model(data: Any, response_model: Any) -> Any:
     """Validate thrift-decoded ``data`` against ``response_model``.
 
-    ``response_model`` may be a plain :class:`~pydantic.BaseModel` subclass
-    *or* a typing generic such as ``List[SomeModel]`` / ``Dict[str, Model]``.
-    A generic alias has no ``.model_validate`` of its own -- calling it
-    directly raises ``AttributeError: type object 'list' has no attribute
-    'model_validate'`` for e.g. ``response_model=List[Pb1_C13097n4]`` (used by
-    ~40 methods such as ``getE2EEPublicKeys``). :class:`~pydantic.TypeAdapter`
-    validates both shapes uniformly, so it replaces the direct
-    ``response_model.model_validate(...)`` call unconditionally.
+    ``response_model`` may be a plain :class:`~linepy._model_base.ModelBase`
+    dataclass *or* a typing generic such as ``List[SomeModel]`` /
+    ``Dict[str, Model]`` -- ``linepy._model_base.validate_python`` (the
+    ``TypeAdapter.validate_python`` equivalent) handles both shapes
+    uniformly, structurally recursing into ``List``/``Dict``/dataclass as
+    needed (used by ~40 methods such as ``getE2EEPublicKeys``, which returns
+    ``List[Pb1_C13097n4]``).
 
     Int-keyed thrift field dicts are recursively normalized to string keys
-    (matching each model's ``Field(alias="<id>")``) regardless of whether
-    ``data`` itself is a dict, a list of dicts, or a bare scalar -- the old
-    code only converted when the *top-level* value was a dict, so a
-    ``List[...]`` response's items (which carry the actual int-keyed dicts)
-    were silently left unconverted.
+    (matching each model's ``model_field(alias="<id>")``) regardless of
+    whether ``data`` itself is a dict, a list of dicts, or a bare scalar --
+    converting only when the *top-level* value is a dict would silently
+    leave a ``List[...]`` response's items (which carry the actual
+    int-keyed dicts) unconverted.
     """
     data = _convert_int_keys_to_str(data)
-    return TypeAdapter(response_model).validate_python(data)
+    return _validate_python(response_model, data)
 
 
 class ServiceBase:

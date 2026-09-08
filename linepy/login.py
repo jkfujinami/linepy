@@ -14,7 +14,7 @@ import binascii
 import re
 from typing import Optional, Tuple, Dict, Any, List, Type, TypeVar
 
-from pydantic import BaseModel
+from ._model_base import ModelBase
 
 from .config import is_v3_support
 from .models.login import (
@@ -28,7 +28,7 @@ from .models.login import (
     QRCodeLoginV2Response,
 )
 
-T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", bound=ModelBase)
 
 
 # Regex patterns (from linejs base/login/regex.ts)
@@ -41,7 +41,7 @@ class LoginError(Exception):
 
 
 def _dump_response(response: Any) -> Any:
-    """Normalize a response (pydantic model or raw dict) to a string-keyed
+    """Normalize a response (ModelBase dataclass or raw dict) to a string-keyed
     field-id dict, for storage.save_login_result and other dict-style
     consumers. Raw dicts (already int/str-keyed) pass through unchanged."""
     if hasattr(response, "model_dump"):

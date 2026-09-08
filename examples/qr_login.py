@@ -12,12 +12,12 @@ def main():
     client = Client(device="DESKTOPWIN")
 
     # Set up event handlers for QR code
-    @client.base.on
+    @client.base.on("pincall")
     def pincall(pincode):
         """Called when PIN code verification is needed"""
         print(f"\n🔐 Enter this PIN code on your device: {pincode}")
 
-    @client.base.on
+    @client.base.on("qrcall")
     def qrcall(url):
         """Called when QR code is ready"""
         print(f"\n📱 Scan this QR code with LINE app:")

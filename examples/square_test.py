@@ -1,19 +1,23 @@
 from linepy.base import BaseClient
 from linepy.models.square import FindSquareByInvitationTicketResponse, SquareJoinMethod, SquareJoinMethodType
 
-client = BaseClient(device="ANDROID", storage=".linepy_bot.json")
+client = BaseClient(device="DESKTOPWIN", storage=".linepy_storage.json")
 if not client.auto_login():
     print("❌ Need login")
     client.login_with_qr()
 
 print(f"Logged in as: {client.profile.display_name}")
 
+# Invitation ticket to test with (e.g. the "xxxx" part of a
+# line://ti/g2/xxxx invite link).
+ticket = "your_invitation_ticket"
+
 try:
-    
+
     print(f"Finding square by ticket: {ticket}")
     response = client.square.findSquareByInvitationTicketV2(ticket)
 
-    join_type:SquareJoinMethodType = response.square.joinMethod.type_
+    join_type:SquareJoinMethodType = response.square.join_method.type_
     if join_type == SquareJoinMethodType.NONE:
         print("✅ Join square by None")
     elif join_type == SquareJoinMethodType.APPROVAL:
@@ -28,7 +32,7 @@ try:
     print(response.model_dump_json(indent=2))
 
     if response.chat:
-        target_chat_mid = response.chat.squareChatMid
+        target_chat_mid = response.chat.square_chat_mid
         print(f"   Chat Name: {response.chat.name}")
         print(f"   Chat MID: {target_chat_mid}")
 

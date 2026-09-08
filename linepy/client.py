@@ -159,6 +159,13 @@ class Client:
         """Get contacts info"""
         return self.base.talk.get_contacts(mids)
 
+    def get_all_friends(self) -> List[Contact]:
+        """Get all friends (contacts) on the account."""
+        mids = self.base.talk.get_all_contact_ids()
+        if not mids:
+            return []
+        return self.get_contacts(mids)
+
     # ========== Chats (Group/Room) ==========
 
     def get_chat(self, mid: str) -> Chat:
@@ -172,6 +179,17 @@ class Client:
         """Get chats info"""
         resp = self.base.talk.get_chats(mids, with_members=True, with_invitees=True)
         return resp.chats if resp and resp.chats else []
+
+    def get_all_chats(self) -> List[Chat]:
+        """Get all chats (groups/rooms) the account is a member of or
+        invited to."""
+        resp = self.base.talk.get_all_chat_mids()
+        mids = list(dict.fromkeys(
+            (resp.member_chat_mids or []) + (resp.invited_chat_mids or [])
+        ))
+        if not mids:
+            return []
+        return self.get_chats(mids)
 
     def get_group(self, mid: str) -> Chat:
         """Alias for get_chat"""
