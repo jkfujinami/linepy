@@ -24,8 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "httpx[http2]>=0.25.0",
-    "pycryptodome>=3.19.0",
-    "cryptography>=42.0.0",
+    "pyaes>=1.6.1",
     "qrcode>=7.4.0",
     "xxhash>=3.4.0",
 ]
@@ -33,6 +32,11 @@ dependencies = [
 # pydantic-core (its Rust validation engine) has no iOS wheels and no
 # pure-Python fallback, so it can never install on sandboxed/no-compiler
 # environments like a-Shell on iOS -- see linepy/_model_base.py.
+#
+# No pycryptodome/cryptography/pynacl either: all of them require C or Rust
+# extensions with no iOS wheels, so they can never install on a-Shell either.
+# AES/RSA/X25519/HKDF/AES-GCM-SIV are implemented in pure Python on top of
+# `pyaes` (itself pure-Python) in linepy/_purecrypto.py.
 
 [project.optional-dependencies]
 dev = [

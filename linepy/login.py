@@ -125,11 +125,7 @@ class Login:
     def _encrypt_rsa(self, message: str, nvalue: str, evalue: str) -> str:
         """RSA PKCS1v1.5 encrypt -> hex string (matches 本家's ``getRSACrypto``,
         which uses node-bignumber's ``Key.encrypt()`` == RSA_PKCS1_PADDING)."""
-        try:
-            from Crypto.PublicKey import RSA
-            from Crypto.Cipher import PKCS1_v1_5
-        except ImportError:
-            raise ImportError("pycryptodome is required for RSA encryption")
+        from ._purecrypto import RSA, PKCS1_v1_5
 
         n = int(nvalue, 16)
         e = int(evalue, 16)

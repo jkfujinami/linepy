@@ -24,22 +24,18 @@ import os
 import struct
 from typing import Any, Dict, List, Optional, Tuple
 
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256, HMAC
 import hashlib
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric.x25519 import (
-    X25519PrivateKey,
-    X25519PublicKey,
+from ._purecrypto import (
+    AES,
+    SHA256,
+    HMAC,
+    HKDF,
+    SHA256Algorithm,
+    AESGCMSIV,
+    x25519_scalarmult,
+    x25519_scalarmult_base,
 )
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-
-try:  # AES-GCM-SIV: cryptography >= 42
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCMSIV
-except Exception:  # pragma: no cover
-    AESGCMSIV = None
 
 
 # MIDType enum (matches LINE): USER=0, ROOM=1, GROUP=2, SQUARE_CHAT etc.
@@ -114,15 +110,12 @@ class E2EE:
 
     def generate_shared_secret(self, private_key: bytes, public_key: bytes) -> bytes:
         """Raw X25519 shared secret (Curve25519 ``sharedKey``)."""
-        priv = X25519PrivateKey.from_private_bytes(bytes(private_key))
-        pub = X25519PublicKey.from_public_bytes(bytes(public_key))
-        return priv.exchange(pub)
+        return x25519_scalarmult(bytes(private_key), bytes(public_key))
 
     @staticmethod
     def public_from_private(private_key: bytes) -> bytes:
         """Derive the Curve25519 public key from a private key."""
-        priv = X25519PrivateKey.from_private_bytes(bytes(private_key))
-        return priv.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+        return x25519_scalarmult_base(bytes(private_key))
 
     @staticmethod
     def get_sha256_sum(*args) -> bytes:
@@ -291,7 +284,7 @@ class E2EE:
     def derive_key_material(key_material: bytes) -> Tuple[bytes, bytes, bytes]:
         """HKDF-SHA256(info=b"FileEncryption", L=76) -> (encKey, macKey, nonce)."""
         hkdf = HKDF(
-            algorithm=hashes.SHA256(),
+            algorithm=SHA256Algorithm(),
             length=76,
             salt=b"",
             info=b"FileEncryption",
@@ -356,8 +349,6 @@ class E2EE:
     def decrypt_aes_gcm_siv(
         self, gcmsiv_key: bytes, nonce: bytes, data: bytes, aad: Optional[bytes] = None
     ) -> bytes:
-        if AESGCMSIV is None:
-            raise RuntimeError("AES-GCM-SIV requires cryptography>=42")
         return AESGCMSIV(bytes(gcmsiv_key)).decrypt(bytes(nonce), bytes(data), aad)
 
     def decrypt_encrypted_qr_identifier(

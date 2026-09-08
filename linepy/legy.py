@@ -23,9 +23,7 @@ import time
 from typing import Dict, Optional, Tuple
 
 import xxhash
-from Crypto.Cipher import AES, PKCS1_OAEP
-from Crypto.Hash import SHA1
-from Crypto.PublicKey import RSA
+from ._purecrypto import AES, PKCS1_OAEP, SHA1, RSA
 
 
 # ---------------------------------------------------------------------------
