@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, TypeVa
 
 from ._model_base import ModelBase
 from .config import is_v3_support
+from .exceptions import LoginError
 from .models.login import (
     LoginResponse,
     PinCodeResponse,
@@ -39,10 +40,6 @@ T = TypeVar("T", bound=ModelBase)
 # Regex patterns (from linejs base/login/regex.ts)
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 PASSWORD_REGEX = re.compile(r"^.{6,}$")  # At least 6 characters
-
-
-class LoginError(Exception):
-    """Login specific error"""
 
 
 def _dump_response(response: Any) -> Any:

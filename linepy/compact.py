@@ -10,16 +10,12 @@ plain (msgType 2) and E2EE (msgType 5/6) message sends.
 """
 
 import struct
-from typing import List, Optional, Sequence, Union
+from typing import List, Sequence, Union
+
+from .exceptions import CompactMessageProtocolError
 
 COMPACT_PLAIN_MESSAGE_ENDPOINT = "/CA5"
 COMPACT_E2EE_MESSAGE_ENDPOINT = "/ECA5"
-
-
-class CompactMessageProtocolError(Exception):
-    def __init__(self, message: str, code: Optional[int] = None):
-        super().__init__(message)
-        self.code = code
 
 
 # ---------------------------------------------------------------------------

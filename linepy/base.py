@@ -8,6 +8,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from .config import Device, build_app_name, get_device_details, get_mid_type
+from .exceptions import LineException
 from .request import RequestClient
 from .storage import BaseStorage, FileStorage, TokenManager
 
@@ -16,21 +17,6 @@ if TYPE_CHECKING:
     from .push import PushManager
 
 logger = logging.getLogger("linepy.client")
-
-
-class LineException(Exception):
-    """LINE API Exception"""
-
-    def __init__(self, code: int, message: str, metadata: Optional[Dict] = None):
-        self.code = code
-        self.message = message
-        self.metadata = metadata or {}
-
-        # Build detailed message
-        msg = f"[{code}] {message}"
-        if self.metadata:
-            msg += f"\nMetadata: {self.metadata}"
-        super().__init__(msg)
 
 
 class BaseClient:

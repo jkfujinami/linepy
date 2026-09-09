@@ -6,6 +6,8 @@ Handles channel token issuance and other channel-related operations.
 
 from typing import Any, Dict, List
 
+from .exceptions import LineException
+
 
 class ChannelService:
     """
@@ -37,8 +39,6 @@ class ChannelService:
 
         if isinstance(response, dict) and "error" in response:
             err = response["error"]
-            from .base import LineException
-
             raise LineException(
                 code=err.get("code", -1),
                 message=err.get("message", "Unknown error"),

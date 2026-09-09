@@ -5,6 +5,7 @@ from typing import Any, List, Optional, Type, TypeVar, Union
 
 from .._model_base import ModelBase
 from .._model_base import validate_python as _validate_python
+from ..exceptions import LineException
 
 T = TypeVar("T", bound=ModelBase)
 
@@ -82,8 +83,6 @@ class ServiceBase:
             )
         except httpx.HTTPStatusError as e:
             # HTTP error (4xx, 5xx)
-            from ..base import LineException
-
             # Try to parse response body for more info
             body = ""
             try:
@@ -100,8 +99,6 @@ class ServiceBase:
         # Check for Thrift-level error
         if isinstance(response, dict) and "error" in response:
             err = response["error"]
-            from ..base import LineException
-
             raise LineException(
                 code=err.get("code", -1),
                 message=err.get("message", "Unknown error"),
