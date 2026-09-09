@@ -14,9 +14,8 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 if TYPE_CHECKING:
     from ..base import BaseClient
 
-from linepy.models.square import SquareJoinMethodType
-from linepy.models.square_structs import SquareEvent as PydanticSquareEvent
-from linepy.models.square_structs import SquareEventType
+from linepy.models import SquareEvent as PydanticSquareEvent
+from linepy.models import SquareEventType, SquareJoinMethodType
 
 logger = logging.getLogger("linepy.square")
 

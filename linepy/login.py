@@ -15,10 +15,10 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, TypeVar
 
-from ._model_base import ModelBase
 from .config import is_v3_support
 from .exceptions import LoginError
-from .models.login import (
+from .models.base import ModelBase
+from .models.custom.login import (
     LoginResponse,
     PinCodeResponse,
     QRCodeLoginResponse,

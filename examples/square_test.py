@@ -1,5 +1,5 @@
 from linepy.base import BaseClient
-from linepy.models.square import (
+from linepy.models import (
     SquareJoinMethodType,
 )
 

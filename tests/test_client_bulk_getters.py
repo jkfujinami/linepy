@@ -12,7 +12,7 @@ import tempfile
 import pytest
 
 from linepy.client import Client
-from linepy.models._generated import GetAllChatMidsResponse
+from linepy.models import GetAllChatMidsResponse
 
 
 @pytest.fixture

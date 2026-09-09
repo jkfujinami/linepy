@@ -1,4 +1,4 @@
-from ..models.sync_structs import RefreshAccessTokenResponse
+from ..models.generated import RefreshAccessTokenResponse
 from .base import ServiceBase
 
 

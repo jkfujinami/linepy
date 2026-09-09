@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
 
-from .._model_base import ModelBase, model_field
+from .base import ModelBase, model_field
 
 
 @dataclass(kw_only=True)

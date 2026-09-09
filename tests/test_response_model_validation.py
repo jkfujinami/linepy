@@ -15,7 +15,7 @@ after every successful login.
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from linepy._model_base import ModelBase, model_field
+from linepy.models.base import ModelBase, model_field
 from linepy.services.base import ServiceBase, validate_response_model
 
 
@@ -72,7 +72,7 @@ def test_verify_login_key_end_to_end_with_real_list_response_model():
     import tempfile
 
     from linepy.base import BaseClient
-    from linepy.models.sync_structs import Pb1_C13097n4
+    from linepy.models import Pb1_C13097n4
 
     client = BaseClient(device="DESKTOPWIN", storage=os.path.join(tempfile.mkdtemp(), "s.json"))
     e = client.e2ee

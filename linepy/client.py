@@ -4,11 +4,17 @@ High-level Client for LINEPY
 User-friendly API with event handling and convenient methods.
 """
 
-from typing import Any, Callable, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 from .base import BaseClient, LineException
 from .config import Device
-from .models.talk import Chat, Contact, Message, Profile
+
+if TYPE_CHECKING:
+    # Annotation-only: importing linepy.models pulls in the ~3000 generated
+    # dataclasses (~320 ms), which merely importing the package should not pay.
+    from .models import Chat, Contact, Message, Profile
 
 
 class Client:

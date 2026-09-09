@@ -22,7 +22,7 @@ from typing import Any, Dict, List
 
 from linepy.base import BaseClient
 from linepy.helpers.square import SquareEventData
-from linepy.models.square import SquareEvent, SquareEventNotifiedMarkAsRead
+from linepy.models import SquareEvent, SquareEventNotifiedMarkAsRead
 
 
 class ReadChecker:

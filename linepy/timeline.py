@@ -10,8 +10,8 @@ import logging
 import urllib.parse
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
-from ._model_base import ModelBase
-from .models.timeline import (
+from .models.base import ModelBase
+from .models.custom.timeline import (
     CreatePostResponse,
     DeletePostResponse,
     GetPostResponse,
@@ -185,7 +185,7 @@ class Timeline:
             json_data = resp.json()
 
             if response_model:
-                from ._model_base import validate_python
+                from .models.base import validate_python
 
                 # validate_python (not response_model.from_dict directly) so
                 # a generic response_model (List[X]/Dict[K, V]) validates too

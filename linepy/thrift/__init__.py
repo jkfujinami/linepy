@@ -388,7 +388,7 @@ def _write_struct(writer: CompactWriter, params: Union[List, Any]):
     writer._last_fid = 0
 
     if dataclasses.is_dataclass(params) and not isinstance(params, type):
-        # Handle a ModelBase dataclass instance (see linepy._model_base).
+        # Handle a ModelBase dataclass instance (see linepy.models.base).
         # Iterate over its fields to get values and Thrift field ids (alias).
         for f in dataclasses.fields(params):
             value = getattr(params, f.name)

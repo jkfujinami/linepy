@@ -16,7 +16,7 @@ import pytest
 from linepy._purecrypto import AES
 from linepy.base import BaseClient
 from linepy.login import registration_auth_endpoint
-from linepy.models.login import (
+from linepy.models import (
     LoginResponse,
     PinCodeResponse,
     QRCodeLoginResponse,

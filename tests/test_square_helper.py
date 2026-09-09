@@ -10,7 +10,7 @@ generated models, so from_event() raised AttributeError for every event.
 """
 
 from linepy.helpers.square import SquareEventData
-from linepy.models._generated import (
+from linepy.models import (
     Message,
     SquareEvent,
     SquareEventNotifiedMarkAsRead,

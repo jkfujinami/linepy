@@ -1,9 +1,95 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, List, Optional
 
-from linepy.models.square_structs import *
-
-from .models.square import *
+from .models.generated import (
+    ApproveSquareMembersResponse,
+    CheckJoinCodeResponse,
+    CreateSquareChatAnnouncementResponse,
+    CreateSquareChatResponse,
+    CreateSquareChatThreadResponse,
+    CreateSquareResponse,
+    DeleteSquareChatAnnouncementResponse,
+    DeleteSquareChatResponse,
+    DeleteSquareResponse,
+    DestroyMessageResponse,
+    DestroyMessagesResponse,
+    FetchMyEventsResponse,
+    FetchSquareChatEventsResponse,
+    FindSquareByEmidResponse,
+    FindSquareByInvitationTicketResponse,
+    FindSquareByInvitationTicketV2Response,
+    GetGoogleAdOptionsResponse,
+    GetInvitationTicketUrlResponse,
+    GetJoinableSquareChatsResponse,
+    GetJoinedSquareChatsResponse,
+    GetJoinedSquareChatThreadsResponse,
+    GetJoinedSquaresResponse,
+    GetNoteStatusResponse,
+    GetPopularKeywordsResponse,
+    GetSquareAuthoritiesResponse,
+    GetSquareAuthorityResponse,
+    GetSquareCategoriesResponse,
+    GetSquareChatAnnouncementsResponse,
+    GetSquareChatEmidResponse,
+    GetSquareChatFeatureSetResponse,
+    GetSquareChatMemberResponse,
+    GetSquareChatMembersResponse,
+    GetSquareChatResponse,
+    GetSquareChatStatusResponse,
+    GetSquareChatThreadResponse,
+    GetSquareEmidResponse,
+    GetSquareFeatureSetResponse,
+    GetSquareMemberRelationResponse,
+    GetSquareMemberRelationsResponse,
+    GetSquareMemberResponse,
+    GetSquareMembersBySquareResponse,
+    GetSquareMembersResponse,
+    GetSquareResponse,
+    GetSquareStatusResponse,
+    GetSquareThreadMidResponse,
+    GetSquareThreadResponse,
+    GetUserSettingsResponse,
+    HideSquareMemberContentsResponse,
+    InviteIntoSquareChatResponse,
+    InviteToSquareResponse,
+    JoinSquareChatResponse,
+    JoinSquareChatThreadResponse,
+    JoinSquareResponse,
+    JoinSquareThreadResponse,
+    LeaveSquareChatResponse,
+    LeaveSquareResponse,
+    LeaveSquareThreadResponse,
+    ManualRepairResponse,
+    MarkAsReadResponse,
+    MarkChatsAsReadResponse,
+    MarkThreadsAsReadResponse,
+    ReactToMessageResponse,
+    RefreshSubscriptionsResponse,
+    RejectSquareMembersResponse,
+    RemoveSubscriptionsResponse,
+    ReportMessageSummaryResponse,
+    ReportSquareChatResponse,
+    ReportSquareMemberResponse,
+    ReportSquareMessageResponse,
+    ReportSquareResponse,
+    SearchSquareChatMembersResponse,
+    SearchSquareMembersResponse,
+    SearchSquaresResponse,
+    SendMessageResponse,
+    SendSquareThreadMessageResponse,
+    SyncSquareMembersResponse,
+    UnhideSquareMemberContentsResponse,
+    UnsendMessageResponse,
+    UpdateSquareAuthorityResponse,
+    UpdateSquareChatMemberResponse,
+    UpdateSquareChatResponse,
+    UpdateSquareFeatureSetResponse,
+    UpdateSquareMemberRelationResponse,
+    UpdateSquareMemberResponse,
+    UpdateSquareMembersResponse,
+    UpdateSquareResponse,
+    UpdateUserSettingsResponse,
+)
 from .services.base import ServiceBase
 
 
@@ -203,7 +289,7 @@ class SquareService(ServiceBase):
         text: str,
         contentMetadata: dict = {},
         relatedMessageId: Optional[str] = None,
-    ) -> "SendSquareTextMessageResponse":
+    ) -> "SendMessageResponse":
         return self.sendSquareMessage(
             squareChatMid, text, 0, contentMetadata, relatedMessageId
         )
@@ -454,14 +540,14 @@ class SquareService(ServiceBase):
             METHOD_NAME, [[12, 1, params]], response_model=JoinSquareResponse
         )
 
-    def getSquarePopularKeywords(self) -> "GetSquarePopularKeywordsResponse":
+    def getSquarePopularKeywords(self) -> "GetPopularKeywordsResponse":
         """Get popular keywords."""
         METHOD_NAME = "getPopularKeywords"
         params = []
         return self._call(
             METHOD_NAME,
             [[12, 1, params]],
-            response_model=GetSquarePopularKeywordsResponse,
+            response_model=GetPopularKeywordsResponse,
         )
 
     def reportSquareMessage(
@@ -539,7 +625,7 @@ class SquareService(ServiceBase):
 
     def removeSquareSubscriptions(
         self, subscriptionIds: list = []
-    ) -> "RemoveSquareSubscriptionsResponse":
+    ) -> "RemoveSubscriptionsResponse":
         METHOD_NAME = "removeSquareSubscriptions"
         params = [
             [
@@ -620,7 +706,7 @@ class SquareService(ServiceBase):
         continuationToken: str,
         limit: int,
         threadMid: Optional[str] = None,
-    ) -> "GetSquareMessageReactionsResponse":
+    ) -> Any:
         """Get square message reactions."""
         METHOD_NAME = "getSquareMessageReactions"
         params = [
@@ -665,12 +751,16 @@ class SquareService(ServiceBase):
 
     def unsendSquareMessage(
         self, squareChatMid: str, messageId: str
-    ) -> "UnsendSquareMessageResponse":
+    ) -> "UnsendMessageResponse":
         """Unsend message for square.
 
         2022/09/19: Added."""
         METHOD_NAME = "unsendMessage"
-        params = SquareServiceStruct.UnsendMessageRequest(squareChatMid, messageId)
+        # UnsendMessageRequest: 2=squareChatMid, 3=messageId
+        params = [
+            [11, 2, squareChatMid],
+            [11, 3, messageId],
+        ]
         return self._call(
             METHOD_NAME, [[12, 1, params]], response_model=UnsendMessageResponse
         )
@@ -849,7 +939,7 @@ class SquareService(ServiceBase):
 
     def getSquareInvitationTicketUrl(
         self, mid: str
-    ) -> "GetSquareInvitationTicketUrlResponse":
+    ) -> "GetInvitationTicketUrlResponse":
         """Get square invitation ticket url"""
         METHOD_NAME = "getInvitationTicketUrl"
         params = [
@@ -951,7 +1041,7 @@ class SquareService(ServiceBase):
 
     def deleteOtherFromSquare(
         self, sid: str, pid: str
-    ) -> "DeleteOtherFromSquareResponse":
+    ) -> Any:
         """Kick out member for square."""
         UPDATE_PREF_ATTRS = []
         UPDATE_ATTRS = [5]
@@ -1165,7 +1255,7 @@ class SquareService(ServiceBase):
 
     def checkSquareJoinCode(
         self, squareMid: str, code: str
-    ) -> "CheckSquareJoinCodeResponse":
+    ) -> "CheckJoinCodeResponse":
         METHOD_NAME = "checkJoinCode"
         params = [
             [
@@ -1250,7 +1340,7 @@ class SquareService(ServiceBase):
 
     def refreshSquareSubscriptions(
         self, subscriptions: List[int]
-    ) -> "RefreshSquareSubscriptionsResponse":
+    ) -> "RefreshSubscriptionsResponse":
         """Refresh subscriptions."""
         METHOD_NAME = "refreshSubscriptions"
         params = [
@@ -1317,7 +1407,7 @@ class SquareService(ServiceBase):
 
     def destroySquareMessages(
         self, squareChatMid: str, messageIds: list, threadMid: Optional[str] = None
-    ) -> "DestroySquareMessagesResponse":
+    ) -> "DestroyMessagesResponse":
         """Destroy messages for Square."""
         METHOD_NAME = "destroyMessages"
         params = [
@@ -1361,7 +1451,7 @@ class SquareService(ServiceBase):
             METHOD_NAME, [[12, 1, params]], response_model=ReportSquareMemberResponse
         )
 
-    def getSquareNoteStatus(self, squareMid: str) -> "GetSquareNoteStatusResponse":
+    def getSquareNoteStatus(self, squareMid: str) -> "GetNoteStatusResponse":
         """Get note status."""
         METHOD_NAME = "getNoteStatus"
         params = [
@@ -1478,7 +1568,7 @@ class SquareService(ServiceBase):
             [11, 3, continuationToken],
         ]
         return self._call(
-            METHOD_NAME, [[12, 1, params]], response_model=GetJoinedThreadsResponse
+            METHOD_NAME, [[12, 1, params]], response_model=GetJoinedSquareChatThreadsResponse
         )
 
     def createSquareChatThread(
@@ -1826,7 +1916,7 @@ class SquareService(ServiceBase):
             METHOD_NAME, [[12, 1, params]], response_model=UpdateUserSettingsResponse
         )
 
-    def searchMentionables(self) -> "SearchMentionablesResponse":
+    def searchMentionables(self) -> Any:
         """AUTO_GENERATED_CODE! DONT_USE_THIS_FUNC!!
 
         GENERATED BY YinMo0913_DeachSword-DearSakura_v1.0.6.py

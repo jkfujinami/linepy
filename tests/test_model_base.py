@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tests for linepy._model_base -- the pure-stdlib (dataclasses-based)
+Tests for linepy.models.base -- the pure-stdlib (dataclasses-based)
 replacement for the pydantic v2 subset LINEPY's generated models used.
 
 Covers: alias-keyed / name-keyed construction (populate_by_name parity),
@@ -16,7 +16,7 @@ from dataclasses import dataclass, fields
 from enum import IntEnum
 from typing import Dict, List, Optional
 
-from linepy._model_base import ModelBase, TypeAdapter, model_field, validate_python
+from linepy.models.base import ModelBase, TypeAdapter, model_field, validate_python
 
 
 @dataclass

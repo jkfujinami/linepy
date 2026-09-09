@@ -68,7 +68,7 @@ def test_binary_writer_types_roundtrip():
 
 
 def test_rsakeyinfo_model_parses_field_ids():
-    from linepy.models.login import RSAKeyInfo
+    from linepy.models import RSAKeyInfo
     from linepy.services.base import _convert_int_keys_to_str
 
     r = {1: "keynm", 2: "00ab", 3: "10001", 4: "sess"}

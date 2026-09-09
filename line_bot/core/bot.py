@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Type
 
 from linepy.base import BaseClient
 from linepy.helpers.square import SquareEventData
-from linepy.models.square import SquareEvent, SquareEventType
+from linepy.models import SquareEvent, SquareEventType
 
 from .base import BaseModule
 from .context import JoinContext, LeaveContext, MessageContext, ReadContext

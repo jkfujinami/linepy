@@ -43,7 +43,6 @@ from .config import (
     get_mid_type,
 )
 
-
 logger = logging.getLogger("linepy.e2ee")
 
 
@@ -523,7 +522,7 @@ class E2EE:
         key_id = -1
         if talk is not None:
             try:
-                from .models.sync_structs import Pb1_C13097n4
+                from .models.generated import Pb1_C13097n4
 
                 pub_model = Pb1_C13097n4(
                     version=1, key_data=base64.b64encode(pub).decode("ascii")

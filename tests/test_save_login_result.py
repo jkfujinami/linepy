@@ -5,7 +5,7 @@ call sites in login.py (_login_v2_raw's raw dict vs. QRCodeLoginV2Response's
 _dump_response)."""
 
 from linepy.login import _dump_response
-from linepy.models.login import QRCodeLoginV2Response
+from linepy.models import QRCodeLoginV2Response
 from linepy.storage import MemoryStorage, TokenManager
 
 

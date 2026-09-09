@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Models for LINE Login API responses.
 
-These are plain stdlib ``@dataclass``es built on ``linepy._model_base``
+These are plain stdlib ``@dataclass``es built on ``linepy.models.base``
 (see that module for why: pydantic-core has no iOS wheels and no
 pure-Python fallback). They provide the same type-safe, dot-accessible,
 alias-keyed structures as before -- just without the Rust dependency.
@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from .._model_base import ModelBase, model_field
+from ..base import ModelBase, model_field
 
 
 @dataclass(kw_only=True)

@@ -3,9 +3,9 @@
 
 from typing import Any, List, Optional, Type, TypeVar, Union
 
-from .._model_base import ModelBase
-from .._model_base import validate_python as _validate_python
 from ..exceptions import LineException
+from ..models.base import ModelBase
+from ..models.base import validate_python as _validate_python
 
 T = TypeVar("T", bound=ModelBase)
 
@@ -28,9 +28,9 @@ def _convert_int_keys_to_str(data: Any) -> Any:
 def validate_response_model(data: Any, response_model: Any) -> Any:
     """Validate thrift-decoded ``data`` against ``response_model``.
 
-    ``response_model`` may be a plain :class:`~linepy._model_base.ModelBase`
+    ``response_model`` may be a plain :class:`~linepy.models.base.ModelBase`
     dataclass *or* a typing generic such as ``List[SomeModel]`` /
-    ``Dict[str, Model]`` -- ``linepy._model_base.validate_python`` (the
+    ``Dict[str, Model]`` -- ``linepy.models.base.validate_python`` (the
     ``TypeAdapter.validate_python`` equivalent) handles both shapes
     uniformly, structurally recursing into ``List``/``Dict``/dataclass as
     needed (used by ~40 methods such as ``getE2EEPublicKeys``, which returns

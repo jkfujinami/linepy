@@ -11,7 +11,7 @@ from checker import ReadChecker
 
 from linepy.base import BaseClient
 from linepy.helpers.square import SquareEventData
-from linepy.models.square import SquareEvent, SquareEventType
+from linepy.models import SquareEvent, SquareEventType
 
 
 def main():

@@ -6,7 +6,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from linepy import BaseClient
-from linepy.models.square import SquareEvent
+from linepy.models import SquareEvent
 
 
 def main():

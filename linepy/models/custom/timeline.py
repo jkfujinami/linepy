@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Models for LINE Timeline API responses.
 
-Plain stdlib ``@dataclass``es (see ``linepy._model_base``). These wrap real
+Plain stdlib ``@dataclass``es (see ``linepy.models.base``). These wrap real
 JSON REST responses (VOOM API) rather than Thrift structs, so field names
 match the JSON keys directly -- no ``alias`` mapping needed, just
 ``ModelBase.from_dict``/``to_dict`` for the same dot-accessible construction
@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .._model_base import ModelBase
+from ..base import ModelBase
 
 
 @dataclass(kw_only=True)

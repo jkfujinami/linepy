@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import MagicMock
 
 from linepy.client import Client
-from linepy.client import Message as ClientMessage
-from linepy.models.talk import Message as PydanticMessage
-from linepy.models.talk import Operation, OpType
+from linepy.models import Message as ClientMessage
+from linepy.models import Message as PydanticMessage
+from linepy.models import Operation, OpType
 
 
 class TestPollingLogic(unittest.TestCase):

@@ -19,7 +19,7 @@ def format_event(event):
 
 
 from linepy.helpers.square import SquareEventData
-from linepy.models.square import SquareEvent, SquareEventType
+from linepy.models import SquareEvent, SquareEventType
 
 
 def on_push_event(service_type: int, event: SquareEvent):
