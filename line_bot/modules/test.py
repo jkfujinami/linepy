@@ -5,8 +5,8 @@ Test module for LINE OC Bot
 !test コマンドで動作確認
 """
 
-from core.context import MessageContext
 from core.base import BaseModule
+from core.context import MessageContext
 from core.storage import Role
 
 

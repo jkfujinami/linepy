@@ -4,12 +4,13 @@ Modules for LINE OC Bot
 """
 
 from core.base import BaseModule
-from .test import TestModule
-from .read_checker import ReadCheckerModule
-from .ban_handler import BanHandlerModule
+
 from .admin import AdminModule
+from .ban_handler import BanHandlerModule
 from .join import JoinModule
 from .rate_limiter import RateLimiterModule
+from .read_checker import ReadCheckerModule
+from .test import TestModule
 
 __all__ = [
     "BaseModule",

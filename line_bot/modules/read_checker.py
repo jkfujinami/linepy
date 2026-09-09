@@ -13,10 +13,10 @@ Square (OpenChat) の既読状況を追跡・確認する。
 """
 
 import logging
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
-from core.context import MessageContext, ReadContext
 from core.base import BaseModule
+from core.context import MessageContext, ReadContext
 
 logger = logging.getLogger("line_bot.read_checker")
 

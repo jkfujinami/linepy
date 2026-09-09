@@ -7,14 +7,12 @@ REAL linejs crypto functions (tools/gen_vectors.ts) with fixed inputs. These
 tests assert the Python port produces byte-identical output.
 """
 
-import base64
 import json
 import os
 
 import pytest
 
 from linepy.e2ee import E2EE, byte2int
-
 
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "linejs_vectors.json")
 

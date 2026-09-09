@@ -1,5 +1,7 @@
 from linepy.base import BaseClient
-from linepy.models.square import FindSquareByInvitationTicketResponse, SquareJoinMethod, SquareJoinMethodType
+from linepy.models.square import (
+    SquareJoinMethodType,
+)
 
 client = BaseClient(device="DESKTOPWIN", storage=".linepy_storage.json")
 if not client.auto_login():

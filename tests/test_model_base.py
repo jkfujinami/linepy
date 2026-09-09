@@ -16,8 +16,6 @@ from dataclasses import dataclass, fields
 from enum import IntEnum
 from typing import Dict, List, Optional
 
-import pytest
-
 from linepy._model_base import ModelBase, TypeAdapter, model_field, validate_python
 
 

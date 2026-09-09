@@ -6,17 +6,16 @@ Bot本体 - イベントディスパッチャー
 """
 
 import logging
-import time
 from pathlib import Path
-from typing import Dict, List, Type, Optional, Callable, Any
+from typing import Dict, List, Optional, Type
 
 from linepy.base import BaseClient
-from linepy.models.square import SquareEvent, SquareEventType
 from linepy.helpers.square import SquareEventData
+from linepy.models.square import SquareEvent, SquareEventType
 
-from .storage import ChatStorage, SquareStorage, GlobalStorage, Role
-from .context import MessageContext, ReadContext, JoinContext, LeaveContext
 from .base import BaseModule
+from .context import JoinContext, LeaveContext, MessageContext, ReadContext
+from .storage import ChatStorage, GlobalStorage, SquareStorage
 
 logger = logging.getLogger("line_bot")
 

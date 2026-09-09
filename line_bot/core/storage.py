@@ -5,10 +5,10 @@ Storage module for LINE OC Bot
 LiveJSON を使ったデータ永続化
 """
 
-from pathlib import Path
-from enum import IntEnum
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from enum import IntEnum
+from pathlib import Path
+from typing import Dict
 
 import livejson
 

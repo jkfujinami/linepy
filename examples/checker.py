@@ -18,7 +18,8 @@ Square (OpenChat) の既読状況を追跡・確認するツール。
     checker.on_message_event(event)   # メッセージイベント
 """
 
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List
+
 from linepy.base import BaseClient
 from linepy.helpers.square import SquareEventData
 from linepy.models.square import SquareEvent, SquareEventNotifiedMarkAsRead

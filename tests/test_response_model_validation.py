@@ -15,10 +15,8 @@ after every successful login.
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-import pytest
-
 from linepy._model_base import ModelBase, model_field
-from linepy.services.base import validate_response_model, ServiceBase
+from linepy.services.base import ServiceBase, validate_response_model
 
 
 @dataclass(kw_only=True)

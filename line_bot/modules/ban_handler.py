@@ -9,9 +9,8 @@ BANユーザーの発言を処理する。
 import logging
 from typing import Optional
 
-from core.context import MessageContext
 from core.base import BaseModule
-from core.storage import Role
+from core.context import MessageContext
 
 logger = logging.getLogger("line_bot.ban_handler")
 

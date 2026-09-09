@@ -12,18 +12,18 @@ import os
 import tempfile
 
 import pytest
-from linepy._purecrypto import AES
 
+from linepy._purecrypto import AES
 from linepy.base import BaseClient
 from linepy.login import registration_auth_endpoint
 from linepy.models.login import (
-    RSAKeyInfo,
     LoginResponse,
-    QRSessionResponse,
-    QRCodeResponse,
+    PinCodeResponse,
     QRCodeLoginResponse,
     QRCodeLoginV2Response,
-    PinCodeResponse,
+    QRCodeResponse,
+    QRSessionResponse,
+    RSAKeyInfo,
 )
 from linepy.thrift import ThriftReader
 

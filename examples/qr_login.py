@@ -20,7 +20,7 @@ def main():
     @client.base.on("qrcall")
     def qrcall(url):
         """Called when QR code is ready"""
-        print(f"\n📱 Scan this QR code with LINE app:")
+        print("\n📱 Scan this QR code with LINE app:")
         print(f"   {url}")
         print("\n   Or open the URL in your browser to view the QR code")
 

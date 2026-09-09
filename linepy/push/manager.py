@@ -11,8 +11,8 @@ import threading
 import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
-from .data import LegyH2PushFrame, ServiceType
 from .conn import PushConnection
+from .data import LegyH2PushFrame, ServiceType
 
 if TYPE_CHECKING:
     from ..base import BaseClient
@@ -39,6 +39,8 @@ class PushManager:
         push.on_event = lambda service, event: print(event)
         push.start()
     """
+
+    DEFAULT_SERVICES = (ServiceType.SQUARE, ServiceType.TALK_SYNC)
 
     def __init__(self, client: "BaseClient"):
         self.client = client
@@ -73,17 +75,24 @@ class PushManager:
 
     def start(
         self,
-        watched_chats: List[str] = [],
+        watched_chats: Optional[List[str]] = None,
         on_event: Optional[Callable[[Any, Any], None]] = None,
         fetch_type: int = 1,
-        services: List[int] = [3, 8],
+        services: Optional[List[int]] = None,
     ):
-        """Start Push connection loop."""
+        """Start Push connection loop.
+
+        ``watched_chats=None`` keeps whatever :meth:`add_watched_chat` has
+        already registered (along with its restored sync tokens); pass a list
+        to replace the watch set outright.
+        """
         if self._running:
             logger.warning("Push is already running")
             return
 
-        self.watched_chats = watched_chats
+        if watched_chats is not None:
+            self.watched_chats = list(watched_chats)
+        services = list(services) if services is not None else list(self.DEFAULT_SERVICES)
         if on_event:
             self.on_event = on_event
         self.fetch_type = fetch_type
@@ -388,7 +397,6 @@ class PushManager:
 
     def _handle_square_response(self, data: bytes):
         """Handle Square (fetchMyEvents) response."""
-        from ..thrift import read_thrift
 
         try:
             # Note: This is usually the initial fetch result

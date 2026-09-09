@@ -4,7 +4,7 @@ Channel Service for LINEPY
 Handles channel token issuance and other channel-related operations.
 """
 
-from typing import Optional, Dict, List, Any
+from typing import Any, Dict, List
 
 
 class ChannelService:

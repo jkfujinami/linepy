@@ -7,9 +7,9 @@ import tempfile
 
 import pytest
 
-from linepy.base import BaseClient
-from linepy import voom as voom_mod
 from linepy import liff as liff_mod
+from linepy import voom as voom_mod
+from linepy.base import BaseClient
 
 
 @pytest.fixture

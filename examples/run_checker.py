@@ -6,10 +6,12 @@ ReadChecker と SquareHelper (Polling) を分離した構成。
 """
 
 import time
-from linepy.base import BaseClient
-from linepy.models.square import SquareEventType, SquareEvent
-from linepy.helpers.square import SquareEventData
+
 from checker import ReadChecker
+
+from linepy.base import BaseClient
+from linepy.helpers.square import SquareEventData
+from linepy.models.square import SquareEvent, SquareEventType
 
 
 def main():

@@ -6,18 +6,21 @@ Based on linejs Timeline implementation.
 """
 
 import json
+import logging
 import urllib.parse
-from typing import Optional, Dict, List, Any, Union, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 from ._model_base import ModelBase
-
 from .models.timeline import (
-    ListPostResponse,
     CreatePostResponse,
-    GetPostResponse,
     DeletePostResponse,
+    GetPostResponse,
+    ListPostResponse,
     SharePostResponse,
 )
+
+logger = logging.getLogger("linepy.timeline")
+
 
 T = TypeVar("T", bound=ModelBase)
 
@@ -52,7 +55,7 @@ class Timeline:
 
         # Get channel token from ChannelService
         resp = self.client.channel.approve_channel_and_issue_channel_token(channel_id)
-        print(f"[Timeline] Channel response: {resp}")
+        logger.debug("Channel response: %s", resp)
 
         # CHRLINE-Patch: checkAndGetValue(resp, "channelAccessToken", 5)
         # Field ID 5 is channelAccessToken
@@ -72,7 +75,7 @@ class Timeline:
             raise Exception(f"No channel access token found in response: {resp}")
 
         self.timeline_token = token
-        print(f"[Timeline] Got channel token: {token[:50]}...")
+        logger.debug("Got channel token: %s...", token[:50])
 
         self.timeline_headers = {
             "x-line-application": self.client.app_name,
@@ -124,7 +127,7 @@ class Timeline:
         if params:
             query = urllib.parse.urlencode(params)
             url += f"?{query}"
-        print(url)
+        logger.debug("%s %s", method, url)
 
         headers = self.timeline_headers.copy()
 
@@ -167,7 +170,7 @@ class Timeline:
         if http_method == "POST":
             headers["Content-type"] = "application/json"
 
-        print(headers)
+        logger.debug("headers: %s", headers)
 
         with httpx.Client(http2=True) as client:
             resp = client.request(

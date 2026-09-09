@@ -6,10 +6,10 @@ Admin module for LINE OC Bot
 """
 
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
-from core.context import MessageContext
 from core.base import BaseModule
+from core.context import MessageContext
 from core.storage import Role
 
 logger = logging.getLogger("line_bot.admin")

@@ -8,7 +8,7 @@ Supports Binary (protocol 3) and Compact (protocol 4) protocols.
 import logging
 import os
 import struct
-from typing import Any, Tuple, List, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger("linepy.thrift")
 
@@ -610,14 +610,13 @@ class CompactReader:
             try:
                 text = self.data.decode("utf-8", errors="replace")
                 debug_log("Response text", text[:500])
-            except:
+            except Exception:
                 pass
             raise Exception(f"Bad protocol id: {proto_id}")
 
         ver_type = self.data[self._pos]
         self._pos += 1
         _type = (ver_type >> 5) & 7
-        version = ver_type & 0x1F
 
         seqid = self.read_varint()
         name_len = self.read_varint()
@@ -758,7 +757,7 @@ class CompactReader:
         data = self._read(size)
         try:
             return data.decode("utf-8")
-        except:
+        except UnicodeDecodeError:
             return data
 
     def read_value(self, ftype: int) -> Any:

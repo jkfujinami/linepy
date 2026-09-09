@@ -8,7 +8,7 @@ Base module for LINE OC Bot
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from .context import MessageContext, ReadContext, JoinContext, LeaveContext
+from .context import JoinContext, LeaveContext, MessageContext, ReadContext
 
 if TYPE_CHECKING:
     from .bot import Bot

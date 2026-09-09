@@ -6,8 +6,8 @@ import os
 import tempfile
 
 import pytest
-from linepy._purecrypto import AES
 
+from linepy._purecrypto import AES
 from linepy.base import BaseClient
 
 

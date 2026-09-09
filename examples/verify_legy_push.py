@@ -5,10 +5,10 @@ LEGY Push 動作確認テストスクリプト
 リアルタイムでイベントを取得し、プロトコルの中身を整形して表示します。
 """
 
-import time
 import json
+import time
+
 from linepy.base import BaseClient
-from linepy.push.data import ServiceType
 
 
 def format_event(event):
@@ -18,8 +18,9 @@ def format_event(event):
     return str(event)
 
 
-from linepy.models.square import SquareEventType, SquareEvent
 from linepy.helpers.square import SquareEventData
+from linepy.models.square import SquareEvent, SquareEventType
+
 
 def on_push_event(service_type: int, event: SquareEvent):
     """Callback for push events."""
@@ -30,7 +31,7 @@ def on_push_event(service_type: int, event: SquareEvent):
     data = SquareEventData.from_event(event)
 
     if data.square_event_type == SquareEventType.RECEIVE_MESSAGE:
-        print(f"📩 MESSAGE (RECEIVE_MESSAGE):")
+        print("📩 MESSAGE (RECEIVE_MESSAGE):")
         print(f"   From: {data.member_mid}")
         print(f"   Name: {data.sender_name}")
         print(f"   Text: {data.message_text or '(No Text/Content)'}")
@@ -42,16 +43,16 @@ def on_push_event(service_type: int, event: SquareEvent):
         # But for now let's just show what we have or raw event slightly.
         if event.payload.notified_mark_as_read:
             read = event.payload.notified_mark_as_read
-            print(f"👀 READ MARK (NOTIFIED_MARK_AS_READ):")
+            print("👀 READ MARK (NOTIFIED_MARK_AS_READ):")
             print(f"   Mid: {read.s_member_mid}")
             print(f"   MsgId: {read.message_id}")
 
     elif data.square_event_type == SquareEventType.NOTIFIED_JOIN_SQUARE_CHAT:
-        print(f"👋 JOIN (NOTIFIED_JOIN_SQUARE_CHAT)")
+        print("👋 JOIN (NOTIFIED_JOIN_SQUARE_CHAT)")
         print(f"   SquareChatMid: {data.square_chat_mid or event.payload.notified_join_square_chat.square_chat_mid}")
 
     elif data.square_event_type == SquareEventType.NOTIFIED_LEAVE_SQUARE_CHAT:
-        print(f"👋 LEAVE (NOTIFIED_LEAVE_SQUARE_CHAT)")
+        print("👋 LEAVE (NOTIFIED_LEAVE_SQUARE_CHAT)")
 
     else:
         print(f"📦 OTHER EVENT: {data.square_event_type}")

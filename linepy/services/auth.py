@@ -1,10 +1,6 @@
-from typing import Optional
+from ..models.sync_structs import RefreshAccessTokenResponse
 from .base import ServiceBase
-from ..models.sync_structs import (
-    RefreshAccessTokenRequest,
-    RefreshAccessTokenResponse,
-    ReportRefreshedAccessTokenRequest
-)
+
 
 class AuthService(ServiceBase):
     """Auth Service for token management."""

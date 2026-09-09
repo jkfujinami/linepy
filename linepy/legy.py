@@ -13,8 +13,8 @@ xxhash32-based ``legyHmac`` integrity trailer.
 """
 
 import base64
-import hmac as _hmac
 import hashlib
+import hmac as _hmac
 import json
 import os
 import re
@@ -22,8 +22,7 @@ import struct
 import time
 from typing import Dict, Optional, Tuple
 
-from ._purecrypto import AES, PKCS1_OAEP, SHA1, RSA, xxh32_intdigest
-
+from ._purecrypto import AES, PKCS1_OAEP, RSA, SHA1, xxh32_intdigest
 
 # ---------------------------------------------------------------------------
 # Constants

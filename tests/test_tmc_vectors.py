@@ -15,7 +15,6 @@ import pytest
 
 from linepy.thrift.tmc import TMoreCompactProtocol, decode_tmc
 
-
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "tmc_vectors.json")
 
 

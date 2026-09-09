@@ -5,15 +5,16 @@ Handles all HTTP communication with LINE servers.
 Uses httpx for HTTP/2 support.
 """
 
-from typing import Optional, Dict, Any, Callable
+from typing import Any, Callable, Dict, Optional
+
 import httpx
 
-from .thrift import ThriftReader, ThriftWriter, CompactReader
 from .legy import (
     LegyEncryptedTransport,
     is_legy_talk_path,
     should_use_legy_encrypted_access,
 )
+from .thrift import CompactReader, ThriftReader
 
 
 class RequestClient:

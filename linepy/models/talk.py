@@ -5,7 +5,7 @@ These models wrap the auto-generated thrift structures and add convenience metho
 """
 
 from __future__ import annotations
-from typing import List, Optional, Dict, Any, Union
+
 from .talk_structs import *
 
 # Export common types for easier access

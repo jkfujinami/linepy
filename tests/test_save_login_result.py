@@ -4,9 +4,9 @@ pydantic model_dump(by_alias=True) (string-keyed) shapes, matching the two
 call sites in login.py (_login_v2_raw's raw dict vs. QRCodeLoginV2Response's
 _dump_response)."""
 
-from linepy.storage import TokenManager, MemoryStorage
-from linepy.models.login import QRCodeLoginV2Response
 from linepy.login import _dump_response
+from linepy.models.login import QRCodeLoginV2Response
+from linepy.storage import MemoryStorage, TokenManager
 
 
 def test_save_login_result_int_keyed_dict():

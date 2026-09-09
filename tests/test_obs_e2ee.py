@@ -16,11 +16,8 @@ import json
 import os
 import tempfile
 
-import pytest
-
-from linepy.obs import build_talk_meta, _write_binary_struct, E2EE_MEDIA_TYPESET
 from linepy.base import BaseClient
-
+from linepy.obs import E2EE_MEDIA_TYPESET, _write_binary_struct, build_talk_meta
 
 _ID = "m1234567890"
 _INNER_HEX = "0b00040000000b6d313233343536373839300f001b0c0000000000"

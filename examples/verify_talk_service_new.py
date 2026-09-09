@@ -1,11 +1,12 @@
 
-import sys
 import os
+import sys
 
 # Add parent directory to path to import linepy
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 from linepy import BaseClient
+
 
 def test_talk():
     try:
@@ -35,7 +36,7 @@ def test_talk():
         print("Testing get_chats()...")
         # Just use an empty list to see if it doesn't crash
         chats = client.talk.get_chats(chat_mids=[])
-        print(f"Successfully called get_chats()")
+        print("Successfully called get_chats()")
 
     except Exception as e:
         print(f"TalkService Test Failed: {e}")

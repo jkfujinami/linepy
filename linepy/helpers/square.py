@@ -9,13 +9,14 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, List, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 if TYPE_CHECKING:
     from ..base import BaseClient
 
-from linepy.models.square_structs import SquareEvent as PydanticSquareEvent, SquareEventType
 from linepy.models.square import SquareJoinMethodType
+from linepy.models.square_structs import SquareEvent as PydanticSquareEvent
+from linepy.models.square_structs import SquareEventType
 
 logger = logging.getLogger("linepy.square")
 
@@ -560,7 +561,7 @@ class SquareHelper:
             chat_name = response.chat.name
             join_method = response.square.join_method.type_
             membership = response.my_membership
-            print(response.model_dump_json(indent=2))
+            logger.debug("findSquareByInvitationTicket: %s", response)
             result["square_mid"] = square_mid
             result["chat_mid"] = chat_mid
             result["square_name"] = square_name
@@ -592,12 +593,12 @@ class SquareHelper:
                         displayName=displayName,
                         squareChatMid=chat_mid,
                     )
-                    print(join_result.model_dump_json(indent=2))
+                    logger.debug("joinSquare: %s", join_result)
                     try:
                         member_mid = join_result.square_member.square_member_mid
                         self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
                     except Exception as e:
-                        print(f"画像のアップロードに失敗しました: {e}")
+                        logger.warning("Profile image upload failed: %s", e)
                     result["status"] = "JOINED"
                     result["message"] = f"Squareに参加しました: {square_name}"
 
@@ -613,12 +614,12 @@ class SquareHelper:
                         squareChatMid=chat_mid,
                         joinMessage=defaultApprovalMessage,
                     )
-                    print(join_result.model_dump_json(indent=2))
+                    logger.debug("joinSquare: %s", join_result)
                     try:
                         member_mid = join_result.square_chat_member.square_member_mid
                         self.client.obs.upload_obj_square_member_image(member_mid=member_mid,path_or_bytes=profileImagePath,filename="Image.jpg")
                     except Exception as e:
-                        print(f"画像のアップロードに失敗しました: {e}")
+                        logger.warning("Profile image upload failed: %s", e)
                     result["status"] = "PENDING"
                     result["message"] = f"参加リクエストを送信しました: {square_name}"
 

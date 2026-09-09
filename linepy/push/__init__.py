@@ -5,8 +5,8 @@ LEGY Push package for LINEPY
 HTTP/2 Push によるリアルタイムイベント取得
 """
 
-from .data import ServiceType, LegyH2PushFrame
 from .conn import PushConnection
+from .data import LegyH2PushFrame, ServiceType
 from .manager import PushManager
 
 __all__ = [

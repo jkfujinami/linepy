@@ -10,7 +10,7 @@ alias-keyed structures as before -- just without the Rust dependency.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, Union
+from typing import Any, Dict, Optional, Union
 
 from .._model_base import ModelBase, model_field
 

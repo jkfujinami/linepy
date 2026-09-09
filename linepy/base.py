@@ -4,11 +4,18 @@ Base Client for LINEPY
 Low-level API client that handles authentication and service calls.
 """
 
-from typing import Optional, Dict, Any, Callable, List, Union
+import logging
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from .config import Device, get_device_details, build_app_name, is_v3_support
+from .config import Device, build_app_name, get_device_details, get_mid_type
 from .request import RequestClient
 from .storage import BaseStorage, FileStorage, TokenManager
+
+if TYPE_CHECKING:
+    from .polling import PollingManager
+    from .push import PushManager
+
+logger = logging.getLogger("linepy.client")
 
 
 class LineException(Exception):
@@ -139,8 +146,12 @@ class BaseClient:
         from .helpers.square import SquareHelper
         self.square_helper = SquareHelper(self)
 
-        # Push manager (LEGY Push for realtime events)
-        self.push: Optional["PushManager"] = None  # Lazy init
+        # Realtime receivers (lazy init)
+        self.push: Optional["PushManager"] = None
+        self.polling: Optional["PollingManager"] = None
+
+        # Chats the PUSH/polling loop should watch (see ``listen``)
+        self._watch_chat_mids: List[str] = []
 
         # User state
         self.auth_token: Optional[str] = None
@@ -195,13 +206,13 @@ class BaseClient:
         try:
             self.e2ee.verify_login_key()
         except Exception as exc:
-            print(f"[Login] verify_login_key failed: {exc}")
+            logger.warning("verify_login_key failed: %s", exc)
 
         # Get profile
         self.profile = self.get_profile()
         self.mid = self.profile.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
         return auth_token
 
     def login_with_qr(self, v3: Optional[bool] = None, save: bool = True) -> str:
@@ -232,7 +243,7 @@ class BaseClient:
         try:
             self.e2ee.verify_login_key()
         except Exception as exc:
-            print(f"[Login] verify_login_key failed: {exc}")
+            logger.warning("verify_login_key failed: %s", exc)
 
         # Get profile
         self.profile = self.get_profile()
@@ -242,7 +253,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
         return auth_token
 
     def login_with_token(self, auth_token: str, save: bool = True):
@@ -267,7 +278,7 @@ class BaseClient:
         if save:
             self.token_manager.mid = self.mid
 
-        print(f"Logged in as: {self.profile.display_name}")
+        logger.info("Logged in as: %s", self.profile.display_name)
 
     def auto_login(self) -> bool:
         """
@@ -290,10 +301,10 @@ class BaseClient:
             self.profile = self.get_profile()
             self.mid = self.profile.mid
 
-            print(f"Auto-logged in as: {self.profile.display_name}")
+            logger.info("Auto-logged in as: %s", self.profile.display_name)
             return True
         except Exception as e:
-            print(f"Auto-login failed: {e}")
+            logger.warning("Auto-login failed: %s", e)
             return False
 
     def logout(self, clear_storage: bool = True):
@@ -370,9 +381,11 @@ class BaseClient:
         from .config import PRIMARY_DEVICES
 
         if self.device in PRIMARY_DEVICES:
-            print(f"[WARN] Token refresh is DISABLED for Primary Device ({self.device})")
-            print("       Refreshing would invalidate the session on your physical phone.")
-            print("       If the token is expired, please extract a new one via ADB.")
+            logger.warning(
+                "Token refresh is DISABLED for primary device (%s): refreshing would "
+                "invalidate the session on the physical phone. Extract a new token via ADB.",
+                self.device,
+            )
             # Return current token as is (effectively doing nothing)
             return self.auth_token if self.auth_token else ""
 
@@ -389,11 +402,11 @@ class BaseClient:
             new_refresh_token = response.refresh_token
 
             if new_access_token:
-                print("[Auth] Access token refreshed")
+                logger.info("Access token refreshed")
                 self.set_auth_token(new_access_token)
 
             if new_refresh_token:
-                print("[Auth] Refresh token updated")
+                logger.info("Refresh token updated")
                 self.token_manager.refresh_token = new_refresh_token
             else:
                 # リフレッシュトークンが変わらない場合もあるが、Durationだけ更新されるかも
@@ -406,7 +419,13 @@ class BaseClient:
 
     # ========== Push (Realtime Events) ==========
 
-    def start_push(self, chat_mids: List[str], on_event: Callable = None, fetch_type: int = 1):
+    def start_push(
+        self,
+        chat_mids: List[str],
+        on_event: Optional[Callable] = None,
+        fetch_type: int = 1,
+        services: Optional[List[int]] = None,
+    ):
         """
         Start LEGY Push for realtime event reception.
 
@@ -414,8 +433,10 @@ class BaseClient:
             chat_mids: Square chat MIDs to watch
             on_event: Callback function(service_type, event_data)
             fetch_type: 1=Default (Sync), 2=Prefetch By Server
+            services: PUSH service ids (default: Square only)
         """
         from .push import PushManager
+        from .push.data import ServiceType
 
         if self.push is None:
             self.push = PushManager(self)
@@ -426,8 +447,10 @@ class BaseClient:
         if on_event:
             self.push.on_event = on_event
 
-        self.push.start(services=[3], fetch_type=fetch_type)  # Square only
-        pass
+        self.push.start(
+            fetch_type=fetch_type,
+            services=list(services) if services is not None else [ServiceType.SQUARE],
+        )
 
     def stop_push(self):
         """Stop LEGY Push."""
@@ -450,7 +473,7 @@ class BaseClient:
         """
         from .polling import PollingManager
 
-        if not hasattr(self, 'polling') or self.polling is None:
+        if self.polling is None:
             self.polling = PollingManager(self)
 
         self.polling.start(
@@ -461,7 +484,7 @@ class BaseClient:
 
     def stop_polling(self):
         """Stop polling."""
-        if hasattr(self, 'polling') and self.polling:
+        if self.polling:
             self.polling.stop()
 
     # ========== Service Calls ==========
@@ -519,78 +542,6 @@ class BaseClient:
     def get_profile(self) -> Any:
         """Get user profile"""
         return self.talk.get_profile()
-
-    def get_contact(self, mid: str) -> Dict:
-        """Get contact by mid"""
-        # getContact_args: [[11, 2, mid]]
-        return self._call_service(
-            path="/S4",
-            method="getContact",
-            params=[[11, 2, mid]],
-        )
-
-    def get_contacts(self, mids: List[str]) -> List[Dict]:
-        """Get multiple contacts by mids"""
-        # getContacts_args: [[15, 2, [11, mids]]]
-        return self._call_service(
-            path="/S4",
-            method="getContacts",
-            params=[[15, 2, [11, mids]]],
-        )
-
-    def get_all_contact_ids(self) -> List[str]:
-        """Get all friend mids"""
-        # getAllContactIds_args: [[8, 1, syncReason]]
-        return self._call_service(
-            path="/S4",
-            method="getAllContactIds",
-            params=[[8, 1, 0]],  # syncReason = 0
-        )
-
-    def get_chats(
-        self,
-        chat_mids: List[str],
-        with_members: bool = True,
-        with_invitees: bool = True,
-    ) -> Dict:
-        """Get chats by mids"""
-        # getChats_args: [[12, 1, request]]
-        return self._call_service(
-            path="/S4",
-            method="getChats",
-            params=[
-                [
-                    12,
-                    1,
-                    [
-                        [15, 1, [11, chat_mids]],
-                        [2, 2, with_members],
-                        [2, 3, with_invitees],
-                    ],
-                ]
-            ],
-        )
-
-    def get_all_chat_mids(
-        self, with_member_chats: bool = True, with_invited_chats: bool = True
-    ) -> Dict:
-        """Get all chat mids"""
-        # getAllChatMids_args: [[12, 1, request], [8, 2, syncReason]]
-        return self._call_service(
-            path="/S4",
-            method="getAllChatMids",
-            params=[
-                [
-                    12,
-                    1,
-                    [
-                        [2, 1, with_member_chats],
-                        [2, 2, with_invited_chats],
-                    ],
-                ],
-                [8, 2, 0],  # syncReason
-            ],
-        )
 
     def get_reqseq(self) -> int:
         """Next request sequence number (persisted)."""
@@ -699,8 +650,11 @@ class BaseClient:
             raise
 
     def send_compact_plain_message(self, to: str, text: str):
-        from .compact import pack_compact_plain_message, decode_compact_message_response, \
-            COMPACT_PLAIN_MESSAGE_ENDPOINT
+        from .compact import (
+            COMPACT_PLAIN_MESSAGE_ENDPOINT,
+            decode_compact_message_response,
+            pack_compact_plain_message,
+        )
 
         seq_id = self.get_reqseq()
         body = pack_compact_plain_message(seq_id, to, text)
@@ -710,8 +664,11 @@ class BaseClient:
     def send_compact_e2ee_message(
         self, to: str, text: Optional[str] = None, chunks: Optional[List[bytes]] = None
     ):
-        from .compact import pack_compact_e2ee_message, decode_compact_message_response, \
-            COMPACT_E2EE_MESSAGE_ENDPOINT
+        from .compact import (
+            COMPACT_E2EE_MESSAGE_ENDPOINT,
+            decode_compact_message_response,
+            pack_compact_e2ee_message,
+        )
 
         if not chunks:
             if text is None:
@@ -734,22 +691,44 @@ class BaseClient:
             self._dispatcher = dispatcher
         return dispatcher
 
+    def watch_chats(self, *chat_mids: str) -> None:
+        """Register Square chats for :meth:`listen` to fetch events from."""
+        for mid in chat_mids:
+            if mid not in self._watch_chat_mids:
+                self._watch_chat_mids.append(mid)
+
     def listen(self, talk: bool = True, square: bool = True) -> None:
         """Start the PUSH stream and dispatch decrypted events.
 
         Talk operations are auto-decrypted and emitted as ``message`` events
         (``TalkMessage``); Square notifications as ``square:message``
-        (``SquareMessage``). Register handlers via :meth:`on`.
+        (``SquareMessage``). Register handlers via :meth:`on`, and the Square
+        chats to watch via :meth:`watch_chats`.
         """
+        from .push.data import ServiceType
+
         dispatcher = self.get_dispatcher()
 
-        def _on_event(op):
-            dispatcher.dispatch_talk_operation(op)
+        # Talk operations are routed straight into the dispatcher by
+        # PushManager itself; Square events arrive through ``on_event`` and
+        # are forwarded here so both paths fan out from the same dispatcher.
+        def _on_event(service_type, event):
+            if service_type == ServiceType.SQUARE:
+                dispatcher.dispatch_square_event(event)
+            else:
+                dispatcher.dispatch_talk_operation(event)
 
-        # Reuse the existing PUSH machinery; each operation flows through the
-        # dispatcher so E2EE decryption and event fan-out happen centrally.
-        chat_mids = list(getattr(self, "_watch_chat_mids", []) or [])
-        return self.start_push(chat_mids, on_event=_on_event)
+        services = []
+        if square:
+            services.append(ServiceType.SQUARE)
+        if talk:
+            services.append(ServiceType.TALK_SYNC)
+        if not services:
+            raise ValueError("listen() requires talk and/or square to be enabled")
+
+        return self.start_push(
+            list(self._watch_chat_mids), on_event=_on_event, services=services
+        )
 
     def on(self, event: str, callback: Optional[Callable] = None):
         """
@@ -780,16 +759,4 @@ class BaseClient:
 
     def get_to_type(self, mid: str) -> Optional[int]:
         """Get target type from mid prefix"""
-        type_map = {
-            "u": 0,  # USER
-            "r": 1,  # ROOM
-            "c": 2,  # GROUP
-            "s": 3,  # SQUARE
-            "m": 4,  # SQUARE_CHAT
-            "p": 5,  # SQUARE_MEMBER
-            "v": 6,  # BOT
-            "t": 7,  # ?
-        }
-        if mid and len(mid) > 0:
-            return type_map.get(mid[0])
-        return None
+        return get_mid_type(mid)

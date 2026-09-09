@@ -11,22 +11,27 @@ Faithful, function-by-function port of linejs
 """
 
 import binascii
+import logging
 import re
-from typing import Optional, Tuple, Dict, Any, List, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 from ._model_base import ModelBase
-
 from .config import is_v3_support
 from .models.login import (
-    RSAKeyInfo,
     LoginResponse,
-    VerificationResponse,
-    QRSessionResponse,
-    QRCodeResponse,
     PinCodeResponse,
     QRCodeLoginResponse,
     QRCodeLoginV2Response,
+    QRCodeResponse,
+    QRSessionResponse,
+    RSAKeyInfo,
 )
+
+if TYPE_CHECKING:
+    from .base import BaseClient
+
+logger = logging.getLogger("linepy.login")
+
 
 T = TypeVar("T", bound=ModelBase)
 
@@ -656,12 +661,12 @@ class Login:
             try:
                 e2ee_key_result = self.client.e2ee.decode_e2ee_key_v1(e2ee_info, secret)
             except Exception as exc:
-                print(f"[Login] decodeE2EEKeyV1 failed: {exc}")
+                logger.warning("decodeE2EEKeyV1 failed: %s", exc)
         if not e2ee_key_result:
             try:
                 self.client.e2ee.register_e2ee_key_pair()
             except Exception as exc:
-                print(f"[Login] registerE2EEKeyPair failed: {exc}")
+                logger.warning("registerE2EEKeyPair failed: %s", exc)
 
     @staticmethod
     def _print_qr(url: str) -> None:
@@ -743,7 +748,7 @@ class Login:
                     },
                     timeout=(interval_ms + 5000) / 1000,
                 )
-                print(f"[Login] QR code {label}!")
+                logger.info("QR code %s", label)
                 return True
             except Exception as exc:
                 if self._is_retryable_poll_error(exc) and i < max_count - 1:

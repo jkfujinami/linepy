@@ -4,13 +4,11 @@ High-level Client for LINEPY
 User-friendly API with event handling and convenient methods.
 """
 
-from typing import Optional, Callable, Dict, List, Any
-import threading
-import time
+from typing import Any, Callable, List, Optional
 
 from .base import BaseClient, LineException
 from .config import Device
-from .models.talk import Message, Contact, Profile, Chat
+from .models.talk import Chat, Contact, Message, Profile
 
 
 class Client:
@@ -96,6 +94,49 @@ class Client:
     def listen(self, talk: bool = True, square: bool = True):
         """Start the PUSH listen loop (see BaseClient.listen)."""
         return self.base.listen(talk=talk, square=square)
+
+    def watch_chats(self, *chat_mids: str):
+        """Register Square chats for :meth:`listen` (delegates to the base client)."""
+        return self.base.watch_chats(*chat_mids)
+
+    @property
+    def push(self):
+        return self.base.push
+
+    @property
+    def polling(self):
+        return self.base.polling
+
+    def start_push(
+        self,
+        chat_mids: List[str],
+        on_event: Optional[Callable] = None,
+        fetch_type: int = 1,
+        services: Optional[List[int]] = None,
+    ):
+        """Start LEGY Push (delegates to the base client)."""
+        return self.base.start_push(
+            chat_mids, on_event=on_event, fetch_type=fetch_type, services=services
+        )
+
+    def stop_push(self):
+        """Stop LEGY Push (delegates to the base client)."""
+        return self.base.stop_push()
+
+    def start_polling(
+        self,
+        chat_mids: List[str],
+        on_event: Optional[Callable] = None,
+        fetch_type: int = 2,
+    ):
+        """Start high-frequency polling (delegates to the base client)."""
+        return self.base.start_polling(
+            chat_mids, on_event=on_event, fetch_type=fetch_type
+        )
+
+    def stop_polling(self):
+        """Stop polling (delegates to the base client)."""
+        return self.base.stop_polling()
 
     def login(
         self,
@@ -226,28 +267,6 @@ class Client:
             Object ID
         """
         return self._send_media(to, path, "image")
-
-    def start_push(self, chat_mids: List[str], on_event: Callable = None, fetch_type: int = 1):
-        """
-        Start LEGY Push for realtime event reception.
-
-        Args:
-            chat_mids: Square chat MIDs to watch
-            on_event: Callback function(service_type, event_data)
-            fetch_type: 1=Default (Sync), 2=Prefetch By Server
-        """
-        from .push import PushManager
-
-        if self.push is None:
-            self.push = PushManager(self)
-
-        for mid in chat_mids:
-            self.push.add_watched_chat(mid)
-
-        if on_event:
-            self.push.on_event = on_event
-
-        self.push.start(services=[3], fetch_type=fetch_type)  # Square only
 
     def send_video(self, to: str, path: str) -> str:
         """

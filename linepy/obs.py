@@ -9,7 +9,8 @@ import base64
 import json
 import os
 import time
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
+
 
 def _write_binary_struct(fields) -> bytes:
     """Serialize a bare Thrift struct with TBinaryProtocol.

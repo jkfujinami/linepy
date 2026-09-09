@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from linepy.storage import TokenManager, FileStorage, MemoryStorage
+from linepy.storage import FileStorage, MemoryStorage, TokenManager
 
 
 @pytest.fixture

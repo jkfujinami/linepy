@@ -10,7 +10,6 @@ sticker messages on a chat's behalf via LINE's message-share API.
 import json
 from typing import Any, Dict, List, Optional
 
-
 DEFAULT_LIFF_ID = "2006747340-AoraPvdD"
 LIFF_ENDPOINT = "/LIFF1"
 LIFF_SHARE_URL = "https://api.line.me/message/v3/share"

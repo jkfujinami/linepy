@@ -6,7 +6,7 @@ Context module for LINE OC Bot
 """
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Optional, Dict, Any, List
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from .storage import Role
 

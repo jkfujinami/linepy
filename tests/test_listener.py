@@ -8,7 +8,7 @@ import pytest
 
 from linepy.base import BaseClient
 from linepy.listener import EventDispatcher
-from linepy.message import TalkMessage, SquareMessage
+from linepy.message import SquareMessage, TalkMessage
 
 
 @pytest.fixture

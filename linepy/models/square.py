@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import List, Optional, Dict, Any, Union
-from enum import IntEnum
+
+from typing import Any
 
 # Import all auto-generated models from square_structs.py (Snake Case)
 from .square_structs import *

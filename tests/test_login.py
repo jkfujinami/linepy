@@ -24,7 +24,7 @@ def test_token_login():
     client = Client(device="DESKTOPWIN")
     try:
         client.login(auth_token=token)
-        print(f"✅ Login successful!")
+        print("✅ Login successful!")
         return client
     except Exception as e:
         print(f"❌ Login failed: {e}")
@@ -50,7 +50,7 @@ def test_email_login():
             password=password,
             pincode=pincode,
         )
-        print(f"✅ Login successful!")
+        print("✅ Login successful!")
         return client
     except Exception as e:
         print(f"❌ Login failed: {e}")
@@ -92,7 +92,7 @@ def test_qr_login():
 
     try:
         client.login_with_qr()
-        print(f"✅ Login successful!")
+        print("✅ Login successful!")
         return client
     except Exception as e:
         print(f"❌ Login failed: {e}")
@@ -141,7 +141,7 @@ def test_api(client):
     if to:
         try:
             result = client.send_message(to, "Hello from LINEPY! 🎉")
-            print(f"  ✅ Message sent!")
+            print("  ✅ Message sent!")
         except Exception as e:
             print(f"  Error: {e}")
 

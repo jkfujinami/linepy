@@ -7,8 +7,8 @@ Based on linejs storage implementation.
 
 import json
 import os
-from typing import Any, Dict, Optional
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
 
 
 class BaseStorage(ABC):
@@ -369,15 +369,12 @@ class TokenManager:
         sync_tokens = self.storage.get("square_sync_tokens") or {}
         cont_tokens = self.storage.get("square_cont_tokens") or {}
 
-        changed = False
         if chat_mid in sync_tokens:
             del sync_tokens[chat_mid]
             self.storage.set("square_sync_tokens", sync_tokens)
-            changed = True
 
         if chat_mid in cont_tokens:
             del cont_tokens[chat_mid]
             self.storage.set("square_cont_tokens", cont_tokens)
-            changed = True
 # Convenient default storage path
 DEFAULT_STORAGE_PATH = ".linepy_storage.json"

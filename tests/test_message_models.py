@@ -2,11 +2,10 @@
 """OO message wrapper tests (Phase 2 Step 7)."""
 
 import json
-import types
 
 import pytest
 
-from linepy.message import TalkMessage, SquareMessage
+from linepy.message import SquareMessage, TalkMessage
 
 
 class _StubClient:

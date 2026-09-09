@@ -11,10 +11,9 @@ import pytest
 from linepy.config import (
     DEFAULT_VERSIONS,
     TOKEN_V3_SUPPORT,
-    get_device_details,
     build_app_name,
+    get_device_details,
 )
-
 
 # device -> (appVersion, systemName, systemVersion) per 本家 devices.ts
 EXPECTED = {

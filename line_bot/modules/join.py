@@ -85,7 +85,7 @@ class JoinModule(BaseModule):
                     square_name=square_name,
                     chat_name=chat_name,
                 )
-                ctx.reply(f"⏳ 待機リストに追加しました。!update で入室チェックできます。")
+                ctx.reply("⏳ 待機リストに追加しました。!update で入室チェックできます。")
 
             elif status == "CODE_REQUIRED":
                 ctx.reply(f"🔐 {message}\n使い方: !join <ticket> <displayName> <code>")

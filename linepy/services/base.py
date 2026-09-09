@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Base Service module for LINEPY."""
 
-from typing import List, Type, TypeVar, Optional, Dict, Any, Union
+from typing import Any, List, Optional, Type, TypeVar, Union
 
-from .._model_base import ModelBase, validate_python as _validate_python
+from .._model_base import ModelBase
+from .._model_base import validate_python as _validate_python
 
 T = TypeVar("T", bound=ModelBase)
 
@@ -62,8 +63,9 @@ class ServiceBase:
         endpoint: Optional[str] = None
     ) -> Any:
         """Make an API call"""
-        from ..thrift import write_thrift
         import httpx
+
+        from ..thrift import write_thrift
 
         if params is None:
             params = []
@@ -86,7 +88,7 @@ class ServiceBase:
             body = ""
             try:
                 body = e.response.text[:500]  # First 500 chars
-            except:
+            except Exception:
                 pass
 
             raise LineException(

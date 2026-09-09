@@ -15,7 +15,7 @@ def main():
             "DESKTOPWIN", storage=".linepy_storage.json"
         )
         client.auto_login()
-        
+
         # Get profile
         profile = client.get_profile()
         print(f"Logged in as: {profile.display_name}")

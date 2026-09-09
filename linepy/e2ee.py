@@ -19,42 +19,43 @@ Media (OBS "E2EE Next") uses HKDF-SHA256 with the info string
 ``decrypt_by_key_material``.
 """
 
+import hashlib
 import json
+import logging
 import os
 import struct
 from typing import Any, Dict, List, Optional, Tuple
 
-import hashlib
-
 from ._purecrypto import (
     AES,
-    SHA256,
-    HMAC,
-    HKDF,
-    SHA256Algorithm,
     AESGCMSIV,
+    HKDF,
+    HMAC,
+    SHA256,
+    SHA256Algorithm,
     x25519_scalarmult,
     x25519_scalarmult_base,
 )
+from .config import (
+    MID_TYPE_GROUP,
+    MID_TYPE_ROOM,
+    MID_TYPE_USER,
+    get_mid_type,
+)
 
 
-# MIDType enum (matches LINE): USER=0, ROOM=1, GROUP=2, SQUARE_CHAT etc.
-MID_TYPE_USER = 0
-MID_TYPE_ROOM = 1
-MID_TYPE_GROUP = 2
+logger = logging.getLogger("linepy.e2ee")
 
 
 def get_to_type(mid: str) -> int:
-    """Infer a chat's MIDType from its prefix (u/r/c)."""
-    if not mid:
-        return MID_TYPE_USER
-    prefix = mid[0]
-    if prefix == "u":
-        return MID_TYPE_USER
-    if prefix == "r":
-        return MID_TYPE_ROOM
-    if prefix == "c":
-        return MID_TYPE_GROUP
+    """Infer a chat's MIDType from its prefix (u/r/c).
+
+    E2EE only distinguishes user / room / group; every other prefix (and an
+    empty mid) is treated as a 1:1 user chat.
+    """
+    mid_type = get_mid_type(mid)
+    if mid_type in (MID_TYPE_ROOM, MID_TYPE_GROUP):
+        return mid_type
     return MID_TYPE_USER
 
 
@@ -533,7 +534,7 @@ class E2EE:
                 result = talk.register_e2_ee_public_key(req_seq=seq, public_key=pub_model)
                 key_id = getattr(result, "key_id", -1)
             except Exception as exc:  # pragma: no cover - network dependent
-                print(f"[E2EE] register_e2ee_public_key failed: {exc}")
+                logger.warning("register_e2ee_public_key failed: %s", exc)
         data = {
             "keyId": key_id,
             "privKey": base64.b64encode(priv).decode("ascii"),
@@ -744,7 +745,7 @@ class E2EE:
                     reg_pub = base64.b64decode(kd) if isinstance(kd, str) else bytes(kd)
                     return self.verify_e2ee_key_pair(priv, reg_pub)
         except Exception as exc:  # pragma: no cover
-            print(f"[E2EE] verify_login_key failed: {exc}")
+            logger.warning("verify_login_key failed: %s", exc)
         return True
 
     def _resolve_and_decrypt(self, message) -> Dict[str, Any]:

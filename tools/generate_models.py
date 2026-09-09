@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
-from typing import List, Dict, Tuple, Any, Optional
+from typing import Optional, Tuple
+
 
 class ThriftParser:
     # Token types
@@ -457,7 +458,7 @@ class ThriftParser:
         if thrift_type in self.structs or thrift_type in self.enums:
             return f'"{thrift_type}"', "object"
 
-        return f"Any", "object"
+        return "Any", "object"
 
     def get_dependencies(self, target: str, seen: set):
         if target not in self.structs or target in seen:
@@ -546,9 +547,9 @@ class ThriftParser:
                                         self.get_dependencies(res_cand, all_types)
 
                         if found_source_methods:
-                             print(f"Found related structs via source file analysis.")
+                             print("Found related structs via source file analysis.")
                         else:
-                             print(f"Warning: No matching structs found even after source file analysis.")
+                             print("Warning: No matching structs found even after source file analysis.")
 
                     except Exception as e:
                         print(f"Error parsing source file: {e}")
@@ -748,7 +749,7 @@ class ThriftParser:
             lines.append(
                 f"    def {method_py_name}({', '.join(sig_args)}) -> {res_type_py}:"
             )
-            lines.append(f"        params = []")
+            lines.append("        params = []")
 
             for arg in args:
                 f_name = self.to_snake_case(arg["name"])

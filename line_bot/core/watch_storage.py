@@ -21,7 +21,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("line_bot.watch_storage")
 

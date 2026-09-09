@@ -15,17 +15,16 @@ import pytest
 
 from linepy._purecrypto import (
     AES,
+    AESGCMSIV,
     HKDF,
     PKCS1_OAEP,
-    PKCS1_v1_5,
     RSA,
     SHA1,
-    AESGCMSIV,
+    PKCS1_v1_5,
     x25519_scalarmult,
     x25519_scalarmult_base,
     xxh32_intdigest,
 )
-
 
 # ---------------------------------------------------------------------------
 # X25519 -- generated once from `cryptography`'s X25519 implementation.

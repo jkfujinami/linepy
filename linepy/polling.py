@@ -5,11 +5,11 @@ High-frequency polling alternative to LEGY Push connection.
 Each chat gets its own worker thread for maximum throughput.
 """
 
-import threading
-import queue
-import time
 import logging
-from typing import List, Callable, Optional, Dict, Any
+import queue
+import threading
+import time
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("linepy.polling")
 

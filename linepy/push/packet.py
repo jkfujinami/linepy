@@ -11,7 +11,7 @@ Frame types (``dt``):
   1 = ping, 3 = SignOn response (sync data), 4 = push notification.
 """
 
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, Optional
 
 
 class PingFrame:

@@ -14,12 +14,18 @@ from pathlib import Path
 # linepy をインポートできるようにパスを追加
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from linepy import BaseClient
-
 from core import Bot
 from core.watch_storage import WatchStorage
-from modules import TestModule, ReadCheckerModule, BanHandlerModule, AdminModule, JoinModule, RateLimiterModule
+from modules import (
+    AdminModule,
+    BanHandlerModule,
+    JoinModule,
+    RateLimiterModule,
+    ReadCheckerModule,
+    TestModule,
+)
 
+from linepy import BaseClient
 
 # ログ設定（DEBUGで詳細ログ、INFOで通常）
 logging.basicConfig(

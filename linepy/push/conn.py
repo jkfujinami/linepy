@@ -15,17 +15,15 @@ from typing import TYPE_CHECKING, Optional
 try:
     import h2.connection
     from h2.config import H2Configuration
-    from h2.events import DataReceived, StreamEnded, StreamReset, PingAckReceived
+    from h2.events import DataReceived, PingAckReceived, StreamEnded, StreamReset
     H2_AVAILABLE = True
 except ImportError:
     H2_AVAILABLE = False
 
 from .data import (
     LegyH2PingFrame,
-    LegyH2PingFrameType,
     LegyH2PushFrame,
     LegyH2PushFrameType,
-    LegyH2SignOnResponseFrame,
 )
 
 if TYPE_CHECKING:

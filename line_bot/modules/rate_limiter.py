@@ -11,8 +11,8 @@ import time
 from collections import defaultdict
 from typing import Dict, List
 
-from core.context import MessageContext
 from core.base import BaseModule
+from core.context import MessageContext
 from core.storage import Role
 
 logger = logging.getLogger("line_bot.rate_limiter")
@@ -98,7 +98,7 @@ class RateLimiterModule(BaseModule):
                     storage = self.bot.get_square_storage(ctx.square_mid)
                     storage.set_role(sender, Role.BANNED)
                     logger.info("[RATE] Auto-muted user %s", sender[:12])
-                    ctx.reply(f"🔇 自動ミュートしました。")
+                    ctx.reply("🔇 自動ミュートしました。")
                 except Exception as e:
                     logger.warning("[RATE] Failed to auto-mute: %s", e)
 

@@ -9,8 +9,7 @@ is isolated so one bad message never stops the stream (本家 requirement).
 
 from typing import Any
 
-from .message import TalkMessage, SquareMessage
-
+from .message import SquareMessage, TalkMessage
 
 # Talk operation types (LINE OpType enum)
 OP_RECEIVE_MESSAGE = 26

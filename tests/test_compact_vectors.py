@@ -8,7 +8,6 @@ import pytest
 
 from linepy import compact
 
-
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "linejs_vectors.json")
 
 

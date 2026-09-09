@@ -9,8 +9,8 @@ import sys
 
 sys.path.insert(0, ".")
 
-from linepy.thrift import set_debug
 from linepy.base import BaseClient
+from linepy.thrift import set_debug
 
 # Enable debug output
 set_debug(True)
@@ -33,13 +33,13 @@ def test_token_login_with_save():
 
         # Show profile
         profile = client.profile
-        print(f"\n✅ Login successful!")
+        print("\n✅ Login successful!")
         print(f"  MID: {profile.get(1)}")
         print(f"  Name: {profile.get(20)}")
         print(f"  Status: {profile.get(24, '(none)')}")
 
         # Check storage
-        print(f"\n📁 Saved to storage:")
+        print("\n📁 Saved to storage:")
         print(f"  auth_token: {client.token_manager.auth_token[:50]}...")
         print(f"  mid: {client.token_manager.mid}")
 
@@ -65,7 +65,7 @@ def test_auto_login():
 
     try:
         if client.auto_login():
-            print(f"\n✅ Auto-login successful!")
+            print("\n✅ Auto-login successful!")
             print(f"  MID: {client.mid}")
             print(f"  Name: {client.profile.get(20)}")
             return True

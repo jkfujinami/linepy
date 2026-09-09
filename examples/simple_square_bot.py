@@ -1,6 +1,6 @@
-import time
-import sys
 import os
+import sys
+import time
 
 # Add parent directory to path to import linepy
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))

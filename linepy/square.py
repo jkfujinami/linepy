@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from typing import Any, Dict, List, Optional
+
 from linepy.models.square_structs import *
-from typing import Optional, List, Dict, Any, Union
-from .services.base import ServiceBase
+
 from .models.square import *
+from .services.base import ServiceBase
 
 
 class SquareService(ServiceBase):

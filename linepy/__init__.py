@@ -12,8 +12,8 @@ logging.getLogger("linepy").addHandler(logging.NullHandler())
 
 __version__ = "0.1.0"
 
-from .client import Client
 from .base import BaseClient, LineException
+from .client import Client
 from .login import Login, LoginError
 
 __all__ = [
