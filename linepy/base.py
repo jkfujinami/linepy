@@ -91,17 +91,17 @@ class BaseClient:
         # (~3000 dataclasses, ~320 ms), a cost only someone who actually
         # builds a client should pay.
         from .auth.login import Login
-        from .channel import ChannelService
         from .crypto.e2ee import E2EE
         from .helpers.square import SquareHelper
-        from .liff import LiffClient
-        from .obs import ObsBase
         from .services.auth import AuthService
-        from .square import SquareService
-        from .sync import SyncService
-        from .talk import TalkService
-        from .timeline import Timeline
-        from .voom import VoomClient
+        from .services.channel import ChannelService
+        from .services.liff import LiffService
+        from .services.obs import ObsService
+        from .services.square import SquareService
+        from .services.sync import SyncService
+        from .services.talk import TalkService
+        from .services.timeline import TimelineService
+        from .services.voom import VoomService
 
         self.login_handler = Login(self)
         self.e2ee = E2EE(self)
@@ -114,10 +114,10 @@ class BaseClient:
         self.auth_service = AuthService(self)
 
         # REST services
-        self.timeline = Timeline(self)
-        self.obs = ObsBase(self)
-        self.liff = LiffClient(self)
-        self.voom = VoomClient(self)
+        self.timeline = TimelineService(self)
+        self.obs = ObsService(self)
+        self.liff = LiffService(self)
+        self.voom = VoomService(self)
 
         # High-level helpers
         self.square_helper = SquareHelper(self)

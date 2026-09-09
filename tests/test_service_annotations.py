@@ -15,7 +15,11 @@ import pytest
 
 import linepy.models as models
 
-SERVICE_FILES = ["linepy/talk.py", "linepy/square.py", "linepy/sync.py"]
+SERVICE_FILES = [
+    "linepy/services/talk.py",
+    "linepy/services/square.py",
+    "linepy/services/sync.py",
+]
 REPO = pathlib.Path(__file__).resolve().parent.parent
 
 
@@ -101,7 +105,7 @@ def test_no_star_imports(path):
     ],
 )
 def test_repaired_square_methods_resolve_their_response_model(method, response_model):
-    tree = ast.parse(_module_source("linepy/square.py"))
+    tree = ast.parse(_module_source("linepy/services/square.py"))
 
     node = next(
         n for n in ast.walk(tree)
@@ -120,6 +124,6 @@ def test_repaired_square_methods_resolve_their_response_model(method, response_m
 def test_unsend_square_message_builds_its_request_inline():
     """It used to call SquareServiceStruct.UnsendMessageRequest, which is
     defined nowhere in the codebase."""
-    source = _module_source("linepy/square.py")
+    source = _module_source("linepy/services/square.py")
 
     assert "SquareServiceStruct" not in source

@@ -10,8 +10,9 @@ import logging
 import urllib.parse
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
-from .models.base import ModelBase
-from .models.custom.timeline import (
+from ..exceptions import LineException
+from ..models.base import ModelBase, validate_python
+from ..models.custom.timeline import (
     CreatePostResponse,
     DeletePostResponse,
     GetPostResponse,
@@ -19,13 +20,13 @@ from .models.custom.timeline import (
     SharePostResponse,
 )
 
-logger = logging.getLogger("linepy.timeline")
+logger = logging.getLogger("linepy.services.timeline")
 
 
 T = TypeVar("T", bound=ModelBase)
 
 
-class Timeline:
+class TimelineService:
     """
     Timeline (and Square Note) Service.
 
@@ -69,10 +70,12 @@ class Timeline:
             if not token and isinstance(resp.get("channelAccessToken"), str):
                 token = resp["channelAccessToken"]
         else:
-            raise Exception("Failed to get channel token")
+            raise LineException(-1, "Failed to get channel token")
 
         if not token:
-            raise Exception(f"No channel access token found in response: {resp}")
+            raise LineException(
+                -1, "No channel access token in response", metadata={"response": resp}
+            )
 
         self.timeline_token = token
         logger.debug("Got channel token: %s...", token[:50])
@@ -156,13 +159,6 @@ class Timeline:
         else:
             body = json.dumps(data) if data else None
 
-        import httpx
-
-        # We need to verify if we should use BaseClient's request or direct httpx
-        # BaseClient.request handles Thrift mostly.
-        # Let's use httpx directly but share client config if possible.
-        # For simplicity, using httpx.Client here
-
         # Add Host header
         headers["Host"] = domain
 
@@ -172,28 +168,29 @@ class Timeline:
 
         logger.debug("headers: %s", headers)
 
-        with httpx.Client(http2=True) as client:
-            resp = client.request(
-                method=http_method, url=url, headers=headers, content=body
+        # VOOM is a REST API, so this goes through the transport's plain HTTP
+        # path rather than its Thrift one -- but through the same pooled
+        # client, instead of standing up a fresh httpx.Client per request.
+        http = self.client.request.http
+        resp = http.request(method=http_method, url=url, headers=headers, content=body)
+
+        if resp.status_code != 200:
+            raise LineException(
+                resp.status_code,
+                f"Timeline request failed: {resp.text}",
+                metadata={"url": url},
             )
 
-            if resp.status_code != 200:
-                raise Exception(
-                    f"Timeline request failed: {resp.status_code} {resp.text}"
-                )
+        json_data = resp.json()
 
-            json_data = resp.json()
-
-            if response_model:
-                from .models.base import validate_python
-
-                # validate_python (not response_model.from_dict directly) so
-                # a generic response_model (List[X]/Dict[K, V]) validates too
-                # -- a plain typing alias has no .from_dict of its own. These
-                # models carry no alias (real JSON keys == field names), so
-                # ModelBase.from_dict's name-keyed lookup applies directly.
-                return validate_python(response_model, json_data)
-            return json_data
+        if response_model:
+            # validate_python (not response_model.from_dict directly) so
+            # a generic response_model (List[X]/Dict[K, V]) validates too
+            # -- a plain typing alias has no .from_dict of its own. These
+            # models carry no alias (real JSON keys == field names), so
+            # ModelBase.from_dict's name-keyed lookup applies directly.
+            return validate_python(response_model, json_data)
+        return json_data
 
     def create_post(
         self,

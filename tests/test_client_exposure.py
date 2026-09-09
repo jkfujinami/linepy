@@ -15,11 +15,11 @@ def client():
 
 
 def test_feature_properties(client):
-    from linepy.liff import LiffClient
-    from linepy.voom import VoomClient
+    from linepy.services.liff import LiffService
+    from linepy.services.voom import VoomService
 
-    assert isinstance(client.liff, LiffClient)
-    assert isinstance(client.voom, VoomClient)
+    assert isinstance(client.liff, LiffService)
+    assert isinstance(client.voom, VoomService)
     assert client.obs is client.base.obs
     assert client.e2ee is client.base.e2ee
 

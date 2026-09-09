@@ -96,6 +96,17 @@ def _ids(paths):
         "linepy/models/generated.py",
         "linepy/models/custom/login.py",
         "linepy/models/custom/timeline.py",
+        "linepy/services/__init__.py",
+        "linepy/services/base.py",
+        "linepy/services/talk.py",
+        "linepy/services/square.py",
+        "linepy/services/sync.py",
+        "linepy/services/auth.py",
+        "linepy/services/channel.py",
+        "linepy/services/timeline.py",
+        "linepy/services/liff.py",
+        "linepy/services/voom.py",
+        "linepy/services/obs.py",
     ],
 )
 def test_module_is_where_the_layout_says(relpath):
@@ -119,6 +130,14 @@ def test_module_is_where_the_layout_says(relpath):
         "linepy/models/talk_structs.py",
         "linepy/models/square_structs.py",
         "linepy/models/sync_structs.py",
+        "linepy/talk.py",
+        "linepy/square.py",
+        "linepy/sync.py",
+        "linepy/channel.py",
+        "linepy/timeline.py",
+        "linepy/liff.py",
+        "linepy/voom.py",
+        "linepy/obs.py",
     ],
 )
 def test_old_module_locations_are_gone(relpath):
@@ -190,3 +209,80 @@ def test_request_client_exposes_plain_http():
         assert client.http is client._http
     finally:
         client.close()
+
+
+# ---- service shapes --------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "module_name,class_name",
+    [
+        ("talk", "TalkService"),
+        ("square", "SquareService"),
+        ("sync", "SyncService"),
+        ("auth", "AuthService"),
+        ("channel", "ChannelService"),
+        ("timeline", "TimelineService"),
+        ("liff", "LiffService"),
+        ("voom", "VoomService"),
+        ("obs", "ObsService"),
+    ],
+)
+def test_every_service_class_is_named_service(module_name, class_name):
+    from importlib import import_module
+
+    module = import_module(f"linepy.services.{module_name}")
+    assert hasattr(module, class_name), f"{module_name} has no {class_name}"
+
+
+@pytest.mark.parametrize(
+    "module_name,class_name",
+    [
+        ("talk", "TalkService"),
+        ("square", "SquareService"),
+        ("sync", "SyncService"),
+        ("auth", "AuthService"),
+        ("channel", "ChannelService"),
+    ],
+)
+def test_thrift_services_share_servicebase(module_name, class_name):
+    """ChannelService used to carry its own copy of ServiceBase._call."""
+    from importlib import import_module
+
+    from linepy.services.base import ServiceBase
+
+    cls = getattr(import_module(f"linepy.services.{module_name}"), class_name)
+    assert issubclass(cls, ServiceBase)
+    assert "_call" not in vars(cls), f"{class_name} reimplements _call"
+
+
+def test_base_client_exposes_every_service():
+    import os
+    import tempfile
+
+    from linepy import BaseClient
+
+    client = BaseClient(
+        device="DESKTOPMAC", storage=os.path.join(tempfile.mkdtemp(), "s.json")
+    )
+    try:
+        for attr in ("talk", "square", "sync", "channel", "auth_service",
+                     "timeline", "obs", "liff", "voom"):
+            assert getattr(client, attr) is not None, attr
+            assert type(getattr(client, attr)).__name__.endswith("Service"), attr
+    finally:
+        client.close()
+
+
+def test_no_service_creates_its_own_http_client():
+    """Services must reuse the transport's pooled client.
+
+    services/timeline.py used to open a fresh httpx.Client for every single
+    REST call, so VOOM got no connection reuse at all.
+    """
+    offenders = [
+        str(p.relative_to(REPO))
+        for p in _files_under("services")
+        if "httpx.Client(" in p.read_text()
+    ]
+    assert not offenders, f"{offenders} construct their own httpx.Client"

@@ -69,7 +69,7 @@ VOOM_ENDPOINTS = {
 DEFAULT_HOST = "gw.line.naver.jp"
 
 
-class VoomClient:
+class VoomService:
     def __init__(self, client):
         self.client = client
         self._token_cache: Dict[str, str] = {}

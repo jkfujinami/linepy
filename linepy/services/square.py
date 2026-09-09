@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, List, Optional
 
-from .models.generated import (
+from ..models.generated import (
     ApproveSquareMembersResponse,
     CheckJoinCodeResponse,
     CreateSquareChatAnnouncementResponse,
@@ -90,7 +90,7 @@ from .models.generated import (
     UpdateSquareResponse,
     UpdateUserSettingsResponse,
 )
-from .services.base import ServiceBase
+from .base import ServiceBase
 
 
 class SquareService(ServiceBase):

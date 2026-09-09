@@ -65,7 +65,7 @@ E2EE_MEDIA_TYPESET = {
 }
 
 
-class ObsBase:
+class ObsService:
     OBS_DOMAIN = "obs.line-apps.com"
 
     def __init__(self, client):

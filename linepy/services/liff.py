@@ -38,7 +38,7 @@ def LiffStickerMessage(package_id: str, sticker_id: str) -> Dict[str, Any]:
 # Client
 # ---------------------------------------------------------------------------
 
-class LiffClient:
+class LiffService:
     def __init__(self, client):
         self.client = client
         self.liff_id = DEFAULT_LIFF_ID
