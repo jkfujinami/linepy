@@ -2,5 +2,4 @@
 
 httpx[http2]>=0.24.0
 pyaes>=1.6.1
-xxhash>=3.0.0
 qrcode>=7.3.0

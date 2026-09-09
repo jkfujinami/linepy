@@ -36,6 +36,7 @@ __all__ = [
     "AESGCMSIV",
     "x25519_scalarmult",
     "x25519_scalarmult_base",
+    "xxh32_intdigest",
 ]
 
 
@@ -595,3 +596,81 @@ class AESGCMSIV:
         if not _hmac_mod.compare_digest(expected_tag, tag):
             raise ValueError("AES-GCM-SIV tag verification failed")
         return plaintext
+
+
+# ======================================================================
+# xxHash32 -- used for the LEGY transport's ``legyHmac`` integrity
+# trailer. ``xxhash`` itself is a C extension with no iOS wheel that will
+# actually *load* (even when pip finds one, iOS refuses to dlopen an
+# unsigned .so downloaded at install time), so this is a plain
+# reimplementation of the algorithm (see https://xxhash.com and the
+# reference C implementation in Cyan4973/xxHash).
+# ======================================================================
+
+_XXH32_PRIME1 = 0x9E3779B1
+_XXH32_PRIME2 = 0x85EBCA77
+_XXH32_PRIME3 = 0xC2B2AE3D
+_XXH32_PRIME4 = 0x27D4EB2F
+_XXH32_PRIME5 = 0x165667B1
+_XXH32_MASK = 0xFFFFFFFF
+
+
+def _xxh32_rotl(x: int, r: int) -> int:
+    x &= _XXH32_MASK
+    return ((x << r) | (x >> (32 - r))) & _XXH32_MASK
+
+
+def _xxh32_round(acc: int, lane: int) -> int:
+    acc = (acc + lane * _XXH32_PRIME2) & _XXH32_MASK
+    acc = _xxh32_rotl(acc, 13)
+    return (acc * _XXH32_PRIME1) & _XXH32_MASK
+
+
+def xxh32_intdigest(data: bytes, seed: int = 0) -> int:
+    """Matches ``xxhash.xxh32_intdigest(data, seed)`` (32-bit xxHash)."""
+    data = bytes(data)
+    length = len(data)
+    seed &= _XXH32_MASK
+    i = 0
+
+    if length >= 16:
+        v1 = (seed + _XXH32_PRIME1 + _XXH32_PRIME2) & _XXH32_MASK
+        v2 = (seed + _XXH32_PRIME2) & _XXH32_MASK
+        v3 = seed
+        v4 = (seed - _XXH32_PRIME1) & _XXH32_MASK
+        while i <= length - 16:
+            v1 = _xxh32_round(v1, int.from_bytes(data[i : i + 4], "little"))
+            v2 = _xxh32_round(v2, int.from_bytes(data[i + 4 : i + 8], "little"))
+            v3 = _xxh32_round(v3, int.from_bytes(data[i + 8 : i + 12], "little"))
+            v4 = _xxh32_round(v4, int.from_bytes(data[i + 12 : i + 16], "little"))
+            i += 16
+        h32 = (
+            _xxh32_rotl(v1, 1)
+            + _xxh32_rotl(v2, 7)
+            + _xxh32_rotl(v3, 12)
+            + _xxh32_rotl(v4, 18)
+        ) & _XXH32_MASK
+    else:
+        h32 = (seed + _XXH32_PRIME5) & _XXH32_MASK
+
+    h32 = (h32 + length) & _XXH32_MASK
+
+    while i + 4 <= length:
+        lane = int.from_bytes(data[i : i + 4], "little")
+        h32 = (h32 + lane * _XXH32_PRIME3) & _XXH32_MASK
+        h32 = _xxh32_rotl(h32, 17)
+        h32 = (h32 * _XXH32_PRIME4) & _XXH32_MASK
+        i += 4
+
+    while i < length:
+        h32 = (h32 + data[i] * _XXH32_PRIME5) & _XXH32_MASK
+        h32 = _xxh32_rotl(h32, 11)
+        h32 = (h32 * _XXH32_PRIME1) & _XXH32_MASK
+        i += 1
+
+    h32 ^= h32 >> 15
+    h32 = (h32 * _XXH32_PRIME2) & _XXH32_MASK
+    h32 ^= h32 >> 13
+    h32 = (h32 * _XXH32_PRIME3) & _XXH32_MASK
+    h32 ^= h32 >> 16
+    return h32

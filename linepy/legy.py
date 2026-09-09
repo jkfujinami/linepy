@@ -22,8 +22,7 @@ import struct
 import time
 from typing import Dict, Optional, Tuple
 
-import xxhash
-from ._purecrypto import AES, PKCS1_OAEP, SHA1, RSA
+from ._purecrypto import AES, PKCS1_OAEP, SHA1, RSA, xxh32_intdigest
 
 
 # ---------------------------------------------------------------------------
@@ -107,7 +106,7 @@ def decode_legy_headers(data: bytes) -> Tuple[Dict[str, str], bytes]:
 
 def xxhash32(data: bytes, seed: int = 0) -> int:
     """xxHash32 (matches the hand-rolled implementation in legy.ts)."""
-    return xxhash.xxh32_intdigest(data, seed)
+    return xxh32_intdigest(data, seed)
 
 
 def legy_hmac(key: bytes, data: bytes) -> bytes:
