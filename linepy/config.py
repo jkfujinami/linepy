@@ -48,6 +48,15 @@ TOKEN_V3_SUPPORT = ["DESKTOPWIN", "DESKTOPMAC", "IOS", "ANDROID", "ANDROIDSECOND
 # Primary devices (should not refresh token if using extracted token)
 PRIMARY_DEVICES = ["ANDROID", "IOS"]
 
+# QR login registers a *secondary* device, so the primary types above cannot
+# use it -- /acct/lgn/sq/v1 refuses them with SecondaryQrCodeErrorCode 101
+# (APP_UPGRADE_REQUIRED), which misleadingly blames the app version. These
+# are the secondary counterparts to reach for instead.
+SECONDARY_DEVICE_FOR = {
+    "ANDROID": "ANDROIDSECONDARY",
+    "IOS": "IOSIPAD",
+}
+
 
 # ---- MID types -------------------------------------------------------------
 # LINE's MIDType enum. Every mid carries its type in the first character.

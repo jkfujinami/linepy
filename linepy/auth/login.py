@@ -15,7 +15,7 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, TypeVar
 
-from ..config import is_v3_support
+from ..config import PRIMARY_DEVICES, SECONDARY_DEVICE_FOR, is_v3_support
 from ..exceptions import LoginError
 from ..models.base import ModelBase
 from ..models.custom.login import (
@@ -187,10 +187,38 @@ class Login:
 
     def login_with_qr(self, v3: Optional[bool] = None) -> str:
         """``withQrCode``: dispatch to the legacy or ForSecure QR flow."""
+        self._reject_primary_device()
         use_v3 = is_v3_support(self.client.device) if v3 is None else v3
         if use_v3:
             return self._request_sqr2()
         return self._request_sqr()
+
+    def _reject_primary_device(self) -> None:
+        """QR login registers a *secondary* device, so a primary one cannot use it.
+
+        The server does reject it, but with SecondaryQrCodeErrorCode 101
+        (APP_UPGRADE_REQUIRED) -- "LINEアプリをアップデートして、もう一度お試しく
+        ださい。" -- which sends people chasing an app version that is not the
+        problem. Verified against /acct/lgn/sq/v1 createSession: ANDROID and
+        IOS are refused; ANDROIDSECONDARY, IOSIPAD, DESKTOPWIN, DESKTOPMAC,
+        WATCHOS and WEAROS all succeed on the very same app versions.
+        """
+        device = self.client.device
+        if device not in PRIMARY_DEVICES:
+            return
+
+        alternative = SECONDARY_DEVICE_FOR.get(device)
+        raise LoginError(
+            f"QR login is not available for {device}: it registers a secondary "
+            f"device, and {device} is a primary one (the primary device is what "
+            f"approves the QR code). "
+            + (
+                f"Use BaseClient({alternative!r}) to log in by QR, or "
+                f"login_with_email() to log in as {device}."
+                if alternative
+                else "Use a secondary device type, or login_with_email()."
+            )
+        )
 
     # ========== Email/Password login (v1: loginZ) ==========
 
@@ -879,7 +907,7 @@ class Login:
             raise LoginError(f"[{error_code}] {error_msg}")
 
         if response_model:
-            from .services.base import validate_response_model
+            from ..services.base import validate_response_model
 
             return validate_response_model(response, response_model)
 

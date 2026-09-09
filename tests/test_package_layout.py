@@ -301,3 +301,44 @@ def test_no_service_creates_its_own_http_client():
         if "httpx.Client(" in p.read_text()
     ]
     assert not offenders, f"{offenders} construct their own httpx.Client"
+
+
+# ---- imports actually resolve ---------------------------------------------
+
+
+def _relative_import_targets(path):
+    """Every relative import in `path`, resolved to an absolute module name."""
+    module = _module_name(path)
+    package = module if path.name == "__init__.py" else module.rsplit(".", 1)[0]
+
+    for node in ast.walk(ast.parse(path.read_text())):
+        if isinstance(node, ast.ImportFrom) and node.level:
+            parts = package.split(".")
+            parts = parts[: len(parts) - node.level + 1]
+            written = "." * node.level + (node.module or "")
+            yield node.lineno, written, ".".join(
+                parts + ([node.module] if node.module else [])
+            )
+
+
+@pytest.mark.parametrize("path", ALL_FILES, ids=_ids(ALL_FILES))
+def test_every_relative_import_resolves(path):
+    """Catches a module move that missed a `from .x import y` somewhere.
+
+    Function-local imports included -- those are the ones that survive a
+    rename silently, because nothing executes them until the one code path
+    that needs them runs. linepy/auth/login.py kept a `.services.base` after
+    moving into auth/, and only a real QR login would have hit it.
+    """
+    import importlib.util
+
+    broken = []
+    for lineno, written, target in _relative_import_targets(path):
+        try:
+            found = importlib.util.find_spec(target)
+        except (ImportError, ModuleNotFoundError, ValueError):
+            found = None
+        if found is None:
+            broken.append(f"line {lineno}: '{written}' -> {target}")
+
+    assert not broken, f"{path.relative_to(REPO)} has unresolvable imports: {broken}"
