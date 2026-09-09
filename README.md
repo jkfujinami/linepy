@@ -1,6 +1,6 @@
 # LINEPY
 
-LINE SelfBot library for Python — a faithful port of [linejs](https://github.com/evex-dev/linejs)'s protocol/crypto/auth layer, with a Python-friendly high-level API on top.
+LINE SelfBot library for Python — talks to LINE's internal Thrift-based API directly (login, E2EE, messaging, Square/OpenChat, Timeline) with a Python-friendly high-level API on top.
 
 - Pure-Python end to end: **no C or Rust extensions anywhere in the dependency tree.** Models are stdlib `dataclasses`, and crypto (AES/RSA/X25519/HKDF/AES-GCM-SIV/xxHash32) is a from-scratch pure-Python implementation. This means it also installs and runs on sandboxed/no-compiler environments like **a-Shell on iPhone/iPad** — see [Running on iOS (a-Shell)](#running-on-ios-a-shell) below.
 
@@ -93,7 +93,7 @@ square_resp = client.square.findSquareByInvitationTicketV2("your_ticket")
 | Method | Notes |
 |---|---|
 | `login_with_qr(v3=None, save=True)` | Prints/returns a QR login URL; scan it with the LINE mobile app. |
-| `login_with_email(email, password, pincode="114514", e2ee=True)` | Full E2EE PIN-verification handshake (loginZ/loginV2), matching linejs. |
+| `login_with_email(email, password, pincode="114514", e2ee=True)` | Full E2EE PIN-verification handshake (loginZ/loginV2). |
 | `login_with_token(auth_token, save=True)` | Log in with an existing auth token (e.g. exported from another client). |
 | `auto_login()` | Loads and validates the token from storage; returns `False` if none is saved or it's invalid. |
 
@@ -174,11 +174,6 @@ from linepy.base import BaseClient
 ### Why no pycryptodome/cryptography/pydantic/xxhash?
 
 Short version: they're all C or Rust extensions, and a-Shell's Python sandbox cannot execute any dynamically-loaded native code that wasn't compiled and code-signed as part of the app bundle itself — not because the wheel doesn't exist, but because iOS's code-signing enforcement blocks it at `dlopen()` time regardless. This is a hard platform constraint, not something fixable by pinning a different version. See the comment block at the top of `pyproject.toml` and `linepy/_purecrypto.py`'s module docstring for the full story.
-
-## References
-
-- [linejs](https://github.com/evex-dev/linejs) — original TypeScript library (protocol/crypto reference)
-- [CHRLINE](https://github.com/DeachSword/CHRLINE) — Python reference implementation
 
 ## License
 
