@@ -75,6 +75,13 @@ class Login:
     LEGACY_VERIFY_ENDPOINT = "/Q"
     RESPOND_E2EE_LOGIN_ENDPOINT = "/S4"
 
+    # How long to wait for the user to scan the code. The ForSecure flow gets
+    # these from the server (createQrCodeForSecure fields 2 and 3); the legacy
+    # flow has no equivalent response, so it uses the same budget. 12 x 30s is
+    # what LINE itself asks for, i.e. six minutes rather than one attempt.
+    DEFAULT_LONG_POLLING_MAX_COUNT = 12
+    DEFAULT_LONG_POLLING_INTERVAL_SEC = 30
+
     def __init__(self, client: "BaseClient"):
         self.client = client
         self._cert_cache: Dict[str, str] = {}
@@ -575,7 +582,10 @@ class Login:
         self._print_qr(url)
         self.client.emit("qrcall", url)
 
-        if not self.check_qr_code_verified(sqr):
+        max_count = self.DEFAULT_LONG_POLLING_MAX_COUNT
+        interval_sec = self.DEFAULT_LONG_POLLING_INTERVAL_SEC
+
+        if not self.check_qr_code_verified(sqr, max_count, interval_sec):
             raise LoginError("TimeoutError: checkQrCodeVerified timed out")
 
         try:
@@ -584,7 +594,7 @@ class Login:
             pincode = self.create_pin_code(sqr).pincode
             self.client.emit("pincall", pincode)
             print(f"[Login] Enter PIN code: {pincode}")
-            self.check_pin_code_verified(sqr)
+            self.check_pin_code_verified(sqr, max_count, interval_sec)
 
         response = self.qr_code_login(sqr)
 
@@ -605,8 +615,14 @@ class Login:
 
     def _request_sqr2(self) -> str:
         """``requestSQR2``: the modern ForSecure QR login flow used by
-        LINE 26+ Android clients. The legacy ``createQrCode`` RPC still
-        exists but the server marks those sessions expired immediately."""
+        LINE 26+ Android clients.
+
+        Chosen for any device in ``TOKEN_V3_SUPPORT``; everything else falls
+        back to :meth:`_request_sqr`. The legacy ``createQrCode`` RPC does
+        still work -- a session created that way survives its full long-poll
+        window, measured against /acct/lp/lgn/sq/v1 -- but only this flow
+        carries the ForSecure nonce, so prefer a v3-capable device.
+        """
         session = self._request(
             path=self.SECONDARY_QR_ENDPOINT,
             method="createSession",
@@ -620,8 +636,12 @@ class Login:
         # Response shape per 本家 (oc4.i): 1=callbackUrl, 2=longPollingMaxCount,
         # 3=longPollingIntervalSec, 4=nonce.
         url = for_secure.get(1, "")
-        long_polling_max_count = for_secure.get(2) or 12
-        long_polling_interval_sec = for_secure.get(3) or 30
+        long_polling_max_count = (
+            for_secure.get(2) or self.DEFAULT_LONG_POLLING_MAX_COUNT
+        )
+        long_polling_interval_sec = (
+            for_secure.get(3) or self.DEFAULT_LONG_POLLING_INTERVAL_SEC
+        )
         nonce = for_secure.get(4) or ""
 
         secret, secret_url = self._create_secret()
@@ -776,9 +796,21 @@ class Login:
                 logger.info("QR code %s", label)
                 return True
             except Exception as exc:
-                if self._is_retryable_poll_error(exc) and i < max_count - 1:
+                if not self._is_retryable_poll_error(exc):
+                    raise
+                if i < max_count - 1:
                     continue
-                raise
+                # Budget spent and the user still has not acted. That is a
+                # timeout, not a transport failure -- the endpoint signals an
+                # elapsed poll window with 410 Gone, which otherwise escapes
+                # as a bare httpx.HTTPStatusError and reads like a dead
+                # session rather than "nobody scanned the code".
+                raise LoginError(
+                    f"QR code was not {label} within "
+                    f"{max_count * interval_sec}s ({max_count} polls of "
+                    f"{interval_sec}s). Run login_with_qr() again to get a "
+                    f"fresh code."
+                ) from exc
         return False
 
     def verify_certificate(self, qrcode: str, cert: Optional[str] = None) -> Any:
