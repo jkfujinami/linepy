@@ -96,7 +96,7 @@ class LiffClient:
             "content-type": "application/json",
         }
         payload = json.dumps({"messages": messages})
-        response = self.client.request._http.post(
+        response = self.client.request.post(
             LIFF_SHARE_URL, content=payload, headers=headers
         )
         response.raise_for_status()

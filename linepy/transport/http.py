@@ -9,12 +9,12 @@ from typing import Any, Callable, Dict, Optional
 
 import httpx
 
-from .legy import (
+from ..protocol.legy import (
     LegyEncryptedTransport,
     is_legy_talk_path,
     should_use_legy_encrypted_access,
 )
-from .thrift import CompactReader, ThriftReader
+from ..protocol.thrift import CompactReader, ThriftReader
 
 
 class RequestClient:
@@ -74,6 +74,24 @@ class RequestClient:
     def close(self):
         """Close HTTP client"""
         self._http.close()
+
+    # ---- Plain HTTP -------------------------------------------------------
+    # OBS, LIFF, VOOM and QR long-polling talk to ordinary HTTP endpoints
+    # rather than Thrift ones. They go through these rather than reaching into
+    # ``_http``, so the underlying client stays this module's business.
+
+    @property
+    def http(self) -> httpx.Client:
+        """The underlying httpx client, for calls these helpers do not cover."""
+        return self._http
+
+    def get(self, url: str, **kwargs) -> httpx.Response:
+        """Plain HTTP GET (no Thrift framing, no LEGY envelope)."""
+        return self._http.get(url, **kwargs)
+
+    def post(self, url: str, **kwargs) -> httpx.Response:
+        """Plain HTTP POST (no Thrift framing, no LEGY envelope)."""
+        return self._http.post(url, **kwargs)
 
     @property
     def user_agent(self) -> str:

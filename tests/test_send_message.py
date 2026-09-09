@@ -13,7 +13,7 @@ import tempfile
 import pytest
 
 from linepy.base import BaseClient
-from linepy.thrift import CompactReader
+from linepy.protocol.thrift import CompactReader
 
 
 class _FakePub:
@@ -159,7 +159,7 @@ def test_e2ee_failover_on_plain_error(client):
 
 
 def test_compact_plain_and_e2ee(client):
-    from linepy import compact
+    from linepy.protocol import compact
 
     to = "u" + "d" * 32
     _setup_e2ee(client, to)

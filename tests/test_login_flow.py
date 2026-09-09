@@ -13,9 +13,9 @@ import tempfile
 
 import pytest
 
-from linepy._purecrypto import AES
+from linepy.auth.login import registration_auth_endpoint
 from linepy.base import BaseClient
-from linepy.login import registration_auth_endpoint
+from linepy.crypto.primitives import AES
 from linepy.models import (
     LoginResponse,
     PinCodeResponse,
@@ -25,7 +25,7 @@ from linepy.models import (
     QRSessionResponse,
     RSAKeyInfo,
 )
-from linepy.thrift import ThriftReader
+from linepy.protocol.thrift import ThriftReader
 
 
 @pytest.fixture
@@ -102,7 +102,7 @@ def test_login_v2_login_type_computation(client):
 def test_login_v2_fields_are_omitted_on_the_wire(client):
     """End-to-end: encode with the real binary writer and confirm the
     omitted fields never appear on the wire at all."""
-    from linepy.thrift import write_thrift
+    from linepy.protocol.thrift import write_thrift
 
     lh = client.login_handler
     fields = lh._build_login_v2_params("k", "e", None, None, None)
@@ -174,7 +174,7 @@ def _build_encrypted_keychain(e, secret, key_id):
     """Build a valid AES-256-CBC encrypted keychain blob, matching
     decryptKeyChainEntries's expected wire format (compact struct, field 1 =
     list of {2:keyId,4:pubKey,5:privKey})."""
-    from linepy.thrift import CompactWriter, _write_struct
+    from linepy.protocol.thrift import CompactWriter, _write_struct
 
     secret_pub = e.public_from_private(secret)
     server_priv = os.urandom(32)

@@ -7,10 +7,10 @@ Low-level API client that handles authentication and service calls.
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
+from .auth.storage import BaseStorage, FileStorage, TokenManager
 from .config import Device, build_app_name, get_device_details, get_mid_type
 from .exceptions import LineException
-from .request import RequestClient
-from .storage import BaseStorage, FileStorage, TokenManager
+from .transport import RequestClient
 
 if TYPE_CHECKING:
     from .polling import PollingManager
@@ -86,50 +86,40 @@ class BaseClient:
         self.request.on_next_access = self._on_next_access_token
         self.request.refresh_hook = self._legy_refresh_hook
 
-        # Login handler
-        from .login import Login
-
-        self.login_handler = Login(self)
-
-        # Talk service
-        from .talk import TalkService
-
-        self.talk = TalkService(self)
-
-        # Sync service
-        from .sync import SyncService
-
-        self.sync = SyncService(self)
-
-        # Square (OpenChat) service
-        from .square import SquareService
-
-        self.square = SquareService(self)
-
-        # Channel & Timeline service
+        # Imported here rather than at module scope so that `import linepy`
+        # stays cheap: the service modules pull in linepy.models.generated
+        # (~3000 dataclasses, ~320 ms), a cost only someone who actually
+        # builds a client should pay.
+        from .auth.login import Login
         from .channel import ChannelService
-        from .timeline import Timeline
-
-        self.channel = ChannelService(self)
-        self.timeline = Timeline(self)
-
-        # OBS Client (Object Storage)
-        from .obs import ObsBase
-        self.obs = ObsBase(self)
-
-        # LIFF & VOOM (Phase 3)
+        from .crypto.e2ee import E2EE
+        from .helpers.square import SquareHelper
         from .liff import LiffClient
+        from .obs import ObsBase
+        from .services.auth import AuthService
+        from .square import SquareService
+        from .sync import SyncService
+        from .talk import TalkService
+        from .timeline import Timeline
         from .voom import VoomClient
 
+        self.login_handler = Login(self)
+        self.e2ee = E2EE(self)
+
+        # Thrift RPC services
+        self.talk = TalkService(self)
+        self.sync = SyncService(self)
+        self.square = SquareService(self)
+        self.channel = ChannelService(self)
+        self.auth_service = AuthService(self)
+
+        # REST services
+        self.timeline = Timeline(self)
+        self.obs = ObsBase(self)
         self.liff = LiffClient(self)
         self.voom = VoomClient(self)
 
-        # Auth service
-        from .services.auth import AuthService
-        self.auth_service = AuthService(self)
-
-        # Square helper (high-level APIs)
-        from .helpers.square import SquareHelper
+        # High-level helpers
         self.square_helper = SquareHelper(self)
 
         # Realtime receivers (lazy init)
@@ -143,11 +133,6 @@ class BaseClient:
         self.auth_token: Optional[str] = None
         self.mid: Optional[str] = None
         self.profile: Optional[Dict] = None
-
-        # E2EE handler
-        from .e2ee import E2EE
-
-        self.e2ee = E2EE(self)
 
         # Event callbacks
         self._callbacks: Dict[str, List[Callable]] = {}
@@ -496,7 +481,7 @@ class BaseClient:
         Returns:
             Response data
         """
-        from .thrift import write_thrift
+        from .protocol.thrift import write_thrift
 
         if params is None:
             params = []
@@ -636,7 +621,7 @@ class BaseClient:
             raise
 
     def send_compact_plain_message(self, to: str, text: str):
-        from .compact import (
+        from .protocol.compact import (
             COMPACT_PLAIN_MESSAGE_ENDPOINT,
             decode_compact_message_response,
             pack_compact_plain_message,
@@ -650,7 +635,7 @@ class BaseClient:
     def send_compact_e2ee_message(
         self, to: str, text: Optional[str] = None, chunks: Optional[List[bytes]] = None
     ):
-        from .compact import (
+        from .protocol.compact import (
             COMPACT_E2EE_MESSAGE_ENDPOINT,
             decode_compact_message_response,
             pack_compact_e2ee_message,

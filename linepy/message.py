@@ -111,7 +111,7 @@ class TalkMessage(_BaseMessage):
             "PREVIEW_URL" if preview else "DOWNLOAD_URL"
         )
         if url:
-            resp = self.client.request._http.get(url)
+            resp = self.client.request.get(url)
             resp.raise_for_status()
             return resp.content
         if _field(self.raw, "chunks"):
@@ -161,7 +161,7 @@ class SquareMessage(_BaseMessage):
             "PREVIEW_URL" if preview else "DOWNLOAD_URL"
         )
         if url:
-            resp = self.client.request._http.get(url)
+            resp = self.client.request.get(url)
             resp.raise_for_status()
             return resp.content
         result = self.client.obs.download_message_data(

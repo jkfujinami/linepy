@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from linepy._purecrypto import (
+from linepy.crypto.primitives import (
     AES,
     AESGCMSIV,
     HKDF,
@@ -253,7 +253,7 @@ def test_xxh32_boundary_lengths_are_deterministic():
 
 
 def test_legy_hmac_uses_xxh32():
-    from linepy.legy import legy_hmac
+    from linepy.protocol.legy import legy_hmac
 
     key = bytes(range(16))
     data = b"legy transport body"

@@ -24,7 +24,7 @@ class ChannelService:
         self.client = client
 
     def _call(self, method: str, params: List = None) -> Any:
-        from .thrift import write_thrift
+        from .protocol.thrift import write_thrift
 
         if params is None:
             params = []

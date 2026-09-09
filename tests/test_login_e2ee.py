@@ -11,9 +11,9 @@ import tempfile
 
 import pytest
 
-from linepy._purecrypto import AES
 from linepy.base import BaseClient
-from linepy.thrift import CompactWriter, _write_struct
+from linepy.crypto.primitives import AES
+from linepy.protocol.thrift import CompactWriter, _write_struct
 
 
 @pytest.fixture

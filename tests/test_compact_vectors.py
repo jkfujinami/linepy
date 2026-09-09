@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from linepy import compact
+from linepy.protocol import compact
 
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "linejs_vectors.json")
 

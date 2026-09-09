@@ -18,7 +18,7 @@ import subprocess
 
 import pytest
 
-from linepy.e2ee import E2EE
+from linepy.crypto.e2ee import E2EE
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INTEROP_TS = os.path.join(REPO, "tools", "interop.ts")

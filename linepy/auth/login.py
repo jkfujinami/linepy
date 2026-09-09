@@ -15,10 +15,10 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, TypeVar
 
-from .config import is_v3_support
-from .exceptions import LoginError
-from .models.base import ModelBase
-from .models.custom.login import (
+from ..config import is_v3_support
+from ..exceptions import LoginError
+from ..models.base import ModelBase
+from ..models.custom.login import (
     LoginResponse,
     PinCodeResponse,
     QRCodeLoginResponse,
@@ -29,9 +29,9 @@ from .models.custom.login import (
 )
 
 if TYPE_CHECKING:
-    from .base import BaseClient
+    from ..base import BaseClient
 
-logger = logging.getLogger("linepy.login")
+logger = logging.getLogger("linepy.auth.login")
 
 
 T = TypeVar("T", bound=ModelBase)
@@ -127,7 +127,7 @@ class Login:
     def _encrypt_rsa(self, message: str, nvalue: str, evalue: str) -> str:
         """RSA PKCS1v1.5 encrypt -> hex string (matches 本家's ``getRSACrypto``,
         which uses node-bignumber's ``Key.encrypt()`` == RSA_PKCS1_PADDING)."""
-        from ._purecrypto import RSA, PKCS1_v1_5
+        from ..crypto.primitives import RSA, PKCS1_v1_5
 
         n = int(nvalue, 16)
         e = int(evalue, 16)
@@ -359,7 +359,7 @@ class Login:
             "accept-encoding": "gzip",
         }
         url = f"https://{self.client.request.HOST}{self.E2EE_VERIFY_ENDPOINT}"
-        http_response = self.client.request._http.get(url, headers=headers, timeout=120)
+        http_response = self.client.request.get(url, headers=headers, timeout=120)
         http_response.raise_for_status()
         e2ee_info = http_response.json().get("result")
         if not e2ee_info:
@@ -389,7 +389,7 @@ class Login:
             "accept-encoding": "gzip",
         }
         url = f"https://{self.client.request.HOST}{self.LEGACY_VERIFY_ENDPOINT}"
-        http_response = self.client.request._http.get(url, headers=headers, timeout=120)
+        http_response = self.client.request.get(url, headers=headers, timeout=120)
         http_response.raise_for_status()
         result = http_response.json().get("result") or {}
         return result.get("verifier", verifier)
@@ -858,7 +858,7 @@ class Login:
         """Send a Thrift request using linejs-style ``[[type, id, value], ...]``
         params, mirroring 本家's ``client.request.request(...)``.
         """
-        from .thrift import write_thrift
+        from ..protocol.thrift import write_thrift
 
         data = write_thrift(params, method, protocol)
 

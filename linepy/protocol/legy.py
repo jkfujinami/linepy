@@ -22,7 +22,7 @@ import struct
 import time
 from typing import Dict, Optional, Tuple
 
-from ._purecrypto import AES, PKCS1_OAEP, RSA, SHA1, xxh32_intdigest
+from ..crypto.primitives import AES, PKCS1_OAEP, RSA, SHA1, xxh32_intdigest
 
 # ---------------------------------------------------------------------------
 # Constants

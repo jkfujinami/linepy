@@ -10,7 +10,7 @@ import os
 import struct
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-logger = logging.getLogger("linepy.thrift")
+logger = logging.getLogger("linepy.protocol.thrift")
 
 # Debug mode (controls verbose hex dumps in debug_log)
 DEBUG = os.getenv("LINEPY_DEBUG", "false").lower() == "true"

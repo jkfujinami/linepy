@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, ".")
 
 from linepy.base import BaseClient
-from linepy.thrift import set_debug
+from linepy.protocol.thrift import set_debug
 
 # Enable debug output
 set_debug(True)

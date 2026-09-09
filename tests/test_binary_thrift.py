@@ -3,7 +3,7 @@
 
 import struct
 
-from linepy.thrift import ThriftReader, TType, write_thrift
+from linepy.protocol.thrift import ThriftReader, TType, write_thrift
 
 
 def test_binary_message_header():

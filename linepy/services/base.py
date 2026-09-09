@@ -66,7 +66,7 @@ class ServiceBase:
         """Make an API call"""
         import httpx
 
-        from ..thrift import write_thrift
+        from ..protocol.thrift import write_thrift
 
         if params is None:
             params = []

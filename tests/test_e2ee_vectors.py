@@ -12,7 +12,7 @@ import os
 
 import pytest
 
-from linepy.e2ee import E2EE, byte2int
+from linepy.crypto.e2ee import E2EE, byte2int
 
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "linejs_vectors.json")
 

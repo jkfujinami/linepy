@@ -26,7 +26,11 @@ type checkers, linters and IDEs.
 
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from .base import ModelBase, TypeAdapter, model_field, validate_python
+# Re-exported; __all__ is computed lazily below, so ruff cannot see the use.
+from .base import ModelBase as ModelBase
+from .base import TypeAdapter as TypeAdapter
+from .base import model_field as model_field
+from .base import validate_python as validate_python
 
 if TYPE_CHECKING:  # pragma: no cover - static analysis only
     from .custom.login import *  # noqa: F401,F403

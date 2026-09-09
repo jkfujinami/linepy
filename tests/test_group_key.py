@@ -7,8 +7,8 @@ import tempfile
 
 import pytest
 
-from linepy._purecrypto import AES
 from linepy.base import BaseClient
+from linepy.crypto.primitives import AES
 
 
 @pytest.fixture

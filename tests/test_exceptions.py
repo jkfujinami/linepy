@@ -37,9 +37,9 @@ def test_exported_from_package_root():
 
 def test_legacy_import_locations_still_work():
     """Callers that learned `from linepy.base import LineException` keep working."""
+    from linepy.auth.login import LoginError as FromLogin
     from linepy.base import LineException as FromBase
-    from linepy.compact import CompactMessageProtocolError as FromCompact
-    from linepy.login import LoginError as FromLogin
+    from linepy.protocol.compact import CompactMessageProtocolError as FromCompact
 
     assert FromBase is LineException
     assert FromLogin is LoginError

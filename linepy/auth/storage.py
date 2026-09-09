@@ -101,7 +101,7 @@ class FileStorage(BaseStorage):
         except json.JSONDecodeError as e:
             # Log error but don't silently return empty - this could cause data loss
             import logging
-            logging.getLogger("linepy.storage").error(
+            logging.getLogger("linepy.auth.storage").error(
                 "JSON decode error in %s: %s. NOT overwriting file.", self.path, e
             )
             raise  # Re-raise to prevent set() from overwriting with partial data

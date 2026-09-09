@@ -26,7 +26,13 @@ import os
 import struct
 from typing import Any, Dict, List, Optional, Tuple
 
-from ._purecrypto import (
+from ..config import (
+    MID_TYPE_GROUP,
+    MID_TYPE_ROOM,
+    MID_TYPE_USER,
+    get_mid_type,
+)
+from .primitives import (
     AES,
     AESGCMSIV,
     HKDF,
@@ -36,14 +42,8 @@ from ._purecrypto import (
     x25519_scalarmult,
     x25519_scalarmult_base,
 )
-from .config import (
-    MID_TYPE_GROUP,
-    MID_TYPE_ROOM,
-    MID_TYPE_USER,
-    get_mid_type,
-)
 
-logger = logging.getLogger("linepy.e2ee")
+logger = logging.getLogger("linepy.crypto.e2ee")
 
 
 def get_to_type(mid: str) -> int:
@@ -465,7 +465,7 @@ class E2EE:
         struct's field 1 holds the list of key entries, each a field map with
         keyId (2), pubKey (4) and privKey (5).
         """
-        from .thrift import CompactReader
+        from ..protocol.thrift import CompactReader
 
         parsed = CompactReader(data).read_struct()
         entries = parsed.get(1) if isinstance(parsed, dict) else None
@@ -522,7 +522,7 @@ class E2EE:
         key_id = -1
         if talk is not None:
             try:
-                from .models.generated import Pb1_C13097n4
+                from ..models.generated import Pb1_C13097n4
 
                 pub_model = Pb1_C13097n4(
                     version=1, key_data=base64.b64encode(pub).decode("ascii")

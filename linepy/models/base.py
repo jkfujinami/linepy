@@ -27,7 +27,7 @@ Design notes:
     :func:`typing.get_type_hints`, cached per class and invalidated by
     :meth:`ModelBase.model_rebuild`.
   * Thrift-decoded data always already carries correctly-typed leaf values
-    (str/int/bytes/bool/float from :mod:`linepy.thrift`), so unlike real
+    (str/int/bytes/bool/float from :mod:`linepy.protocol.thrift`), so unlike real
     pydantic there is no type coercion/validation to perform on scalars --
     only *structural* recursion into nested dataclasses/lists/dicts is
     needed to turn raw dicts into the right nested object graph.

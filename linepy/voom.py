@@ -133,7 +133,7 @@ class VoomClient:
              host: Optional[str] = None) -> Dict[str, Any]:
         req = self.build_request(path, routing, method, body, channel_token,
                                  extra_headers, host)
-        http = self.client.request._http
+        http = self.client.request.http
         if req["method"] == "GET":
             resp = http.get(req["url"], headers=req["headers"])
         else:

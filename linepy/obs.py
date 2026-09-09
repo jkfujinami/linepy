@@ -100,7 +100,7 @@ class ObsBase:
             "x-line-application": self.client.app_name,
             "x-Line-access": self.client.auth_token,
         }
-        resp = self.client.request._http.get(
+        resp = self.client.request.get(
             self.get_message_data_url(message_id, is_preview, is_square), headers=headers
         )
         resp.raise_for_status()
@@ -121,7 +121,7 @@ class ObsBase:
             "x-line-application": self.client.app_name,
             "x-Line-access": self.client.auth_token,
         }
-        resp = self.client.request._http.get(
+        resp = self.client.request.get(
             self.get_message_metadata_url(message_id, is_square), headers=headers
         )
         resp.raise_for_status()
@@ -138,7 +138,7 @@ class ObsBase:
             "User-Agent": self.client.request.user_agent,
         }
         url = f"https://{self.OBS_DOMAIN}/{obs_path}"
-        response = self.client.request._http.post(url, content=data, headers=headers)
+        response = self.client.request.post(url, content=data, headers=headers)
         response.raise_for_status()
         return {
             "objId": response.headers.get("x-obs-oid", ""),
@@ -254,7 +254,7 @@ class ObsBase:
             "X-Talk-Meta": talk_meta,
         }
         url = f"https://{self.OBS_DOMAIN}/talk/{metadata.get('SID')}"
-        response = self.client.request._http.get(url, headers=headers)
+        response = self.client.request.get(url, headers=headers)
         response.raise_for_status()
         plain = self.client.e2ee.decrypt_by_key_material(response.content, key_material)
         return {"data": plain, "fileName": file_name}
@@ -361,7 +361,7 @@ class ObsBase:
         url = f"https://{self.OBS_DOMAIN}/r/g2/m/reqseq"
 
         try:
-            response = self.client.request._http.post(
+            response = self.client.request.post(
                 url,
                 content=data,
                 headers=headers
@@ -426,7 +426,7 @@ class ObsBase:
         url = f"https://{self.OBS_DOMAIN}/r/g2/member/{member_mid}"
 
         try:
-            response = self.client.request._http.post(
+            response = self.client.request.post(
                 url,
                 content=data,
                 headers=headers

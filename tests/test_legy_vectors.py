@@ -11,7 +11,7 @@ import os
 
 import pytest
 
-from linepy import legy
+from linepy.protocol import legy
 
 VECTORS = os.path.join(os.path.dirname(__file__), "vectors", "linejs_vectors.json")
 

@@ -22,7 +22,7 @@ from linepy.config import (
     MID_TYPE_USER,
     get_mid_type,
 )
-from linepy.e2ee import get_to_type
+from linepy.crypto.e2ee import get_to_type
 
 
 @pytest.fixture
