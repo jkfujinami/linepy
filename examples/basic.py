@@ -15,6 +15,7 @@ def main():
             "DESKTOPWIN", storage=".linepy_storage.json"
         )
         client.auto_login()
+        
 
         # Get profile
         profile = client.get_profile()
