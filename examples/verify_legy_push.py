@@ -18,8 +18,8 @@ def format_event(event):
     return str(event)
 
 
-from linepy.helpers.square import SquareEventData
-from linepy.models import SquareEvent, SquareEventType
+from linepy.helpers.square import SquareEventData  # noqa: E402
+from linepy.models import SquareEvent, SquareEventType  # noqa: E402
 
 
 def on_push_event(service_type: int, event: SquareEvent):

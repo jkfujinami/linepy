@@ -1,101 +1,181 @@
-import unittest
-from unittest.mock import MagicMock
+#!/usr/bin/env python3
+"""PollingManager, and the reply targeting it used to exercise.
 
-from linepy.client import Client
-from linepy.models import Message as ClientMessage
-from linepy.models import Message as PydanticMessage
-from linepy.models import Operation, OpType
+The previous version of this file tested a `Client._handle_operation` and a
+`Message(dump, client)` wrapper that no longer exist -- it had been failing
+on every run for a long time. It is rewritten here against the current API:
+PollingManager's worker/queue plumbing (which had no coverage at all) and
+TalkMessage's reply targeting (which had coverage for group chats only, and
+was wrong for 1:1).
+"""
 
+import os
+import queue
+import tempfile
 
-class TestPollingLogic(unittest.TestCase):
-    def setUp(self):
-        # Mock BaseClient and Polling
-        self.mock_client_base = MagicMock()
-        self.mock_client_base.polling = MagicMock()
-        self.mock_client_base.mid = "u123"  # Mock own mid
+import pytest
 
-        # Create Client instance with mocked base
-        self.client = Client()
-        self.client.base = self.mock_client_base
+from linepy.base import BaseClient
+from linepy.realtime.message import TalkMessage, reply_target
+from linepy.realtime.polling import ChatWorker, DispatchWorker, PollingManager
 
-        # Mock event handler
-        self.mock_handler = MagicMock()
-        self.client.on("message")(self.mock_handler)
-
-    def test_handle_operation_message(self):
-        """Test handling of RECEIVE_MESSAGE operation"""
-        # Create a mock operation with Pydantic Message
-        # Note: We must be careful with aliases. PydanticMessage expects input to match field names or aliases depending on config.
-        # But when model_dump is called, it produces aliases if by_alias=True.
-        # client.py does:
-        # msg = Message(
-        #    operation.message.model_dump(by_alias=True) ...,
-        # )
-
-        pydantic_msg = PydanticMessage(
-            from_="u123", to="u456", text="Hello world", id="msg1", content_type=0
-        )
-
-        operation = Operation(
-            revision=100, type=OpType.RECEIVE_MESSAGE, message=pydantic_msg
-        )
-
-        # Verify model dump outputs aliases
-        dump = pydantic_msg.model_dump(by_alias=True)
-        # print("DEBUG: Dumped msg:", dump)
-
-        # Simulate polling yielding this operation
-        self.client._handle_operation(operation)
-
-        # Check if handler was called
-        self.assertTrue(self.mock_handler.called)
-
-        # Check argument passed to handler
-        args, _ = self.mock_handler.call_args
-        msg = args[0]
-
-        self.assertIsInstance(msg, ClientMessage)
-        self.assertEqual(msg.text, "Hello world")
-        self.assertEqual(msg.from_, "u123")
-
-        # Verify Message wrapper behavior
-        self.assertEqual(msg._raw.get(1), "u123")
-        self.assertEqual(msg._raw.get(10), "Hello world")
-
-    def test_reply_logic_1on1(self):
-        """Test reply logic for 1:1 chat"""
-        # 1:1 message: from=Other, to=Me
-        pydantic_msg = PydanticMessage(from_="uOther", to="uMe", text="Hi", id="msg1")
-        self.client.base.send_message = MagicMock()
-
-        # Construct wrapper
-        dump = pydantic_msg.model_dump(by_alias=True)
-        msg_wrapper = ClientMessage(dump, self.client)
-
-        # Reply
-        msg_wrapper.reply("Hello")
-
-        # Should send to "uOther" (the sender)
-        self.client.base.send_message.assert_called_with("uOther", "Hello")
-
-    def test_reply_logic_group(self):
-        """Test reply logic for Group chat"""
-        # Group message: from=Other, to=Group
-        pydantic_msg = PydanticMessage(
-            from_="uOther", to="cGroup", text="Hi group", id="msg2"
-        )
-        self.client.base.send_message = MagicMock()
-
-        # Construct wrapper
-        dump = pydantic_msg.model_dump(by_alias=True)
-        msg_wrapper = ClientMessage(dump, self.client)
-
-        # Reply
-        msg_wrapper.reply("Hello group")
-
-        # Should send to "cGroup" (the group mid)
-        self.client.base.send_message.assert_called_with("cGroup", "Hello group")
+ME = "u" + "0" * 32
+OTHER = "u" + "1" * 32
+GROUP = "c" + "2" * 32
+ROOM = "r" + "3" * 32
+CHAT = "m" + "4" * 32
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.fixture
+def client():
+    client = BaseClient(
+        device="DESKTOPMAC", storage=os.path.join(tempfile.mkdtemp(), "s.json")
+    )
+    client.mid = ME
+    return client
+
+
+# ---- reply targeting -------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "sender,to,expected",
+    [
+        # Group / room: reply goes to the chat.
+        (OTHER, GROUP, GROUP),
+        (OTHER, ROOM, ROOM),
+        (ME, GROUP, GROUP),
+        # 1:1 we received: `to` is us, so answer the sender.
+        (OTHER, ME, OTHER),
+        # 1:1 we sent: `to` is already the other party.
+        (ME, OTHER, OTHER),
+        # Missing sender: nothing better than `to`.
+        (None, OTHER, OTHER),
+        (None, None, None),
+    ],
+)
+def test_reply_target(sender, to, expected):
+    assert reply_target(sender, to, ME) == expected
+
+
+def _talk_message(client, sender, to):
+    return TalkMessage(
+        {"from_": sender, "to": to, "id_": "MSG1", "text": "hi"}, client
+    )
+
+
+def test_reply_in_a_group_goes_to_the_group(client):
+    sent = []
+    client.send_message = lambda to, text, **kw: sent.append((to, text)) or {}
+
+    _talk_message(client, OTHER, GROUP).reply("pong")
+
+    assert sent == [(GROUP, "pong")]
+
+
+def test_reply_in_a_one_to_one_goes_to_the_sender(client):
+    """reply() used to send to `to`, which in a received 1:1 message is us."""
+    sent = []
+    client.send_message = lambda to, text, **kw: sent.append((to, text)) or {}
+
+    message = _talk_message(client, OTHER, ME)
+
+    assert message.reply_target == OTHER
+    message.reply("pong")
+    assert sent == [(OTHER, "pong")]
+
+
+def test_reply_quotes_the_original(client):
+    sent = []
+    client.send_message = lambda to, text, **kw: sent.append(kw) or {}
+
+    _talk_message(client, OTHER, GROUP).reply("pong")
+
+    assert sent == [{"related_message_id": "MSG1"}]
+
+
+# ---- PollingManager --------------------------------------------------------
+
+
+class _Response:
+    def __init__(self, sync_token=None, events=(), continuation_token=None):
+        self.sync_token = sync_token
+        self.events = list(events)
+        self.continuation_token = continuation_token
+
+
+def test_dispatch_worker_drains_the_queue():
+    q = queue.Queue()
+    seen = []
+    worker = DispatchWorker(q, lambda service, event: seen.append((service, event)))
+    worker.start()
+    try:
+        q.put((3, "A"))
+        q.put((3, "B"))
+        q.join()
+    finally:
+        worker.stop()
+        worker.join(timeout=2)
+
+    assert seen == [(3, "A"), (3, "B")]
+
+
+def test_chat_worker_fetches_with_the_stored_sync_token(client):
+    calls = []
+
+    def fetch(**kwargs):
+        calls.append(kwargs)
+        return _Response(sync_token="TOK2", events=["E1"])
+
+    client.square.fetchSquareChatEvents = fetch
+    client.token_manager.set_square_sync_token(CHAT, "TOK1")
+
+    q = queue.Queue()
+    worker = ChatWorker(client, CHAT, q, client.token_manager, fetch_type=2)
+    worker._fetch_once()
+
+    assert calls[0]["syncToken"] == "TOK1"
+    assert calls[0]["squareChatMid"] == CHAT
+    assert q.get_nowait() == (3, "E1")
+
+
+def test_chat_worker_persists_the_new_sync_token(client):
+    client.square.fetchSquareChatEvents = lambda **kw: _Response(sync_token="TOK2")
+    client.token_manager.set_square_sync_token(CHAT, "TOK1")
+
+    worker = ChatWorker(client, CHAT, queue.Queue(), client.token_manager)
+    worker._fetch_once()
+
+    assert client.token_manager.get_square_sync_token(CHAT) == "TOK2"
+
+
+def test_chat_worker_initialises_a_missing_token(client):
+    calls = []
+
+    def fetch(*args, **kwargs):
+        # _init_token passes the chat mid positionally.
+        calls.append({"args": args, **kwargs})
+        return _Response(sync_token="TOK1")
+
+    client.square.fetchSquareChatEvents = fetch
+    worker = ChatWorker(client, CHAT, queue.Queue(), client.token_manager)
+
+    assert worker.sync_token is None
+    worker._fetch_once()  # no token yet -> initialises instead of fetching
+
+    assert calls[0]["limit"] == 1
+    assert worker.sync_token == "TOK1"
+    assert client.token_manager.get_square_sync_token(CHAT) == "TOK1"
+
+
+def test_manager_tracks_watched_chats_before_start(client):
+    manager = PollingManager(client)
+    manager.add_watched_chat(CHAT)
+    manager.add_watched_chat(CHAT)  # idempotent
+
+    assert manager.watched_chats == [CHAT]
+    assert manager._workers == {}  # not running, so no threads yet
+
+
+def test_manager_stop_is_safe_before_start(client):
+    PollingManager(client).stop()

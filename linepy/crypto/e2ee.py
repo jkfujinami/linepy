@@ -542,7 +542,9 @@ class E2EE:
         self.save_self_key_data(key_id, data)
         return data
 
-    def encrypt_e2ee_message(self, to: str, data, content_type: int = 0, spec_version: int = 2) -> List[bytes]:
+    def encrypt_e2ee_message(
+        self, to: str, data, content_type: int = 0, spec_version: int = 2
+    ) -> List[bytes]:
         """High-level: negotiate keys and build E2EE chunks for ``to``.
 
         Mirrors 本家 ``encryptE2EEMessage``. Returns the 5-chunk list

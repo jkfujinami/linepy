@@ -140,7 +140,7 @@ def test_api(client):
     to = input("  Enter MID to send test message (or Enter to skip): ").strip()
     if to:
         try:
-            result = client.send_message(to, "Hello from LINEPY! 🎉")
+            client.send_message(to, "Hello from LINEPY! 🎉")
             print("  ✅ Message sent!")
         except Exception as e:
             print(f"  Error: {e}")

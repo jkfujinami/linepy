@@ -141,13 +141,18 @@ class DispatchWorker(threading.Thread):
         while self._running:
             try:
                 service_type, event = self.event_queue.get(timeout=0.1)
-                if self.on_event:
-                    try:
-                        self.on_event(service_type, event)
-                    except Exception as e:
-                        logger.exception("Error in on_event callback: %s", e)
             except queue.Empty:
                 continue
+
+            try:
+                if self.on_event:
+                    self.on_event(service_type, event)
+            except Exception as e:
+                logger.exception("Error in on_event callback: %s", e)
+            finally:
+                # Pairs with the get() above so producers can join() the
+                # queue and know every event has been handled.
+                self.event_queue.task_done()
 
         logger.info("DispatchWorker stopped")
 
@@ -178,8 +183,13 @@ class PollingManager:
 
     def add_watched_chat(self, chat_mid: str):
         """Add a chat to watch list and start worker if running."""
-        logger.debug("[%s] add_watched_chat called, running=%s, in_workers=%s, in_watched=%s",
-                     chat_mid[:8], self._running, chat_mid in self._workers, chat_mid in self.watched_chats)
+        logger.debug(
+            "[%s] add_watched_chat called, running=%s, in_workers=%s, in_watched=%s",
+            chat_mid[:8],
+            self._running,
+            chat_mid in self._workers,
+            chat_mid in self.watched_chats,
+        )
 
         # Add to watched list if not present
         if chat_mid not in self.watched_chats:

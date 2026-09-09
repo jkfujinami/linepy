@@ -10,6 +10,26 @@ linejs client message features.
 import json
 from typing import Any, Dict, List, Optional
 
+from ..config import MID_TYPE_GROUP, MID_TYPE_ROOM, get_mid_type
+
+
+def reply_target(sender_mid: Optional[str], to: Optional[str],
+                 my_mid: Optional[str]) -> Optional[str]:
+    """Where a reply to a Talk message should be addressed.
+
+    Group and room messages go back to the chat itself. In a 1:1 chat ``to``
+    names whoever *received* the message, so replying to one we received
+    means answering ``sender_mid`` -- sending to ``to`` would address
+    ourselves. When we were the sender, ``to`` is already the other party.
+    """
+    if not to:
+        return None
+    if get_mid_type(to) in (MID_TYPE_GROUP, MID_TYPE_ROOM):
+        return to
+    if not sender_mid:
+        return to
+    return to if sender_mid == my_mid else sender_mid
+
 
 def _field(raw, name):
     """Read a message field from a ModelBase dataclass or a dict, tolerating aliases."""
@@ -75,8 +95,17 @@ class _BaseMessage:
 class TalkMessage(_BaseMessage):
     """OO wrapper over a Talk (1:1 / group) message."""
 
+    @property
+    def reply_target(self) -> Optional[str]:
+        """The mid :meth:`reply` will send to."""
+        return reply_target(
+            self.sender_mid, self.to, getattr(self.client, "mid", None)
+        )
+
     def reply(self, text: str) -> "TalkMessage":
-        result = self.client.send_message(self.to, text, related_message_id=self.id)
+        result = self.client.send_message(
+            self.reply_target, text, related_message_id=self.id
+        )
         return TalkMessage(result, self.client)
 
     def react(self, reaction_type: int = 2) -> None:

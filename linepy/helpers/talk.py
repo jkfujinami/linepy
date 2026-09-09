@@ -13,7 +13,7 @@ to ``BaseClient.send_message``, which is what these call.
 
 from typing import TYPE_CHECKING, Any, Optional
 
-from ..config import MID_TYPE_GROUP, MID_TYPE_ROOM, get_mid_type
+from ..realtime.message import reply_target as _reply_target
 
 if TYPE_CHECKING:
     from ..base import BaseClient
@@ -25,18 +25,13 @@ __all__ = ["reply_target", "reply_message", "send_chat_message"]
 def reply_target(client: "BaseClient", message: "Message") -> Optional[str]:
     """Where a reply to ``message`` should be addressed.
 
-    Group and room messages go back to the chat itself. In a 1:1 chat the
-    ``to`` field holds whoever received the message, so replying means
-    answering the *sender* -- unless we were the sender, in which case ``to``
-    is already the other party.
+    Same rule as :attr:`linepy.realtime.message.TalkMessage.reply_target`,
+    which this delegates to, but reading the mids off a raw ``Message``.
+    Returns ``None`` when the message carries no sender or no target.
     """
-    sender, to = message.from_, message.to
-    if not sender or not to:
+    if not message.from_ or not message.to:
         return None
-
-    if get_mid_type(to) in (MID_TYPE_GROUP, MID_TYPE_ROOM):
-        return to
-    return to if sender == client.mid else sender
+    return _reply_target(message.from_, message.to, client.mid)
 
 
 def reply_message(client: "BaseClient", message: "Message", text: str) -> Optional[Any]:

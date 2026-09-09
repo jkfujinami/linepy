@@ -148,4 +148,7 @@ def is_v3_support(device: Device) -> bool:
 
 def build_app_name(details: DeviceDetails) -> str:
     """Build x-line-application header value"""
-    return f"{details.device}\t{details.app_version}\t{details.system_name}\t{details.system_version}"
+    return (
+        f"{details.device}\t{details.app_version}"
+        f"\t{details.system_name}\t{details.system_version}"
+    )

@@ -444,12 +444,16 @@ class PushManager:
             # We discard the events here but update the subscriptionId and syncToken.
             if self.subscription_id and self.event_sync_token:
                 try:
-                    logger.debug("Calling fetchMyEvents to keep subscription alive (sub=%d, sync=%s...)",
-                                 self.subscription_id, self.event_sync_token[:10])
+                    logger.debug(
+                        "Calling fetchMyEvents to keep subscription alive "
+                        "(sub=%d, sync=%s...)",
+                        self.subscription_id,
+                        self.event_sync_token[:10],
+                    )
 
-                    # fetchMyEvents(subscriptionId, syncToken, limit, continuationToken)
-                    # Note: Arguments order depends on the generated code. assuming standard order.
-                    # Based on square.py: fetchMyEvents(self, subscriptionId, syncToken=None, limit=None, continuationToken=None, fetchType=None)
+                    # services/square.py: fetchMyEvents(subscriptionId,
+                    #     syncToken=None, limit=None, continuationToken=None,
+                    #     fetchType=None)
 
                     global_res = self.client.square.fetchMyEvents(
                         subscriptionId=self.subscription_id,
@@ -519,7 +523,9 @@ class PushManager:
                          # Noneなら次はないということなので、保持しているものを更新する
                          self.chat_continuation_tokens[chat_mid] = response.continuation_token
                          if hasattr(self.client, 'token_manager') and response.continuation_token:
-                             self.client.token_manager.set_square_continuation_token(chat_mid, response.continuation_token)
+                             self.client.token_manager.set_square_continuation_token(
+                                chat_mid, response.continuation_token
+                            )
 
                     # Process events
                     events = response.events if hasattr(response, 'events') else []
@@ -527,7 +533,9 @@ class PushManager:
                         first_ev = events[0]
                         last_ev = events[-1]
                         logger.debug(
-                            "Fetched %d events. \nFirst: SQEqSeq=%s Type=%s\nLast:  SQEqSeq=%s Type=%s",
+                            "Fetched %d events.\n"
+                            "First: SQEqSeq=%s Type=%s\n"
+                            "Last:  SQEqSeq=%s Type=%s",
                             len(events),
                             getattr(first_ev, 'squareEventId', '?'), getattr(first_ev, 'type', '?'),
                             getattr(last_ev, 'squareEventId', '?'), getattr(last_ev, 'type', '?')

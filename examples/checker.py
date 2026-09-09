@@ -200,7 +200,7 @@ class ReadChecker:
                 m = self.square.getSquareMember(squareMemberMid=mid)
                 name = m.square_member.display_name
                 names.append(f"・{name}")
-            except:
+            except Exception:
                 names.append("・???")
 
         if len(mids) > 30:

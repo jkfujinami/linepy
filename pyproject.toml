@@ -54,3 +54,12 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Machine output from tools/generate_models.py -- reformatting it would be
+# undone by the next regeneration, so only line length is waived here.
+# Everything else (undefined names, unused imports) still applies: it is
+# exactly what caught the missing models in services/square.py.
+"linepy/models/generated.py" = ["E501"]
+"linepy/services/talk.py" = ["E501"]
+"linepy/services/sync.py" = ["E501"]

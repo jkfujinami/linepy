@@ -435,8 +435,10 @@ class ThriftParser:
             depth = 0
             split_idx = -1
             for i, char in enumerate(content):
-                if char == '<': depth += 1
-                elif char == '>': depth -= 1
+                if char == '<':
+                    depth += 1
+                elif char == '>':
+                    depth -= 1
                 elif char == ',' and depth == 0:
                     split_idx = i
                     break
@@ -757,9 +759,7 @@ class ThriftParser:
 
             sig_args = ["self"]
             for arg in args:
-                f_name = self.to_snake_case(arg["name"])
-                if f_name.isdigit() or not f_name[0].isalpha(): f_name = f"arg_{f_name}"
-                if f_name in self.RESERVED_PYTHON_KEYWORDS: f_name += "_"
+                f_name = self._arg_name(arg)
 
                 f_type_py, _ = self._resolve_type(arg["type"])
                 used_models.update(self._model_names_in(f_type_py))
@@ -774,9 +774,7 @@ class ThriftParser:
             lines.append("        params = []")
 
             for arg in args:
-                f_name = self.to_snake_case(arg["name"])
-                if f_name.isdigit() or not f_name[0].isalpha(): f_name = f"arg_{f_name}"
-                if f_name in self.RESERVED_PYTHON_KEYWORDS: f_name += "_"
+                f_name = self._arg_name(arg)
 
                 ftype_id = self.get_ttype_id(arg["type"])
 
@@ -792,6 +790,19 @@ class ThriftParser:
 
         return "\n".join(header() + lines)
 
+    def _arg_name(self, arg) -> str:
+        """Python parameter name for a thrift argument.
+
+        Digits and non-alphabetic leads get an ``arg_`` prefix; anything that
+        would shadow a keyword or builtin gets a trailing underscore.
+        """
+        name = self.to_snake_case(arg["name"])
+        if name.isdigit() or not name[0].isalpha():
+            name = f"arg_{name}"
+        if name in self.RESERVED_PYTHON_KEYWORDS:
+            name += "_"
+        return name
+
     @staticmethod
     def _model_names_in(py_type: str):
         """Identifiers inside a rendered annotation, e.g.
@@ -804,11 +815,16 @@ class ThriftParser:
             "bool": 2, "byte": 3, "double": 4, "i16": 6, "i32": 8, "i64": 10,
             "string": 11, "binary": 11, "struct": 12, "map": 13, "set": 14, "list": 15
         }
-        if thrift_type in mapping: return mapping[thrift_type]
-        if thrift_type.startswith("map<"): return 13
-        if thrift_type.startswith("list<"): return 15
-        if thrift_type.startswith("set<"): return 14
-        if thrift_type in self.enums: return 8
+        if thrift_type in mapping:
+            return mapping[thrift_type]
+        if thrift_type.startswith("map<"):
+            return 13
+        if thrift_type.startswith("list<"):
+            return 15
+        if thrift_type.startswith("set<"):
+            return 14
+        if thrift_type in self.enums:
+            return 8
         return 12
 
 

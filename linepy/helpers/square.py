@@ -543,7 +543,13 @@ class SquareHelper:
         except Exception as e:
             error_str = str(e)
             # 410 = Already member / 既に参加済み
-            if "[410]" in error_str or "既に" in error_str or "already" in error_str.lower() or "メンバー" in error_str:
+            already_member = (
+                "[410]" in error_str
+                or "既に" in error_str
+                or "already" in error_str.lower()
+                or "メンバー" in error_str
+            )
+            if already_member:
                 result["status"] = "ALREADY_MEMBER"
                 result["message"] = f"既に参加済み: {chat_name}"
             else:

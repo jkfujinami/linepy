@@ -129,7 +129,11 @@ def _coerce_value(field_type: Any, value: Any) -> Any:
         try:
             import enum
 
-            if issubclass(tp, enum.IntEnum) and isinstance(value, int) and not isinstance(value, tp):
+            if (
+                issubclass(tp, enum.IntEnum)
+                and isinstance(value, int)
+                and not isinstance(value, tp)
+            ):
                 return tp(value)
         except (TypeError, ValueError):
             pass

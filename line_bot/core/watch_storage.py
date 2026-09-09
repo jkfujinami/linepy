@@ -43,7 +43,7 @@ class WatchStorage:
         try:
             with open(self.path, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except (OSError, json.JSONDecodeError):
             return {"watched": [], "pending": []}
 
     def _write(self, data: Dict[str, Any]):

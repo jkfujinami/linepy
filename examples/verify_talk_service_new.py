@@ -35,7 +35,7 @@ def test_talk():
         # Test 3: get_chats (Nested List call)
         print("Testing get_chats()...")
         # Just use an empty list to see if it doesn't crash
-        chats = client.talk.get_chats(chat_mids=[])
+        client.talk.get_chats(chat_mids=[])
         print("Successfully called get_chats()")
 
     except Exception as e:
