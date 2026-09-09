@@ -6,8 +6,6 @@ Provides high-level APIs for Square (OpenChat) operations.
 """
 
 import logging
-import threading
-import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
@@ -146,8 +144,12 @@ class SquareHelper:
     Provides convenient methods for:
     - Joining/leaving squares
     - Sending messages
-    - Polling events with multi-threading
-    - Event callbacks with decorators
+    - Event handlers keyed by Square event type
+
+    Reception itself belongs to :mod:`linepy.realtime`: this helper drives
+    :class:`~linepy.realtime.polling.PollingManager` and adds the
+    ``@helper.event(<type>)`` dispatch on top. Sync tokens are persisted by
+    the client's TokenManager, so a restart resumes where it left off.
 
     Example:
         helper = SquareHelper(client)
@@ -156,7 +158,7 @@ class SquareHelper:
         @helper.event(1)  # 1 = receiveMessage
         def on_message(event, helper):
             msg = event.get_message()
-            print(f"New message: {msg}")
+            logger.info("New message: %s", msg)
 
         # Start polling
         helper.start_polling(["mXXXXX", "mYYYYY"])
@@ -166,28 +168,8 @@ class SquareHelper:
         self.client = client
         self.square = client.square
 
-        # Sync token for polling (managed per square chat)
-        self._sync_tokens: Dict[str, str] = {}
-
-        # Polling state
-        self._polling = False
-        self._threads: List[threading.Thread] = []
-
-        # Event handlers by type
+        # Handlers registered through @helper.event(<type>)
         self._type_handlers: Dict[int, List[Callable]] = {}
-
-        # Generic event callbacks
-        self._event_callbacks: Dict[str, List[Callable]] = {}
-
-    # ========== Sync Token Management ==========
-
-    def get_sync_token(self, square_chat_mid: str) -> Optional[str]:
-        """Get stored sync token for a square chat."""
-        return self._sync_tokens.get(square_chat_mid)
-
-    def set_sync_token(self, square_chat_mid: str, token: str) -> None:
-        """Store sync token for a square chat."""
-        self._sync_tokens[square_chat_mid] = token
 
     # ========== Event Decorators ==========
 
@@ -217,150 +199,43 @@ class SquareHelper:
             return func
         return decorator
 
-    def on(self, event_name: str, callback: Callable) -> None:
+    def start_polling(self, chat_mids: List[str], fetch_type: int = 2) -> None:
         """
-        Register a callback for a named event.
+        Start polling for events on the given square chats.
+
+        Delegates to the client's PollingManager (one worker thread per chat,
+        one dispatch thread) and routes what it yields into the handlers
+        registered with :meth:`event`.
 
         Args:
-            event_name: Event name (e.g., "message", "error", "started")
-            callback: Function to call when event occurs
+            chat_mids: Square chat MIDs to monitor
+            fetch_type: 1=Default, 2=Prefetch By Server (recommended)
         """
-        if event_name not in self._event_callbacks:
-            self._event_callbacks[event_name] = []
-        self._event_callbacks[event_name].append(callback)
-
-    def emit(self, event_name: str, *args, **kwargs) -> None:
-        """Emit a named event to registered callbacks."""
-        if event_name in self._event_callbacks:
-            for callback in self._event_callbacks[event_name]:
-                try:
-                    callback(*args, **kwargs)
-                except Exception as e:
-                    logger.warning("Callback error (%s): %s", event_name, e)
-
-    # ========== Polling ==========
-
-    def start_polling(self, chat_mids: List[str]) -> None:
-        """
-        Start polling for events on specified square chats.
-
-        Each chat MID gets its own thread.
-
-        Args:
-            chat_mids: List of square chat MIDs to monitor
-        """
-        if self._polling:
-            logger.debug("Polling already running")
-            return
-
-        self._polling = True
-        self._threads = []
-
-        logger.info("Starting polling for %d chats", len(chat_mids))
-
-        for mid in chat_mids:
-            thread = threading.Thread(
-                target=self._poll_chat,
-                args=(mid,),
-                daemon=True
-            )
-            thread.start()
-            self._threads.append(thread)
-
-        self.emit("started", chat_mids)
+        self.client.start_polling(
+            chat_mids, on_event=self._on_polled_event, fetch_type=fetch_type
+        )
 
     def stop_polling(self) -> None:
-        """Stop all polling threads."""
-        logger.info("Stopping polling...")
-        self._polling = False
+        """Stop polling."""
+        self.client.stop_polling()
 
-        # Wait for threads to finish
-        for thread in self._threads:
-            thread.join(timeout=5)
-
-        self._threads = []
-        self.emit("stopped")
-
-    def _poll_chat(self, chat_mid: str) -> None:
-        """
-        Polling loop for a single chat.
-
-        Args:
-            chat_mid: Square chat MID to poll
-        """
-        logger.debug("Polling started for %s", chat_mid[:12])
-
-        # Initial fetch to get sync token
+    def _on_polled_event(self, service_type: int, raw_event: Any) -> None:
+        """PollingManager callback: wrap, dispatch, and emit on the client bus."""
         try:
-            response = self.square.fetchSquareChatEvents(
-                squareChatMid=chat_mid,
-                limit=1  # Just to get initial sync token
-            )
-            sync_token = response.sync_token if hasattr(response, 'sync_token') else response.get('syncToken')
-            self.set_sync_token(chat_mid, sync_token)
-        except Exception as e:
-            logger.warning("Initial fetch failed for %s: %s", chat_mid[:12], e)
+            event = SquareEvent(raw_event)
+        except Exception as exc:
+            logger.warning("Could not read square event: %s", exc)
             return
 
-        # Main polling loop
-        while self._polling:
+        for handler in self._type_handlers.get(event.event_type, []):
             try:
-                sync_token = self.get_sync_token(chat_mid)
-
-                response = self.square.fetchSquareChatEvents(
-                    squareChatMid=chat_mid,
-                    syncToken=sync_token,
-                    limit=100
+                handler(event, self)
+            except Exception as exc:
+                logger.warning(
+                    "Handler error (type %s): %s", event.event_type, exc
                 )
 
-                # Update sync token
-                new_sync_token = response.sync_token if hasattr(response, 'sync_token') else response.get('syncToken')
-                if new_sync_token:
-                    self.set_sync_token(chat_mid, new_sync_token)
-
-                # Process events
-                events = response.events if hasattr(response, 'events') else response.get('events', [])
-
-                for raw_event in events:
-                    self._handle_event(raw_event, chat_mid)
-
-            except Exception as e:
-                logger.warning("Polling error for %s: %s", chat_mid[:12], e)
-                self.emit("error", chat_mid, e)
-                time.sleep(3)  # Pause before retry on error
-                continue
-
-            # Small delay to prevent hammering the server
-            time.sleep(0.1)
-
-        logger.debug("Polling stopped for %s", chat_mid[:12])
-
-    def _handle_event(self, raw_event: Any, chat_mid: str) -> None:
-        """
-        Handle a single event by dispatching to registered handlers.
-
-        Args:
-            raw_event: Raw event data
-            chat_mid: Source chat MID
-        """
-        event = SquareEvent(raw_event)
-        event_type = event.event_type
-
-        # Dispatch to type-specific handlers
-        if event_type in self._type_handlers:
-            for handler in self._type_handlers[event_type]:
-                try:
-                    # Run handler in separate thread to avoid blocking
-                    threading.Thread(
-                        target=handler,
-                        args=(event, self),
-                        daemon=True
-                    ).start()
-                except Exception as e:
-                    logger.warning("Handler error (type %d): %s", event_type, e)
-
-        # Emit generic event
-        self.emit("event", event, chat_mid)
+        self.client.emit("square:event", event)
 
     # ========== High-Level APIs ==========
 

@@ -29,7 +29,7 @@ from .data import (
 if TYPE_CHECKING:
     from .manager import PushManager
 
-logger = logging.getLogger("linepy.push")
+logger = logging.getLogger("linepy.realtime.push")
 
 
 class PushConnection:

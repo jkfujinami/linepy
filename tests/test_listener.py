@@ -7,8 +7,8 @@ import tempfile
 import pytest
 
 from linepy.base import BaseClient
-from linepy.listener import EventDispatcher
-from linepy.message import SquareMessage, TalkMessage
+from linepy.realtime.dispatcher import EventDispatcher
+from linepy.realtime.message import SquareMessage, TalkMessage
 
 
 @pytest.fixture

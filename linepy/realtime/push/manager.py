@@ -15,9 +15,9 @@ from .conn import PushConnection
 from .data import LegyH2PushFrame, ServiceType
 
 if TYPE_CHECKING:
-    from ..base import BaseClient
+    from ...base import BaseClient
 
-logger = logging.getLogger("linepy.push")
+logger = logging.getLogger("linepy.realtime.push")
 
 
 def gen_service_mask(services: List[int]) -> int:
@@ -234,7 +234,7 @@ class PushManager:
 
     def _build_talk_sync_request(self) -> bytes:
         """Build a Talk ``sync`` request payload from stored revisions."""
-        from ..protocol.thrift import write_thrift
+        from ...protocol.thrift import write_thrift
 
         rev = getattr(self, "last_revision", 0) or 0
         global_rev = getattr(self, "last_global_revision", 0) or 0
@@ -255,14 +255,14 @@ class PushManager:
         Talk sync responses arrive as TMoreCompactProtocol; fall back to the
         standard compact protocol when TMC decoding fails.
         """
-        from ..protocol.thrift.tmc import TMoreCompactProtocol
+        from ...protocol.thrift.tmc import TMoreCompactProtocol
 
         try:
             return TMoreCompactProtocol(data).res
         except Exception as tmc_err:
             logger.debug("TMC decode failed (%s), falling back to compact", tmc_err)
             try:
-                from ..protocol.thrift import read_thrift
+                from ...protocol.thrift import read_thrift
 
                 return read_thrift(data, 4)
             except Exception as compact_err:
@@ -289,7 +289,7 @@ class PushManager:
 
     def _build_fetch_my_events_request(self, subscription_id: int, sync_token: str) -> bytes:
         """Build fetchMyEvents request payload."""
-        from ..protocol.thrift import write_thrift
+        from ...protocol.thrift import write_thrift
 
         params = [
             [12, 1, [
@@ -412,7 +412,7 @@ class PushManager:
             # Extract subscriptionId from payload (like linejs L445-448)
             if frame.push_payload and len(frame.push_payload) > 0:
                 try:
-                    from ..protocol.thrift import CompactReader
+                    from ...protocol.thrift import CompactReader
                     proto = CompactReader(frame.push_payload)
                     parsed = proto.read_struct()
                     if 1 in parsed:  # Field 1 = subscriptionId

@@ -11,7 +11,7 @@ import threading
 import time
 from typing import Any, Callable, Dict, List, Optional
 
-logger = logging.getLogger("linepy.polling")
+logger = logging.getLogger("linepy.realtime.polling")
 
 
 class ChatWorker(threading.Thread):

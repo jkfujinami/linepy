@@ -107,6 +107,17 @@ def _ids(paths):
         "linepy/services/liff.py",
         "linepy/services/voom.py",
         "linepy/services/obs.py",
+        "linepy/realtime/__init__.py",
+        "linepy/realtime/dispatcher.py",
+        "linepy/realtime/message.py",
+        "linepy/realtime/polling.py",
+        "linepy/realtime/push/__init__.py",
+        "linepy/realtime/push/conn.py",
+        "linepy/realtime/push/data.py",
+        "linepy/realtime/push/manager.py",
+        "linepy/helpers/__init__.py",
+        "linepy/helpers/talk.py",
+        "linepy/helpers/square.py",
     ],
 )
 def test_module_is_where_the_layout_says(relpath):
@@ -138,6 +149,10 @@ def test_module_is_where_the_layout_says(relpath):
         "linepy/liff.py",
         "linepy/voom.py",
         "linepy/obs.py",
+        "linepy/polling.py",
+        "linepy/listener.py",
+        "linepy/message.py",
+        "linepy/push/__init__.py",
     ],
 )
 def test_old_module_locations_are_gone(relpath):
@@ -151,7 +166,7 @@ def test_old_module_locations_are_gone(relpath):
 def test_protocol_does_not_depend_on_upper_layers(path):
     """Serialisers must not know about transport, services or the client."""
     forbidden = ("linepy.transport", "linepy.services", "linepy.base",
-                 "linepy.client", "linepy.auth", "linepy.push", "linepy.helpers")
+                 "linepy.client", "linepy.auth", "linepy.realtime.push", "linepy.helpers")
     bad = [m for m in _linepy_imports(path) if m.startswith(forbidden)]
     assert not bad, f"{path.name} imports {bad}"
 

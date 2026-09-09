@@ -12,8 +12,8 @@ import pytest
 
 from linepy.base import BaseClient
 from linepy.client import Client
-from linepy.push import PushManager
-from linepy.push.data import ServiceType
+from linepy.realtime.push import PushManager
+from linepy.realtime.push.data import ServiceType
 
 
 def _storage():
@@ -53,7 +53,7 @@ class _FakePush:
 
 def test_client_start_push_delegates_to_base(client, monkeypatch):
     """Client.start_push used to read a self.push it never had -> AttributeError."""
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     client.start_push(["m" + "1" * 32], fetch_type=2)
 
@@ -64,7 +64,7 @@ def test_client_start_push_delegates_to_base(client, monkeypatch):
 
 def test_start_push_keeps_watched_chats(base, monkeypatch):
     """start() must not wipe the chats add_watched_chat() just registered."""
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     mids = ["m" + "1" * 32, "m" + "2" * 32]
     base.start_push(mids)
@@ -84,7 +84,7 @@ def test_push_manager_start_preserves_registered_chats(base):
 
 
 def test_listen_enables_both_talk_and_square(base, monkeypatch):
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     base.listen()
 
@@ -92,7 +92,7 @@ def test_listen_enables_both_talk_and_square(base, monkeypatch):
 
 
 def test_listen_can_select_a_single_service(base, monkeypatch):
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     base.listen(talk=False)
 
@@ -106,7 +106,7 @@ def test_listen_rejects_an_empty_service_set(base):
 
 def test_listen_watches_registered_chats(base, monkeypatch):
     """listen() read a _watch_chat_mids that was never initialised."""
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     base.watch_chats("m" + "4" * 32, "m" + "5" * 32)
     base.watch_chats("m" + "4" * 32)  # duplicates are ignored
@@ -117,7 +117,7 @@ def test_listen_watches_registered_chats(base, monkeypatch):
 
 def test_listen_callback_takes_service_type_and_event(base, monkeypatch):
     """PushManager calls on_event(service_type, event); listen() passed a 1-arg fn."""
-    monkeypatch.setattr("linepy.push.PushManager", _FakePush)
+    monkeypatch.setattr("linepy.realtime.push.PushManager", _FakePush)
 
     seen = []
 

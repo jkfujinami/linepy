@@ -13,8 +13,8 @@ import tempfile
 import pytest
 
 from linepy.base import BaseClient
-from linepy.push.data import ServiceType
-from linepy.push.manager import PushManager
+from linepy.realtime.push.data import ServiceType
+from linepy.realtime.push.manager import PushManager
 
 
 @pytest.fixture

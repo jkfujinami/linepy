@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """PUSH stream packet framing tests (Phase 3 Step 9)."""
 
-from linepy.push.packet import (
+from linepy.realtime.push.packet import (
     PushPacketParser,
     build_packet,
 )

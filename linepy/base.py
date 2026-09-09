@@ -13,8 +13,8 @@ from .exceptions import LineException
 from .transport import RequestClient
 
 if TYPE_CHECKING:
-    from .polling import PollingManager
-    from .push import PushManager
+    from .realtime.polling import PollingManager
+    from .realtime.push import PushManager
 
 logger = logging.getLogger("linepy.client")
 
@@ -406,8 +406,8 @@ class BaseClient:
             fetch_type: 1=Default (Sync), 2=Prefetch By Server
             services: PUSH service ids (default: Square only)
         """
-        from .push import PushManager
-        from .push.data import ServiceType
+        from .realtime.push import PushManager
+        from .realtime.push.data import ServiceType
 
         if self.push is None:
             self.push = PushManager(self)
@@ -442,7 +442,7 @@ class BaseClient:
             on_event: Callback function(service_type, event_data)
             fetch_type: 1=Default, 2=Prefetch By Server (recommended)
         """
-        from .polling import PollingManager
+        from .realtime.polling import PollingManager
 
         if self.polling is None:
             self.polling = PollingManager(self)
@@ -656,7 +656,7 @@ class BaseClient:
         """Lazily create the PUSH event dispatcher (Phase 3 Step 10)."""
         dispatcher = getattr(self, "_dispatcher", None)
         if dispatcher is None:
-            from .listener import EventDispatcher
+            from .realtime.dispatcher import EventDispatcher
 
             dispatcher = EventDispatcher(self)
             self._dispatcher = dispatcher
@@ -676,7 +676,7 @@ class BaseClient:
         (``SquareMessage``). Register handlers via :meth:`on`, and the Square
         chats to watch via :meth:`watch_chats`.
         """
-        from .push.data import ServiceType
+        from .realtime.push.data import ServiceType
 
         dispatcher = self.get_dispatcher()
 

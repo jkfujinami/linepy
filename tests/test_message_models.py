@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from linepy.message import SquareMessage, TalkMessage
+from linepy.realtime.message import SquareMessage, TalkMessage
 
 
 class _StubClient:
