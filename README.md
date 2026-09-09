@@ -158,18 +158,11 @@ linepy avoids every one of these:
 To install in a-Shell:
 
 ```bash
-pip install httpx[http2] pyaes qrcode
 cd linepy
-pip install -e . --no-deps   # --no-deps: pyproject's deps are already pure-Python and installed above
+pip install .
 ```
 
-If `pip install -e .` itself fails on metadata generation (older `hatchling` bundled with a-Shell), install the runtime deps directly and add the repo root to `sys.path` instead of using an editable install:
-
-```python
-import sys
-sys.path.insert(0, "/path/to/linepy")
-from linepy.base import BaseClient
-```
+Use a plain `pip install .`, **not** `pip install -e .` — a-Shell's bundled `hatchling` fails on the editable-install metadata step (`prepare_metadata_for_build_editable`), while the regular (non-editable) build works fine.
 
 ### Why no pycryptodome/cryptography/pydantic/xxhash?
 
